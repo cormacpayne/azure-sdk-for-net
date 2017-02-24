@@ -38,20 +38,19 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Management.Sql
 {
     /// <summary>
-    /// Represents all the operations for operating on Azure SQL Server Active
-    /// Directory Administrators.  Contains operations to: Create, Retrieve,
-    /// Update, and Delete Azure SQL Server Active Directory Administrators.
+    /// Represents all the operations of Azure SQL Database that interact with
+    /// Azure Key Vault Server Keys. Contains operations to: Add, Delete, and
+    /// Retrieve Server Ke.
     /// </summary>
-    internal partial class ServerAdministratorOperations : IServiceOperations<SqlManagementClient>, IServerAdministratorOperations
+    internal partial class ServerKeyOperations : IServiceOperations<SqlManagementClient>, IServerKeyOperations
     {
         /// <summary>
-        /// Initializes a new instance of the ServerAdministratorOperations
-        /// class.
+        /// Initializes a new instance of the ServerKeyOperations class.
         /// </summary>
         /// <param name='client'>
         /// Reference to the service client.
         /// </param>
-        internal ServerAdministratorOperations(SqlManagementClient client)
+        internal ServerKeyOperations(SqlManagementClient client)
         {
             this._client = client;
         }
@@ -68,35 +67,32 @@ namespace Microsoft.Azure.Management.Sql
         }
         
         /// <summary>
-        /// Begins creating a new Azure SQL Server Active Directory
-        /// Administrator or updating an existing Azure SQL Server Active
-        /// Directory Administrator. To determine the status of the operation
-        /// call GetServerAdministratorOperationStatus.
+        /// Begins creating a new Azure SQL Server Key or updating an existing
+        /// Azure SQL Server Key. To determine the status of the operation
+        /// call GetCreateOrUpdateOperationStatus.
         /// </summary>
         /// <param name='resourceGroupName'>
         /// Required. The name of the Resource Group to which the server
         /// belongs.
         /// </param>
         /// <param name='serverName'>
-        /// Required. The name of the Azure SQL Server to which the Azure SQL
-        /// Server Active Directory administrator belongs
+        /// Required. The name of the Azure SQL Server to which to add the
+        /// Server Key.
         /// </param>
-        /// <param name='administratorName'>
-        /// Required. The name of the Azure SQL Server Active Directory
-        /// Administrator.
+        /// <param name='keyName'>
+        /// Required. The name of the Azure SQL Server Key.
         /// </param>
         /// <param name='parameters'>
-        /// Required. The required parameters for createing or updating an
-        /// Active Directory Administrator.
+        /// Required. The required parameters for createing or updating a
+        /// Server Key.
         /// </param>
         /// <param name='cancellationToken'>
         /// Cancellation token.
         /// </param>
         /// <returns>
-        /// Response for long running Azure SQL Server Active Directory
-        /// Administrator operations.
+        /// Represents the response to a Azure Sql Server Key operation request.
         /// </returns>
-        public async Task<ServerAdministratorCreateOrUpdateResponse> BeginCreateOrUpdateAsync(string resourceGroupName, string serverName, string administratorName, ServerAdministratorCreateOrUpdateParameters parameters, CancellationToken cancellationToken)
+        public async Task<ServerKeyCreateOrUpdateResponse> BeginCreateOrUpdateAsync(string resourceGroupName, string serverName, string keyName, ServerKeyCreateOrUpdateParameters parameters, CancellationToken cancellationToken)
         {
             // Validate
             if (resourceGroupName == null)
@@ -107,9 +103,9 @@ namespace Microsoft.Azure.Management.Sql
             {
                 throw new ArgumentNullException("serverName");
             }
-            if (administratorName == null)
+            if (keyName == null)
             {
-                throw new ArgumentNullException("administratorName");
+                throw new ArgumentNullException("keyName");
             }
             if (parameters == null)
             {
@@ -118,14 +114,6 @@ namespace Microsoft.Azure.Management.Sql
             if (parameters.Properties == null)
             {
                 throw new ArgumentNullException("parameters.Properties");
-            }
-            if (parameters.Properties.AdministratorType == null)
-            {
-                throw new ArgumentNullException("parameters.Properties.AdministratorType");
-            }
-            if (parameters.Properties.Login == null)
-            {
-                throw new ArgumentNullException("parameters.Properties.Login");
             }
             
             // Tracing
@@ -137,7 +125,7 @@ namespace Microsoft.Azure.Management.Sql
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("resourceGroupName", resourceGroupName);
                 tracingParameters.Add("serverName", serverName);
-                tracingParameters.Add("administratorName", administratorName);
+                tracingParameters.Add("keyName", keyName);
                 tracingParameters.Add("parameters", parameters);
                 TracingAdapter.Enter(invocationId, this, "BeginCreateOrUpdateAsync", tracingParameters);
             }
@@ -155,10 +143,10 @@ namespace Microsoft.Azure.Management.Sql
             url = url + "Microsoft.Sql";
             url = url + "/servers/";
             url = url + Uri.EscapeDataString(serverName);
-            url = url + "/administrators/";
-            url = url + Uri.EscapeDataString(administratorName);
+            url = url + "/keys/";
+            url = url + Uri.EscapeDataString(keyName);
             List<string> queryParameters = new List<string>();
-            queryParameters.Add("api-version=2014-04-01");
+            queryParameters.Add("api-version=2015-05-01-preview");
             if (queryParameters.Count > 0)
             {
                 url = url + "?" + string.Join("&", queryParameters);
@@ -194,19 +182,21 @@ namespace Microsoft.Azure.Management.Sql
                 string requestContent = null;
                 JToken requestDoc = null;
                 
-                JObject serverAdministratorCreateOrUpdateParametersValue = new JObject();
-                requestDoc = serverAdministratorCreateOrUpdateParametersValue;
+                JObject serverKeyCreateOrUpdateParametersValue = new JObject();
+                requestDoc = serverKeyCreateOrUpdateParametersValue;
                 
                 JObject propertiesValue = new JObject();
-                serverAdministratorCreateOrUpdateParametersValue["properties"] = propertiesValue;
+                serverKeyCreateOrUpdateParametersValue["properties"] = propertiesValue;
                 
-                propertiesValue["login"] = parameters.Properties.Login;
+                if (parameters.Properties.Uri != null)
+                {
+                    propertiesValue["uri"] = parameters.Properties.Uri;
+                }
                 
-                propertiesValue["sid"] = parameters.Properties.Sid.ToString();
-                
-                propertiesValue["administratorType"] = parameters.Properties.AdministratorType;
-                
-                propertiesValue["tenantId"] = parameters.Properties.TenantId.ToString();
+                if (parameters.Properties.ServerKeyType != null)
+                {
+                    propertiesValue["serverKeyType"] = parameters.Properties.ServerKeyType;
+                }
                 
                 requestContent = requestDoc.ToString(Newtonsoft.Json.Formatting.Indented);
                 httpRequest.Content = new StringContent(requestContent, Encoding.UTF8);
@@ -239,13 +229,13 @@ namespace Microsoft.Azure.Management.Sql
                     }
                     
                     // Create Result
-                    ServerAdministratorCreateOrUpdateResponse result = null;
+                    ServerKeyCreateOrUpdateResponse result = null;
                     // Deserialize Response
                     if (statusCode == HttpStatusCode.OK || statusCode == HttpStatusCode.Created || statusCode == HttpStatusCode.Accepted)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                         string responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                        result = new ServerAdministratorCreateOrUpdateResponse();
+                        result = new ServerKeyCreateOrUpdateResponse();
                         JToken responseDoc = null;
                         if (string.IsNullOrEmpty(responseContent) == false)
                         {
@@ -254,6 +244,20 @@ namespace Microsoft.Azure.Management.Sql
                         
                         if (responseDoc != null && responseDoc.Type != JTokenType.Null)
                         {
+                            JToken operationValue = responseDoc["operation"];
+                            if (operationValue != null && operationValue.Type != JTokenType.Null)
+                            {
+                                string operationInstance = ((string)operationValue);
+                                result.Operation = operationInstance;
+                            }
+                            
+                            JToken startTimeValue = responseDoc["startTime"];
+                            if (startTimeValue != null && startTimeValue.Type != JTokenType.Null)
+                            {
+                                DateTime startTimeInstance = ((DateTime)startTimeValue);
+                                result.StartTime = startTimeInstance;
+                            }
+                            
                             ErrorResponse errorInstance = new ErrorResponse();
                             result.Error = errorInstance;
                             
@@ -278,41 +282,41 @@ namespace Microsoft.Azure.Management.Sql
                                 errorInstance.Target = targetInstance;
                             }
                             
-                            ServerAdministrator serverAdministratorInstance = new ServerAdministrator();
-                            result.ServerAdministrator = serverAdministratorInstance;
+                            ServerKey serverKeyInstance = new ServerKey();
+                            result.ServerKey = serverKeyInstance;
                             
                             JToken propertiesValue2 = responseDoc["properties"];
                             if (propertiesValue2 != null && propertiesValue2.Type != JTokenType.Null)
                             {
-                                ServerAdministratorProperties propertiesInstance = new ServerAdministratorProperties();
-                                serverAdministratorInstance.Properties = propertiesInstance;
+                                ServerKeyProperties propertiesInstance = new ServerKeyProperties();
+                                serverKeyInstance.Properties = propertiesInstance;
                                 
-                                JToken administratorTypeValue = propertiesValue2["administratorType"];
-                                if (administratorTypeValue != null && administratorTypeValue.Type != JTokenType.Null)
+                                JToken serverKeyTypeValue = propertiesValue2["serverKeyType"];
+                                if (serverKeyTypeValue != null && serverKeyTypeValue.Type != JTokenType.Null)
                                 {
-                                    string administratorTypeInstance = ((string)administratorTypeValue);
-                                    propertiesInstance.AdministratorType = administratorTypeInstance;
+                                    string serverKeyTypeInstance = ((string)serverKeyTypeValue);
+                                    propertiesInstance.ServerKeyType = serverKeyTypeInstance;
                                 }
                                 
-                                JToken loginValue = propertiesValue2["login"];
-                                if (loginValue != null && loginValue.Type != JTokenType.Null)
+                                JToken uriValue = propertiesValue2["uri"];
+                                if (uriValue != null && uriValue.Type != JTokenType.Null)
                                 {
-                                    string loginInstance = ((string)loginValue);
-                                    propertiesInstance.Login = loginInstance;
+                                    string uriInstance = ((string)uriValue);
+                                    propertiesInstance.Uri = uriInstance;
                                 }
                                 
-                                JToken sidValue = propertiesValue2["sid"];
-                                if (sidValue != null && sidValue.Type != JTokenType.Null)
+                                JToken thumbprintValue = propertiesValue2["thumbprint"];
+                                if (thumbprintValue != null && thumbprintValue.Type != JTokenType.Null)
                                 {
-                                    Guid sidInstance = Guid.Parse(((string)sidValue));
-                                    propertiesInstance.Sid = sidInstance;
+                                    string thumbprintInstance = ((string)thumbprintValue);
+                                    propertiesInstance.Thumbprint = thumbprintInstance;
                                 }
                                 
-                                JToken tenantIdValue = propertiesValue2["tenantId"];
-                                if (tenantIdValue != null && tenantIdValue.Type != JTokenType.Null)
+                                JToken creationDateValue = propertiesValue2["creationDate"];
+                                if (creationDateValue != null && creationDateValue.Type != JTokenType.Null)
                                 {
-                                    Guid tenantIdInstance = Guid.Parse(((string)tenantIdValue));
-                                    propertiesInstance.TenantId = tenantIdInstance;
+                                    DateTime creationDateInstance = ((DateTime)creationDateValue);
+                                    propertiesInstance.CreationDate = creationDateInstance;
                                 }
                             }
                             
@@ -320,28 +324,28 @@ namespace Microsoft.Azure.Management.Sql
                             if (idValue != null && idValue.Type != JTokenType.Null)
                             {
                                 string idInstance = ((string)idValue);
-                                serverAdministratorInstance.Id = idInstance;
+                                serverKeyInstance.Id = idInstance;
                             }
                             
                             JToken nameValue = responseDoc["name"];
                             if (nameValue != null && nameValue.Type != JTokenType.Null)
                             {
                                 string nameInstance = ((string)nameValue);
-                                serverAdministratorInstance.Name = nameInstance;
+                                serverKeyInstance.Name = nameInstance;
                             }
                             
                             JToken typeValue = responseDoc["type"];
                             if (typeValue != null && typeValue.Type != JTokenType.Null)
                             {
                                 string typeInstance = ((string)typeValue);
-                                serverAdministratorInstance.Type = typeInstance;
+                                serverKeyInstance.Type = typeInstance;
                             }
                             
                             JToken locationValue = responseDoc["location"];
                             if (locationValue != null && locationValue.Type != JTokenType.Null)
                             {
                                 string locationInstance = ((string)locationValue);
-                                serverAdministratorInstance.Location = locationInstance;
+                                serverKeyInstance.Location = locationInstance;
                             }
                             
                             JToken tagsSequenceElement = ((JToken)responseDoc["tags"]);
@@ -351,7 +355,7 @@ namespace Microsoft.Azure.Management.Sql
                                 {
                                     string tagsKey = ((string)property.Name);
                                     string tagsValue = ((string)property.Value);
-                                    serverAdministratorInstance.Tags.Add(tagsKey, tagsValue);
+                                    serverKeyInstance.Tags.Add(tagsKey, tagsValue);
                                 }
                             }
                         }
@@ -403,9 +407,8 @@ namespace Microsoft.Azure.Management.Sql
         }
         
         /// <summary>
-        /// Begins deleting an existing Azure SQL Server Active Directory
-        /// Administrator.To determine the status of the operation call
-        /// GetServerAdministratorDeleteOperationStatus.
+        /// Begins deleting an existing Azure SQL Server Key.To determine the
+        /// status of the operation call GetDeleteOperationStatus.
         /// </summary>
         /// <param name='resourceGroupName'>
         /// Required. The name of the Resource Group to which the server
@@ -413,20 +416,18 @@ namespace Microsoft.Azure.Management.Sql
         /// </param>
         /// <param name='serverName'>
         /// Required. The name of the Azure SQL Server to which the Azure SQL
-        /// Server Active Directory administrator belongs
+        /// Server Key belongs
         /// </param>
-        /// <param name='administratorName'>
-        /// Required. The name of the Azure SQL Server Active Directory
-        /// Administrator.
+        /// <param name='keyName'>
+        /// Required. The name of the Azure SQL Server Key.
         /// </param>
         /// <param name='cancellationToken'>
         /// Cancellation token.
         /// </param>
         /// <returns>
-        /// Response for long running Azure SQL Server Active Directory
-        /// administrator delete operations.
+        /// Represents the response to an Azure Sql Server Key Delete request.
         /// </returns>
-        public async Task<ServerAdministratorDeleteResponse> BeginDeleteAsync(string resourceGroupName, string serverName, string administratorName, CancellationToken cancellationToken)
+        public async Task<ServerKeyDeleteResponse> BeginDeleteAsync(string resourceGroupName, string serverName, string keyName, CancellationToken cancellationToken)
         {
             // Validate
             if (resourceGroupName == null)
@@ -437,9 +438,9 @@ namespace Microsoft.Azure.Management.Sql
             {
                 throw new ArgumentNullException("serverName");
             }
-            if (administratorName == null)
+            if (keyName == null)
             {
-                throw new ArgumentNullException("administratorName");
+                throw new ArgumentNullException("keyName");
             }
             
             // Tracing
@@ -451,7 +452,7 @@ namespace Microsoft.Azure.Management.Sql
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("resourceGroupName", resourceGroupName);
                 tracingParameters.Add("serverName", serverName);
-                tracingParameters.Add("administratorName", administratorName);
+                tracingParameters.Add("keyName", keyName);
                 TracingAdapter.Enter(invocationId, this, "BeginDeleteAsync", tracingParameters);
             }
             
@@ -468,10 +469,10 @@ namespace Microsoft.Azure.Management.Sql
             url = url + "Microsoft.Sql";
             url = url + "/servers/";
             url = url + Uri.EscapeDataString(serverName);
-            url = url + "/administrators/";
-            url = url + Uri.EscapeDataString(administratorName);
+            url = url + "/keys/";
+            url = url + Uri.EscapeDataString(keyName);
             List<string> queryParameters = new List<string>();
-            queryParameters.Add("api-version=2014-04-01");
+            queryParameters.Add("api-version=2015-05-01-preview");
             if (queryParameters.Count > 0)
             {
                 url = url + "?" + string.Join("&", queryParameters);
@@ -530,13 +531,13 @@ namespace Microsoft.Azure.Management.Sql
                     }
                     
                     // Create Result
-                    ServerAdministratorDeleteResponse result = null;
+                    ServerKeyDeleteResponse result = null;
                     // Deserialize Response
                     if (statusCode == HttpStatusCode.OK || statusCode == HttpStatusCode.Accepted || statusCode == HttpStatusCode.NoContent)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                         string responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                        result = new ServerAdministratorDeleteResponse();
+                        result = new ServerKeyDeleteResponse();
                         JToken responseDoc = null;
                         if (string.IsNullOrEmpty(responseContent) == false)
                         {
@@ -545,6 +546,20 @@ namespace Microsoft.Azure.Management.Sql
                         
                         if (responseDoc != null && responseDoc.Type != JTokenType.Null)
                         {
+                            JToken operationValue = responseDoc["operation"];
+                            if (operationValue != null && operationValue.Type != JTokenType.Null)
+                            {
+                                string operationInstance = ((string)operationValue);
+                                result.Operation = operationInstance;
+                            }
+                            
+                            JToken startTimeValue = responseDoc["startTime"];
+                            if (startTimeValue != null && startTimeValue.Type != JTokenType.Null)
+                            {
+                                DateTime startTimeInstance = ((DateTime)startTimeValue);
+                                result.StartTime = startTimeInstance;
+                            }
+                            
                             ErrorResponse errorInstance = new ErrorResponse();
                             result.Error = errorInstance;
                             
@@ -617,34 +632,31 @@ namespace Microsoft.Azure.Management.Sql
         }
         
         /// <summary>
-        /// Creates a new Azure SQL Server Active Directory Administrator or
-        /// updates an existing Azure SQL Server Active Directory
-        /// Administrator.
+        /// Creates a new Azure SQL Server Key or updates an existing Azure SQL
+        /// Server Key.
         /// </summary>
         /// <param name='resourceGroupName'>
         /// Required. The name of the Resource Group to which the server
         /// belongs.
         /// </param>
         /// <param name='serverName'>
-        /// Required. The name of the Azure SQL Server on which the Azure SQL
-        /// Server Active Directory Administrator is hosted.
+        /// Required. The name of the Azure SQL Server to which to add the
+        /// Server Key.
         /// </param>
-        /// <param name='administratorName'>
-        /// Required. The name of the Azure SQL Server Active Directory
-        /// Administrator to be operated on (Updated or created).
+        /// <param name='keyName'>
+        /// Required. The name of the Azure SQL Server Key.
         /// </param>
         /// <param name='parameters'>
-        /// Required. The required parameters for creating or updating a Server
-        /// Administrator.
+        /// Required. The required parameters for createing or updating a
+        /// Server Key.
         /// </param>
         /// <param name='cancellationToken'>
         /// Cancellation token.
         /// </param>
         /// <returns>
-        /// Response for long running Azure SQL Server Active Directory
-        /// Administrator operations.
+        /// Represents the response to a Azure Sql Server Key operation request.
         /// </returns>
-        public async Task<ServerAdministratorCreateOrUpdateResponse> CreateOrUpdateAsync(string resourceGroupName, string serverName, string administratorName, ServerAdministratorCreateOrUpdateParameters parameters, CancellationToken cancellationToken)
+        public async Task<ServerKeyCreateOrUpdateResponse> CreateOrUpdateAsync(string resourceGroupName, string serverName, string keyName, ServerKeyCreateOrUpdateParameters parameters, CancellationToken cancellationToken)
         {
             SqlManagementClient client = this.Client;
             bool shouldTrace = TracingAdapter.IsEnabled;
@@ -655,23 +667,23 @@ namespace Microsoft.Azure.Management.Sql
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("resourceGroupName", resourceGroupName);
                 tracingParameters.Add("serverName", serverName);
-                tracingParameters.Add("administratorName", administratorName);
+                tracingParameters.Add("keyName", keyName);
                 tracingParameters.Add("parameters", parameters);
                 TracingAdapter.Enter(invocationId, this, "CreateOrUpdateAsync", tracingParameters);
             }
             
             cancellationToken.ThrowIfCancellationRequested();
-            ServerAdministratorCreateOrUpdateResponse response = await client.ServerAdministrators.BeginCreateOrUpdateAsync(resourceGroupName, serverName, administratorName, parameters, cancellationToken).ConfigureAwait(false);
+            ServerKeyCreateOrUpdateResponse response = await client.ServerKey.BeginCreateOrUpdateAsync(resourceGroupName, serverName, keyName, parameters, cancellationToken).ConfigureAwait(false);
             if (response.Status == OperationStatus.Succeeded)
             {
                 return response;
             }
             cancellationToken.ThrowIfCancellationRequested();
-            ServerAdministratorCreateOrUpdateResponse result = await client.ServerAdministrators.GetServerAdministratorOperationStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
+            ServerKeyCreateOrUpdateResponse result = await client.ServerKey.GetCreateOrUpdateOperationStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
             int delayInSeconds = response.RetryAfter;
             if (delayInSeconds == 0)
             {
-                delayInSeconds = 30;
+                delayInSeconds = 5;
             }
             if (client.LongRunningOperationInitialTimeout >= 0)
             {
@@ -680,9 +692,9 @@ namespace Microsoft.Azure.Management.Sql
             while (result.Status == OperationStatus.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
-                result = await client.ServerAdministrators.GetServerAdministratorOperationStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
+                result = await client.ServerKey.GetCreateOrUpdateOperationStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = result.RetryAfter;
                 if (delayInSeconds == 0)
                 {
@@ -703,7 +715,7 @@ namespace Microsoft.Azure.Management.Sql
         }
         
         /// <summary>
-        /// Deletes an existing Azure SQL Server Active Directory Administrator.
+        /// Deletes an existing Azure SQL Server Key.
         /// </summary>
         /// <param name='resourceGroupName'>
         /// Required. The name of the Resource Group to which the server
@@ -711,20 +723,18 @@ namespace Microsoft.Azure.Management.Sql
         /// </param>
         /// <param name='serverName'>
         /// Required. The name of the Azure SQL Server to which the Azure SQL
-        /// Server Active Directory administrator belongs
+        /// Server Key belongs
         /// </param>
-        /// <param name='administratorName'>
-        /// Required. The name of the Azure SQL Server Active Directory
-        /// Administrator to be operated on (Updated or created).
+        /// <param name='keyName'>
+        /// Required. The name of the Azure SQL Server Key to be deleted.
         /// </param>
         /// <param name='cancellationToken'>
         /// Cancellation token.
         /// </param>
         /// <returns>
-        /// Response for long running Azure SQL Server Active Directory
-        /// administrator delete operations.
+        /// Represents the response to an Azure Sql Server Key Delete request.
         /// </returns>
-        public async Task<ServerAdministratorDeleteResponse> DeleteAsync(string resourceGroupName, string serverName, string administratorName, CancellationToken cancellationToken)
+        public async Task<ServerKeyDeleteResponse> DeleteAsync(string resourceGroupName, string serverName, string keyName, CancellationToken cancellationToken)
         {
             SqlManagementClient client = this.Client;
             bool shouldTrace = TracingAdapter.IsEnabled;
@@ -735,22 +745,22 @@ namespace Microsoft.Azure.Management.Sql
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("resourceGroupName", resourceGroupName);
                 tracingParameters.Add("serverName", serverName);
-                tracingParameters.Add("administratorName", administratorName);
+                tracingParameters.Add("keyName", keyName);
                 TracingAdapter.Enter(invocationId, this, "DeleteAsync", tracingParameters);
             }
             
             cancellationToken.ThrowIfCancellationRequested();
-            ServerAdministratorDeleteResponse response = await client.ServerAdministrators.BeginDeleteAsync(resourceGroupName, serverName, administratorName, cancellationToken).ConfigureAwait(false);
+            ServerKeyDeleteResponse response = await client.ServerKey.BeginDeleteAsync(resourceGroupName, serverName, keyName, cancellationToken).ConfigureAwait(false);
             if (response.Status == OperationStatus.Succeeded)
             {
                 return response;
             }
             cancellationToken.ThrowIfCancellationRequested();
-            ServerAdministratorDeleteResponse result = await client.ServerAdministrators.GetServerAdministratorDeleteOperationStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
+            ServerKeyDeleteResponse result = await client.ServerKey.GetDeleteOperationStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
             int delayInSeconds = response.RetryAfter;
             if (delayInSeconds == 0)
             {
-                delayInSeconds = 30;
+                delayInSeconds = 5;
             }
             if (client.LongRunningOperationInitialTimeout >= 0)
             {
@@ -759,9 +769,9 @@ namespace Microsoft.Azure.Management.Sql
             while (result.Status == OperationStatus.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
-                result = await client.ServerAdministrators.GetServerAdministratorDeleteOperationStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
+                result = await client.ServerKey.GetDeleteOperationStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = result.RetryAfter;
                 if (delayInSeconds == 0)
                 {
@@ -782,28 +792,27 @@ namespace Microsoft.Azure.Management.Sql
         }
         
         /// <summary>
-        /// Returns an Azure SQL Server Administrator.
+        /// Gets an Azure Sql Server Key.
         /// </summary>
         /// <param name='resourceGroupName'>
         /// Required. The name of the Resource Group to which the server
         /// belongs.
         /// </param>
         /// <param name='serverName'>
-        /// Required. The name of the Azure SQL Server to which the Azure SQL
-        /// Server Active Directory administrator belongs.
+        /// Required. The name of the Azure SQL Database Server that has the
+        /// key.
         /// </param>
-        /// <param name='administratorName'>
-        /// Required. The name of the Azure SQL Server Active Directory
-        /// Administrator.
+        /// <param name='keyName'>
+        /// Required. The name of the Azure Key Vault Key to be retrieved from
+        /// the Azure SQL Database Server.
         /// </param>
         /// <param name='cancellationToken'>
         /// Cancellation token.
         /// </param>
         /// <returns>
-        /// Represents the response to a Get Azure SQL Server Active Directory
-        /// Administrators request.
+        /// Represents the response to a List Azure Sql Server Key request.
         /// </returns>
-        public async Task<ServerAdministratorGetResponse> GetAsync(string resourceGroupName, string serverName, string administratorName, CancellationToken cancellationToken)
+        public async Task<ServerKeyGetResponse> GetAsync(string resourceGroupName, string serverName, string keyName, CancellationToken cancellationToken)
         {
             // Validate
             if (resourceGroupName == null)
@@ -814,9 +823,9 @@ namespace Microsoft.Azure.Management.Sql
             {
                 throw new ArgumentNullException("serverName");
             }
-            if (administratorName == null)
+            if (keyName == null)
             {
-                throw new ArgumentNullException("administratorName");
+                throw new ArgumentNullException("keyName");
             }
             
             // Tracing
@@ -828,7 +837,7 @@ namespace Microsoft.Azure.Management.Sql
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("resourceGroupName", resourceGroupName);
                 tracingParameters.Add("serverName", serverName);
-                tracingParameters.Add("administratorName", administratorName);
+                tracingParameters.Add("keyName", keyName);
                 TracingAdapter.Enter(invocationId, this, "GetAsync", tracingParameters);
             }
             
@@ -845,10 +854,10 @@ namespace Microsoft.Azure.Management.Sql
             url = url + "Microsoft.Sql";
             url = url + "/servers/";
             url = url + Uri.EscapeDataString(serverName);
-            url = url + "/administrators/";
-            url = url + Uri.EscapeDataString(administratorName);
+            url = url + "/keys/";
+            url = url + Uri.EscapeDataString(keyName);
             List<string> queryParameters = new List<string>();
-            queryParameters.Add("api-version=2014-04-01");
+            queryParameters.Add("api-version=2015-05-01-preview");
             if (queryParameters.Count > 0)
             {
                 url = url + "?" + string.Join("&", queryParameters);
@@ -907,13 +916,13 @@ namespace Microsoft.Azure.Management.Sql
                     }
                     
                     // Create Result
-                    ServerAdministratorGetResponse result = null;
+                    ServerKeyGetResponse result = null;
                     // Deserialize Response
                     if (statusCode == HttpStatusCode.OK)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                         string responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                        result = new ServerAdministratorGetResponse();
+                        result = new ServerKeyGetResponse();
                         JToken responseDoc = null;
                         if (string.IsNullOrEmpty(responseContent) == false)
                         {
@@ -922,41 +931,41 @@ namespace Microsoft.Azure.Management.Sql
                         
                         if (responseDoc != null && responseDoc.Type != JTokenType.Null)
                         {
-                            ServerAdministrator administratorInstance = new ServerAdministrator();
-                            result.Administrator = administratorInstance;
+                            ServerKey serverKeyInstance = new ServerKey();
+                            result.ServerKey = serverKeyInstance;
                             
                             JToken propertiesValue = responseDoc["properties"];
                             if (propertiesValue != null && propertiesValue.Type != JTokenType.Null)
                             {
-                                ServerAdministratorProperties propertiesInstance = new ServerAdministratorProperties();
-                                administratorInstance.Properties = propertiesInstance;
+                                ServerKeyProperties propertiesInstance = new ServerKeyProperties();
+                                serverKeyInstance.Properties = propertiesInstance;
                                 
-                                JToken administratorTypeValue = propertiesValue["administratorType"];
-                                if (administratorTypeValue != null && administratorTypeValue.Type != JTokenType.Null)
+                                JToken serverKeyTypeValue = propertiesValue["serverKeyType"];
+                                if (serverKeyTypeValue != null && serverKeyTypeValue.Type != JTokenType.Null)
                                 {
-                                    string administratorTypeInstance = ((string)administratorTypeValue);
-                                    propertiesInstance.AdministratorType = administratorTypeInstance;
+                                    string serverKeyTypeInstance = ((string)serverKeyTypeValue);
+                                    propertiesInstance.ServerKeyType = serverKeyTypeInstance;
                                 }
                                 
-                                JToken loginValue = propertiesValue["login"];
-                                if (loginValue != null && loginValue.Type != JTokenType.Null)
+                                JToken uriValue = propertiesValue["uri"];
+                                if (uriValue != null && uriValue.Type != JTokenType.Null)
                                 {
-                                    string loginInstance = ((string)loginValue);
-                                    propertiesInstance.Login = loginInstance;
+                                    string uriInstance = ((string)uriValue);
+                                    propertiesInstance.Uri = uriInstance;
                                 }
                                 
-                                JToken sidValue = propertiesValue["sid"];
-                                if (sidValue != null && sidValue.Type != JTokenType.Null)
+                                JToken thumbprintValue = propertiesValue["thumbprint"];
+                                if (thumbprintValue != null && thumbprintValue.Type != JTokenType.Null)
                                 {
-                                    Guid sidInstance = Guid.Parse(((string)sidValue));
-                                    propertiesInstance.Sid = sidInstance;
+                                    string thumbprintInstance = ((string)thumbprintValue);
+                                    propertiesInstance.Thumbprint = thumbprintInstance;
                                 }
                                 
-                                JToken tenantIdValue = propertiesValue["tenantId"];
-                                if (tenantIdValue != null && tenantIdValue.Type != JTokenType.Null)
+                                JToken creationDateValue = propertiesValue["creationDate"];
+                                if (creationDateValue != null && creationDateValue.Type != JTokenType.Null)
                                 {
-                                    Guid tenantIdInstance = Guid.Parse(((string)tenantIdValue));
-                                    propertiesInstance.TenantId = tenantIdInstance;
+                                    DateTime creationDateInstance = ((DateTime)creationDateValue);
+                                    propertiesInstance.CreationDate = creationDateInstance;
                                 }
                             }
                             
@@ -964,28 +973,28 @@ namespace Microsoft.Azure.Management.Sql
                             if (idValue != null && idValue.Type != JTokenType.Null)
                             {
                                 string idInstance = ((string)idValue);
-                                administratorInstance.Id = idInstance;
+                                serverKeyInstance.Id = idInstance;
                             }
                             
                             JToken nameValue = responseDoc["name"];
                             if (nameValue != null && nameValue.Type != JTokenType.Null)
                             {
                                 string nameInstance = ((string)nameValue);
-                                administratorInstance.Name = nameInstance;
+                                serverKeyInstance.Name = nameInstance;
                             }
                             
                             JToken typeValue = responseDoc["type"];
                             if (typeValue != null && typeValue.Type != JTokenType.Null)
                             {
                                 string typeInstance = ((string)typeValue);
-                                administratorInstance.Type = typeInstance;
+                                serverKeyInstance.Type = typeInstance;
                             }
                             
                             JToken locationValue = responseDoc["location"];
                             if (locationValue != null && locationValue.Type != JTokenType.Null)
                             {
                                 string locationInstance = ((string)locationValue);
-                                administratorInstance.Location = locationInstance;
+                                serverKeyInstance.Location = locationInstance;
                             }
                             
                             JToken tagsSequenceElement = ((JToken)responseDoc["tags"]);
@@ -995,7 +1004,7 @@ namespace Microsoft.Azure.Management.Sql
                                 {
                                     string tagsKey = ((string)property.Name);
                                     string tagsValue = ((string)property.Value);
-                                    administratorInstance.Tags.Add(tagsKey, tagsValue);
+                                    serverKeyInstance.Tags.Add(tagsKey, tagsValue);
                                 }
                             }
                         }
@@ -1031,8 +1040,8 @@ namespace Microsoft.Azure.Management.Sql
         }
         
         /// <summary>
-        /// Gets the status of an Azure SQL Server Active Directory
-        /// Administrator delete operation.
+        /// Gets the status of an Azure SQL Server Key create or update
+        /// operation.
         /// </summary>
         /// <param name='operationStatusLink'>
         /// Required. Location value returned by the Begin operation
@@ -1041,10 +1050,9 @@ namespace Microsoft.Azure.Management.Sql
         /// Cancellation token.
         /// </param>
         /// <returns>
-        /// Response for long running Azure SQL Server Active Directory
-        /// administrator delete operations.
+        /// Represents the response to a Azure Sql Server Key operation request.
         /// </returns>
-        public async Task<ServerAdministratorDeleteResponse> GetServerAdministratorDeleteOperationStatusAsync(string operationStatusLink, CancellationToken cancellationToken)
+        public async Task<ServerKeyCreateOrUpdateResponse> GetCreateOrUpdateOperationStatusAsync(string operationStatusLink, CancellationToken cancellationToken)
         {
             // Validate
             if (operationStatusLink == null)
@@ -1060,7 +1068,253 @@ namespace Microsoft.Azure.Management.Sql
                 invocationId = TracingAdapter.NextInvocationId.ToString();
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("operationStatusLink", operationStatusLink);
-                TracingAdapter.Enter(invocationId, this, "GetServerAdministratorDeleteOperationStatusAsync", tracingParameters);
+                TracingAdapter.Enter(invocationId, this, "GetCreateOrUpdateOperationStatusAsync", tracingParameters);
+            }
+            
+            // Construct URL
+            string url = "";
+            url = url + operationStatusLink;
+            url = url.Replace(" ", "%20");
+            
+            // Create HTTP transport objects
+            HttpRequestMessage httpRequest = null;
+            try
+            {
+                httpRequest = new HttpRequestMessage();
+                httpRequest.Method = HttpMethod.Get;
+                httpRequest.RequestUri = new Uri(url);
+                
+                // Set Headers
+                
+                // Set Credentials
+                cancellationToken.ThrowIfCancellationRequested();
+                await this.Client.Credentials.ProcessHttpRequestAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+                
+                // Send Request
+                HttpResponseMessage httpResponse = null;
+                try
+                {
+                    if (shouldTrace)
+                    {
+                        TracingAdapter.SendRequest(invocationId, httpRequest);
+                    }
+                    cancellationToken.ThrowIfCancellationRequested();
+                    httpResponse = await this.Client.HttpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+                    if (shouldTrace)
+                    {
+                        TracingAdapter.ReceiveResponse(invocationId, httpResponse);
+                    }
+                    HttpStatusCode statusCode = httpResponse.StatusCode;
+                    if (statusCode != HttpStatusCode.OK && statusCode != HttpStatusCode.Created && statusCode != HttpStatusCode.Accepted)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        CloudException ex = CloudException.Create(httpRequest, null, httpResponse, await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false));
+                        if (shouldTrace)
+                        {
+                            TracingAdapter.Error(invocationId, ex);
+                        }
+                        throw ex;
+                    }
+                    
+                    // Create Result
+                    ServerKeyCreateOrUpdateResponse result = null;
+                    // Deserialize Response
+                    if (statusCode == HttpStatusCode.OK || statusCode == HttpStatusCode.Created || statusCode == HttpStatusCode.Accepted)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        string responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                        result = new ServerKeyCreateOrUpdateResponse();
+                        JToken responseDoc = null;
+                        if (string.IsNullOrEmpty(responseContent) == false)
+                        {
+                            responseDoc = JToken.Parse(responseContent);
+                        }
+                        
+                        if (responseDoc != null && responseDoc.Type != JTokenType.Null)
+                        {
+                            JToken operationValue = responseDoc["operation"];
+                            if (operationValue != null && operationValue.Type != JTokenType.Null)
+                            {
+                                string operationInstance = ((string)operationValue);
+                                result.Operation = operationInstance;
+                            }
+                            
+                            JToken startTimeValue = responseDoc["startTime"];
+                            if (startTimeValue != null && startTimeValue.Type != JTokenType.Null)
+                            {
+                                DateTime startTimeInstance = ((DateTime)startTimeValue);
+                                result.StartTime = startTimeInstance;
+                            }
+                            
+                            ErrorResponse errorInstance = new ErrorResponse();
+                            result.Error = errorInstance;
+                            
+                            JToken codeValue = responseDoc["code"];
+                            if (codeValue != null && codeValue.Type != JTokenType.Null)
+                            {
+                                string codeInstance = ((string)codeValue);
+                                errorInstance.Code = codeInstance;
+                            }
+                            
+                            JToken messageValue = responseDoc["message"];
+                            if (messageValue != null && messageValue.Type != JTokenType.Null)
+                            {
+                                string messageInstance = ((string)messageValue);
+                                errorInstance.Message = messageInstance;
+                            }
+                            
+                            JToken targetValue = responseDoc["target"];
+                            if (targetValue != null && targetValue.Type != JTokenType.Null)
+                            {
+                                string targetInstance = ((string)targetValue);
+                                errorInstance.Target = targetInstance;
+                            }
+                            
+                            ServerKey serverKeyInstance = new ServerKey();
+                            result.ServerKey = serverKeyInstance;
+                            
+                            JToken propertiesValue = responseDoc["properties"];
+                            if (propertiesValue != null && propertiesValue.Type != JTokenType.Null)
+                            {
+                                ServerKeyProperties propertiesInstance = new ServerKeyProperties();
+                                serverKeyInstance.Properties = propertiesInstance;
+                                
+                                JToken serverKeyTypeValue = propertiesValue["serverKeyType"];
+                                if (serverKeyTypeValue != null && serverKeyTypeValue.Type != JTokenType.Null)
+                                {
+                                    string serverKeyTypeInstance = ((string)serverKeyTypeValue);
+                                    propertiesInstance.ServerKeyType = serverKeyTypeInstance;
+                                }
+                                
+                                JToken uriValue = propertiesValue["uri"];
+                                if (uriValue != null && uriValue.Type != JTokenType.Null)
+                                {
+                                    string uriInstance = ((string)uriValue);
+                                    propertiesInstance.Uri = uriInstance;
+                                }
+                                
+                                JToken thumbprintValue = propertiesValue["thumbprint"];
+                                if (thumbprintValue != null && thumbprintValue.Type != JTokenType.Null)
+                                {
+                                    string thumbprintInstance = ((string)thumbprintValue);
+                                    propertiesInstance.Thumbprint = thumbprintInstance;
+                                }
+                                
+                                JToken creationDateValue = propertiesValue["creationDate"];
+                                if (creationDateValue != null && creationDateValue.Type != JTokenType.Null)
+                                {
+                                    DateTime creationDateInstance = ((DateTime)creationDateValue);
+                                    propertiesInstance.CreationDate = creationDateInstance;
+                                }
+                            }
+                            
+                            JToken idValue = responseDoc["id"];
+                            if (idValue != null && idValue.Type != JTokenType.Null)
+                            {
+                                string idInstance = ((string)idValue);
+                                serverKeyInstance.Id = idInstance;
+                            }
+                            
+                            JToken nameValue = responseDoc["name"];
+                            if (nameValue != null && nameValue.Type != JTokenType.Null)
+                            {
+                                string nameInstance = ((string)nameValue);
+                                serverKeyInstance.Name = nameInstance;
+                            }
+                            
+                            JToken typeValue = responseDoc["type"];
+                            if (typeValue != null && typeValue.Type != JTokenType.Null)
+                            {
+                                string typeInstance = ((string)typeValue);
+                                serverKeyInstance.Type = typeInstance;
+                            }
+                            
+                            JToken locationValue = responseDoc["location"];
+                            if (locationValue != null && locationValue.Type != JTokenType.Null)
+                            {
+                                string locationInstance = ((string)locationValue);
+                                serverKeyInstance.Location = locationInstance;
+                            }
+                            
+                            JToken tagsSequenceElement = ((JToken)responseDoc["tags"]);
+                            if (tagsSequenceElement != null && tagsSequenceElement.Type != JTokenType.Null)
+                            {
+                                foreach (JProperty property in tagsSequenceElement)
+                                {
+                                    string tagsKey = ((string)property.Name);
+                                    string tagsValue = ((string)property.Value);
+                                    serverKeyInstance.Tags.Add(tagsKey, tagsValue);
+                                }
+                            }
+                        }
+                        
+                    }
+                    result.StatusCode = statusCode;
+                    if (httpResponse.Headers.Contains("x-ms-request-id"))
+                    {
+                        result.RequestId = httpResponse.Headers.GetValues("x-ms-request-id").FirstOrDefault();
+                    }
+                    if (statusCode == HttpStatusCode.OK)
+                    {
+                        result.Status = OperationStatus.Succeeded;
+                    }
+                    if (statusCode == HttpStatusCode.Created)
+                    {
+                        result.Status = OperationStatus.Succeeded;
+                    }
+                    
+                    if (shouldTrace)
+                    {
+                        TracingAdapter.Exit(invocationId, result);
+                    }
+                    return result;
+                }
+                finally
+                {
+                    if (httpResponse != null)
+                    {
+                        httpResponse.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (httpRequest != null)
+                {
+                    httpRequest.Dispose();
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Gets the status of an Azure SQL Server Key delete operation.
+        /// </summary>
+        /// <param name='operationStatusLink'>
+        /// Required. Location value returned by the Begin operation
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// Cancellation token.
+        /// </param>
+        /// <returns>
+        /// Represents the response to an Azure Sql Server Key Delete request.
+        /// </returns>
+        public async Task<ServerKeyDeleteResponse> GetDeleteOperationStatusAsync(string operationStatusLink, CancellationToken cancellationToken)
+        {
+            // Validate
+            if (operationStatusLink == null)
+            {
+                throw new ArgumentNullException("operationStatusLink");
+            }
+            
+            // Tracing
+            bool shouldTrace = TracingAdapter.IsEnabled;
+            string invocationId = null;
+            if (shouldTrace)
+            {
+                invocationId = TracingAdapter.NextInvocationId.ToString();
+                Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
+                tracingParameters.Add("operationStatusLink", operationStatusLink);
+                TracingAdapter.Enter(invocationId, this, "GetDeleteOperationStatusAsync", tracingParameters);
             }
             
             // Construct URL
@@ -1109,13 +1363,13 @@ namespace Microsoft.Azure.Management.Sql
                     }
                     
                     // Create Result
-                    ServerAdministratorDeleteResponse result = null;
+                    ServerKeyDeleteResponse result = null;
                     // Deserialize Response
                     if (statusCode == HttpStatusCode.OK || statusCode == HttpStatusCode.Accepted || statusCode == HttpStatusCode.NoContent)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                         string responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                        result = new ServerAdministratorDeleteResponse();
+                        result = new ServerKeyDeleteResponse();
                         JToken responseDoc = null;
                         if (string.IsNullOrEmpty(responseContent) == false)
                         {
@@ -1124,6 +1378,20 @@ namespace Microsoft.Azure.Management.Sql
                         
                         if (responseDoc != null && responseDoc.Type != JTokenType.Null)
                         {
+                            JToken operationValue = responseDoc["operation"];
+                            if (operationValue != null && operationValue.Type != JTokenType.Null)
+                            {
+                                string operationInstance = ((string)operationValue);
+                                result.Operation = operationInstance;
+                            }
+                            
+                            JToken startTimeValue = responseDoc["startTime"];
+                            if (startTimeValue != null && startTimeValue.Type != JTokenType.Null)
+                            {
+                                DateTime startTimeInstance = ((DateTime)startTimeValue);
+                                result.StartTime = startTimeInstance;
+                            }
+                            
                             ErrorResponse errorInstance = new ErrorResponse();
                             result.Error = errorInstance;
                             
@@ -1188,258 +1456,22 @@ namespace Microsoft.Azure.Management.Sql
         }
         
         /// <summary>
-        /// Gets the status of an Azure SQL Server Active Directory
-        /// Administrator create or update operation.
-        /// </summary>
-        /// <param name='operationStatusLink'>
-        /// Required. Location value returned by the Begin operation
-        /// </param>
-        /// <param name='cancellationToken'>
-        /// Cancellation token.
-        /// </param>
-        /// <returns>
-        /// Response for long running Azure SQL Server Active Directory
-        /// Administrator operations.
-        /// </returns>
-        public async Task<ServerAdministratorCreateOrUpdateResponse> GetServerAdministratorOperationStatusAsync(string operationStatusLink, CancellationToken cancellationToken)
-        {
-            // Validate
-            if (operationStatusLink == null)
-            {
-                throw new ArgumentNullException("operationStatusLink");
-            }
-            
-            // Tracing
-            bool shouldTrace = TracingAdapter.IsEnabled;
-            string invocationId = null;
-            if (shouldTrace)
-            {
-                invocationId = TracingAdapter.NextInvocationId.ToString();
-                Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
-                tracingParameters.Add("operationStatusLink", operationStatusLink);
-                TracingAdapter.Enter(invocationId, this, "GetServerAdministratorOperationStatusAsync", tracingParameters);
-            }
-            
-            // Construct URL
-            string url = "";
-            url = url + operationStatusLink;
-            url = url.Replace(" ", "%20");
-            
-            // Create HTTP transport objects
-            HttpRequestMessage httpRequest = null;
-            try
-            {
-                httpRequest = new HttpRequestMessage();
-                httpRequest.Method = HttpMethod.Get;
-                httpRequest.RequestUri = new Uri(url);
-                
-                // Set Headers
-                
-                // Set Credentials
-                cancellationToken.ThrowIfCancellationRequested();
-                await this.Client.Credentials.ProcessHttpRequestAsync(httpRequest, cancellationToken).ConfigureAwait(false);
-                
-                // Send Request
-                HttpResponseMessage httpResponse = null;
-                try
-                {
-                    if (shouldTrace)
-                    {
-                        TracingAdapter.SendRequest(invocationId, httpRequest);
-                    }
-                    cancellationToken.ThrowIfCancellationRequested();
-                    httpResponse = await this.Client.HttpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
-                    if (shouldTrace)
-                    {
-                        TracingAdapter.ReceiveResponse(invocationId, httpResponse);
-                    }
-                    HttpStatusCode statusCode = httpResponse.StatusCode;
-                    if (statusCode != HttpStatusCode.OK && statusCode != HttpStatusCode.Created && statusCode != HttpStatusCode.Accepted)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        CloudException ex = CloudException.Create(httpRequest, null, httpResponse, await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false));
-                        if (shouldTrace)
-                        {
-                            TracingAdapter.Error(invocationId, ex);
-                        }
-                        throw ex;
-                    }
-                    
-                    // Create Result
-                    ServerAdministratorCreateOrUpdateResponse result = null;
-                    // Deserialize Response
-                    if (statusCode == HttpStatusCode.OK || statusCode == HttpStatusCode.Created || statusCode == HttpStatusCode.Accepted)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        string responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                        result = new ServerAdministratorCreateOrUpdateResponse();
-                        JToken responseDoc = null;
-                        if (string.IsNullOrEmpty(responseContent) == false)
-                        {
-                            responseDoc = JToken.Parse(responseContent);
-                        }
-                        
-                        if (responseDoc != null && responseDoc.Type != JTokenType.Null)
-                        {
-                            ErrorResponse errorInstance = new ErrorResponse();
-                            result.Error = errorInstance;
-                            
-                            JToken codeValue = responseDoc["code"];
-                            if (codeValue != null && codeValue.Type != JTokenType.Null)
-                            {
-                                string codeInstance = ((string)codeValue);
-                                errorInstance.Code = codeInstance;
-                            }
-                            
-                            JToken messageValue = responseDoc["message"];
-                            if (messageValue != null && messageValue.Type != JTokenType.Null)
-                            {
-                                string messageInstance = ((string)messageValue);
-                                errorInstance.Message = messageInstance;
-                            }
-                            
-                            JToken targetValue = responseDoc["target"];
-                            if (targetValue != null && targetValue.Type != JTokenType.Null)
-                            {
-                                string targetInstance = ((string)targetValue);
-                                errorInstance.Target = targetInstance;
-                            }
-                            
-                            ServerAdministrator serverAdministratorInstance = new ServerAdministrator();
-                            result.ServerAdministrator = serverAdministratorInstance;
-                            
-                            JToken propertiesValue = responseDoc["properties"];
-                            if (propertiesValue != null && propertiesValue.Type != JTokenType.Null)
-                            {
-                                ServerAdministratorProperties propertiesInstance = new ServerAdministratorProperties();
-                                serverAdministratorInstance.Properties = propertiesInstance;
-                                
-                                JToken administratorTypeValue = propertiesValue["administratorType"];
-                                if (administratorTypeValue != null && administratorTypeValue.Type != JTokenType.Null)
-                                {
-                                    string administratorTypeInstance = ((string)administratorTypeValue);
-                                    propertiesInstance.AdministratorType = administratorTypeInstance;
-                                }
-                                
-                                JToken loginValue = propertiesValue["login"];
-                                if (loginValue != null && loginValue.Type != JTokenType.Null)
-                                {
-                                    string loginInstance = ((string)loginValue);
-                                    propertiesInstance.Login = loginInstance;
-                                }
-                                
-                                JToken sidValue = propertiesValue["sid"];
-                                if (sidValue != null && sidValue.Type != JTokenType.Null)
-                                {
-                                    Guid sidInstance = Guid.Parse(((string)sidValue));
-                                    propertiesInstance.Sid = sidInstance;
-                                }
-                                
-                                JToken tenantIdValue = propertiesValue["tenantId"];
-                                if (tenantIdValue != null && tenantIdValue.Type != JTokenType.Null)
-                                {
-                                    Guid tenantIdInstance = Guid.Parse(((string)tenantIdValue));
-                                    propertiesInstance.TenantId = tenantIdInstance;
-                                }
-                            }
-                            
-                            JToken idValue = responseDoc["id"];
-                            if (idValue != null && idValue.Type != JTokenType.Null)
-                            {
-                                string idInstance = ((string)idValue);
-                                serverAdministratorInstance.Id = idInstance;
-                            }
-                            
-                            JToken nameValue = responseDoc["name"];
-                            if (nameValue != null && nameValue.Type != JTokenType.Null)
-                            {
-                                string nameInstance = ((string)nameValue);
-                                serverAdministratorInstance.Name = nameInstance;
-                            }
-                            
-                            JToken typeValue = responseDoc["type"];
-                            if (typeValue != null && typeValue.Type != JTokenType.Null)
-                            {
-                                string typeInstance = ((string)typeValue);
-                                serverAdministratorInstance.Type = typeInstance;
-                            }
-                            
-                            JToken locationValue = responseDoc["location"];
-                            if (locationValue != null && locationValue.Type != JTokenType.Null)
-                            {
-                                string locationInstance = ((string)locationValue);
-                                serverAdministratorInstance.Location = locationInstance;
-                            }
-                            
-                            JToken tagsSequenceElement = ((JToken)responseDoc["tags"]);
-                            if (tagsSequenceElement != null && tagsSequenceElement.Type != JTokenType.Null)
-                            {
-                                foreach (JProperty property in tagsSequenceElement)
-                                {
-                                    string tagsKey = ((string)property.Name);
-                                    string tagsValue = ((string)property.Value);
-                                    serverAdministratorInstance.Tags.Add(tagsKey, tagsValue);
-                                }
-                            }
-                        }
-                        
-                    }
-                    result.StatusCode = statusCode;
-                    if (httpResponse.Headers.Contains("x-ms-request-id"))
-                    {
-                        result.RequestId = httpResponse.Headers.GetValues("x-ms-request-id").FirstOrDefault();
-                    }
-                    if (statusCode == HttpStatusCode.Created)
-                    {
-                        result.Status = OperationStatus.Succeeded;
-                    }
-                    if (statusCode == HttpStatusCode.OK)
-                    {
-                        result.Status = OperationStatus.Succeeded;
-                    }
-                    
-                    if (shouldTrace)
-                    {
-                        TracingAdapter.Exit(invocationId, result);
-                    }
-                    return result;
-                }
-                finally
-                {
-                    if (httpResponse != null)
-                    {
-                        httpResponse.Dispose();
-                    }
-                }
-            }
-            finally
-            {
-                if (httpRequest != null)
-                {
-                    httpRequest.Dispose();
-                }
-            }
-        }
-        
-        /// <summary>
-        /// Returns a list of Azure SQL Server Administrators.
+        /// Gets all Azure SQL Database Server Keys for a server.
         /// </summary>
         /// <param name='resourceGroupName'>
         /// Required. The name of the Resource Group to which the server
         /// belongs.
         /// </param>
         /// <param name='serverName'>
-        /// Required. The name of the Azure SQL Server to which the Azure SQL
-        /// Server Active Directory administrators belongs.
+        /// Required. The name of the Azure SQL Database Server.
         /// </param>
         /// <param name='cancellationToken'>
         /// Cancellation token.
         /// </param>
         /// <returns>
-        /// Represents the response to a List Azure SQL Active Directory
-        /// Administrators request.
+        /// Represents the response to a List Azure Sql Server Key request.
         /// </returns>
-        public async Task<ServerAdministratorListResponse> ListAsync(string resourceGroupName, string serverName, CancellationToken cancellationToken)
+        public async Task<ServerKeyListResponse> ListAsync(string resourceGroupName, string serverName, CancellationToken cancellationToken)
         {
             // Validate
             if (resourceGroupName == null)
@@ -1476,9 +1508,9 @@ namespace Microsoft.Azure.Management.Sql
             url = url + "Microsoft.Sql";
             url = url + "/servers/";
             url = url + Uri.EscapeDataString(serverName);
-            url = url + "/administrators";
+            url = url + "/keys";
             List<string> queryParameters = new List<string>();
-            queryParameters.Add("api-version=2014-04-01");
+            queryParameters.Add("api-version=2015-05-01-preview");
             if (queryParameters.Count > 0)
             {
                 url = url + "?" + string.Join("&", queryParameters);
@@ -1537,13 +1569,13 @@ namespace Microsoft.Azure.Management.Sql
                     }
                     
                     // Create Result
-                    ServerAdministratorListResponse result = null;
+                    ServerKeyListResponse result = null;
                     // Deserialize Response
                     if (statusCode == HttpStatusCode.OK)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                         string responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                        result = new ServerAdministratorListResponse();
+                        result = new ServerKeyListResponse();
                         JToken responseDoc = null;
                         if (string.IsNullOrEmpty(responseContent) == false)
                         {
@@ -1557,41 +1589,41 @@ namespace Microsoft.Azure.Management.Sql
                             {
                                 foreach (JToken valueValue in ((JArray)valueArray))
                                 {
-                                    ServerAdministrator serverAdministratorInstance = new ServerAdministrator();
-                                    result.Administrators.Add(serverAdministratorInstance);
+                                    ServerKey serverKeyInstance = new ServerKey();
+                                    result.ServerKeys.Add(serverKeyInstance);
                                     
                                     JToken propertiesValue = valueValue["properties"];
                                     if (propertiesValue != null && propertiesValue.Type != JTokenType.Null)
                                     {
-                                        ServerAdministratorProperties propertiesInstance = new ServerAdministratorProperties();
-                                        serverAdministratorInstance.Properties = propertiesInstance;
+                                        ServerKeyProperties propertiesInstance = new ServerKeyProperties();
+                                        serverKeyInstance.Properties = propertiesInstance;
                                         
-                                        JToken administratorTypeValue = propertiesValue["administratorType"];
-                                        if (administratorTypeValue != null && administratorTypeValue.Type != JTokenType.Null)
+                                        JToken serverKeyTypeValue = propertiesValue["serverKeyType"];
+                                        if (serverKeyTypeValue != null && serverKeyTypeValue.Type != JTokenType.Null)
                                         {
-                                            string administratorTypeInstance = ((string)administratorTypeValue);
-                                            propertiesInstance.AdministratorType = administratorTypeInstance;
+                                            string serverKeyTypeInstance = ((string)serverKeyTypeValue);
+                                            propertiesInstance.ServerKeyType = serverKeyTypeInstance;
                                         }
                                         
-                                        JToken loginValue = propertiesValue["login"];
-                                        if (loginValue != null && loginValue.Type != JTokenType.Null)
+                                        JToken uriValue = propertiesValue["uri"];
+                                        if (uriValue != null && uriValue.Type != JTokenType.Null)
                                         {
-                                            string loginInstance = ((string)loginValue);
-                                            propertiesInstance.Login = loginInstance;
+                                            string uriInstance = ((string)uriValue);
+                                            propertiesInstance.Uri = uriInstance;
                                         }
                                         
-                                        JToken sidValue = propertiesValue["sid"];
-                                        if (sidValue != null && sidValue.Type != JTokenType.Null)
+                                        JToken thumbprintValue = propertiesValue["thumbprint"];
+                                        if (thumbprintValue != null && thumbprintValue.Type != JTokenType.Null)
                                         {
-                                            Guid sidInstance = Guid.Parse(((string)sidValue));
-                                            propertiesInstance.Sid = sidInstance;
+                                            string thumbprintInstance = ((string)thumbprintValue);
+                                            propertiesInstance.Thumbprint = thumbprintInstance;
                                         }
                                         
-                                        JToken tenantIdValue = propertiesValue["tenantId"];
-                                        if (tenantIdValue != null && tenantIdValue.Type != JTokenType.Null)
+                                        JToken creationDateValue = propertiesValue["creationDate"];
+                                        if (creationDateValue != null && creationDateValue.Type != JTokenType.Null)
                                         {
-                                            Guid tenantIdInstance = Guid.Parse(((string)tenantIdValue));
-                                            propertiesInstance.TenantId = tenantIdInstance;
+                                            DateTime creationDateInstance = ((DateTime)creationDateValue);
+                                            propertiesInstance.CreationDate = creationDateInstance;
                                         }
                                     }
                                     
@@ -1599,28 +1631,28 @@ namespace Microsoft.Azure.Management.Sql
                                     if (idValue != null && idValue.Type != JTokenType.Null)
                                     {
                                         string idInstance = ((string)idValue);
-                                        serverAdministratorInstance.Id = idInstance;
+                                        serverKeyInstance.Id = idInstance;
                                     }
                                     
                                     JToken nameValue = valueValue["name"];
                                     if (nameValue != null && nameValue.Type != JTokenType.Null)
                                     {
                                         string nameInstance = ((string)nameValue);
-                                        serverAdministratorInstance.Name = nameInstance;
+                                        serverKeyInstance.Name = nameInstance;
                                     }
                                     
                                     JToken typeValue = valueValue["type"];
                                     if (typeValue != null && typeValue.Type != JTokenType.Null)
                                     {
                                         string typeInstance = ((string)typeValue);
-                                        serverAdministratorInstance.Type = typeInstance;
+                                        serverKeyInstance.Type = typeInstance;
                                     }
                                     
                                     JToken locationValue = valueValue["location"];
                                     if (locationValue != null && locationValue.Type != JTokenType.Null)
                                     {
                                         string locationInstance = ((string)locationValue);
-                                        serverAdministratorInstance.Location = locationInstance;
+                                        serverKeyInstance.Location = locationInstance;
                                     }
                                     
                                     JToken tagsSequenceElement = ((JToken)valueValue["tags"]);
@@ -1630,7 +1662,7 @@ namespace Microsoft.Azure.Management.Sql
                                         {
                                             string tagsKey = ((string)property.Name);
                                             string tagsValue = ((string)property.Value);
-                                            serverAdministratorInstance.Tags.Add(tagsKey, tagsValue);
+                                            serverKeyInstance.Tags.Add(tagsKey, tagsValue);
                                         }
                                     }
                                 }

@@ -143,10 +143,10 @@
     <None Include="SessionRecords\Sql2.Tests.ScenarioTests.Sql2ElasticPoolScenarioTests\ElasticPoolDatabaseOperations.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-	<None Include="SessionRecords\Sql2.Tests.ScenarioTests.Sql2FailoverGroupScenarioTests\FailoverGroupCrud.json">
+    <None Include="SessionRecords\Sql2.Tests.ScenarioTests.Sql2FailoverGroupScenarioTests\FailoverGroupCrud.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-	<None Include="SessionRecords\Sql2.Tests.ScenarioTests.Sql2FailoverGroupScenarioTests\FailoverGroupDatabaseOperations.json">
+    <None Include="SessionRecords\Sql2.Tests.ScenarioTests.Sql2FailoverGroupScenarioTests\FailoverGroupDatabaseOperations.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="SessionRecords\Sql2.Tests.ScenarioTests.Sql2JobAccountScenarioTest\JobAccountCRUDTest.json">
@@ -221,10 +221,10 @@
     <None Include="SessionRecords\Sql2.Tests.ScenarioTests.Sql2ScenarioTest\TransparentDataEncryptionCRUDTest.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-	<None Include="SessionRecords\Sql2.Tests.ScenarioTests.Sql2ScenarioTest\ServerKeyCRUDTest.json">
+    <None Include="SessionRecords\Sql2.Tests.ScenarioTests.Sql2ScenarioTest\ServerKeyCRUDTest.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-	<None Include="SessionRecords\Sql2.Tests.ScenarioTests.Sql2ScenarioTest\TransparentDataEncryptionProtectorCRUDTest.json">
+    <None Include="SessionRecords\Sql2.Tests.ScenarioTests.Sql2ScenarioTest\TransparentDataEncryptionProtectorCRUDTest.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="SessionRecords\Sql2.Tests.ScenarioTests.Sql2SecureConnectionScenarioTest\SecureConnectionPolicyLifecycleTest.json">
@@ -278,9 +278,9 @@
       <Project>{40f35645-00ee-4df2-b66e-7624546b66df}</Project>
       <Name>TestDependencies</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SqlManagement\SqlManagement.csproj">
-      <Project>{04b53727-16e6-4ef0-9116-04c7f1c33842}</Project>
-      <Name>SqlManagement</Name>
+    <ProjectReference Include="..\Microsoft.Azure.Management.Sql\Microsoft.Azure.Management.Sql.xproj">
+      <Project>{059fcc20-7379-4afa-a6f8-c533d00d086c}</Project>
+      <Name>Microsoft.Azure.Management.Sql</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

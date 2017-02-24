@@ -25,8 +25,6 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Hyak.Common;
@@ -38,19 +36,19 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Management.Sql
 {
     /// <summary>
-    /// Represents all the operations for operating on Azure SQL Job Accounts.
-    /// Contains operations to: Create, Retrieve, Update, and Delete Job
-    /// Accounts
+    /// Represents all the operations for operating on Azure SQL Database
+    /// Replication Links.  Contains operations to: Delete and Retrieve
+    /// replication links.
     /// </summary>
-    internal partial class JobAccountOperations : IServiceOperations<SqlManagementClient>, IJobAccountOperations
+    internal partial class ReplicationLinkOperations : IServiceOperations<SqlManagementClient>, IReplicationLinkOperations
     {
         /// <summary>
-        /// Initializes a new instance of the JobAccountOperations class.
+        /// Initializes a new instance of the ReplicationLinkOperations class.
         /// </summary>
         /// <param name='client'>
         /// Reference to the service client.
         /// </param>
-        internal JobAccountOperations(SqlManagementClient client)
+        internal ReplicationLinkOperations(SqlManagementClient client)
         {
             this._client = client;
         }
@@ -67,33 +65,32 @@ namespace Microsoft.Azure.Management.Sql
         }
         
         /// <summary>
-        /// Begins creating a new Azure SQL Job Account or updating an existing
-        /// Azure SQL Job Account. To determine the status of the operation
-        /// call GetJobAccountOperationStatus.
+        /// Begins failover of the Azure SQL Database Replication Link with the
+        /// given id.
         /// </summary>
         /// <param name='resourceGroupName'>
         /// Required. The name of the Resource Group to which the Azure SQL
-        /// Database Server belongs.
+        /// Server belongs.
         /// </param>
         /// <param name='serverName'>
-        /// Required. The name of the Azure SQL Database Server that the Job
-        /// Account is hosted in.
+        /// Required. The name of the Azure SQL Server on which the Azure SQL
+        /// Database is hosted.
         /// </param>
-        /// <param name='jobAccountName'>
-        /// Required. The name of the Azure SQL Job Account to be created or
-        /// updated.
+        /// <param name='databaseName'>
+        /// Required. The name of the Azure SQL Database that has the
+        /// replication link to be failed over.
         /// </param>
-        /// <param name='parameters'>
-        /// Required. The required parameters for creating or updating a Job
-        /// Account.
+        /// <param name='linkId'>
+        /// Required. The id of the replication link to be failed over.
         /// </param>
         /// <param name='cancellationToken'>
         /// Cancellation token.
         /// </param>
         /// <returns>
-        /// Response for long running Azure Sql Job Account operations.
+        /// Response for long running Azure Sql Database replication failover
+        /// operations.
         /// </returns>
-        public async Task<JobAccountOperationResponse> BeginCreateOrUpdateAsync(string resourceGroupName, string serverName, string jobAccountName, JobAccountCreateOrUpdateParameters parameters, CancellationToken cancellationToken)
+        public async Task<ReplicationLinkFailoverResponse> BeginFailoverAsync(string resourceGroupName, string serverName, string databaseName, string linkId, CancellationToken cancellationToken)
         {
             // Validate
             if (resourceGroupName == null)
@@ -104,25 +101,13 @@ namespace Microsoft.Azure.Management.Sql
             {
                 throw new ArgumentNullException("serverName");
             }
-            if (jobAccountName == null)
+            if (databaseName == null)
             {
-                throw new ArgumentNullException("jobAccountName");
+                throw new ArgumentNullException("databaseName");
             }
-            if (parameters == null)
+            if (linkId == null)
             {
-                throw new ArgumentNullException("parameters");
-            }
-            if (parameters.Location == null)
-            {
-                throw new ArgumentNullException("parameters.Location");
-            }
-            if (parameters.Properties == null)
-            {
-                throw new ArgumentNullException("parameters.Properties");
-            }
-            if (parameters.Properties.DatabaseId == null)
-            {
-                throw new ArgumentNullException("parameters.Properties.DatabaseId");
+                throw new ArgumentNullException("linkId");
             }
             
             // Tracing
@@ -134,9 +119,9 @@ namespace Microsoft.Azure.Management.Sql
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("resourceGroupName", resourceGroupName);
                 tracingParameters.Add("serverName", serverName);
-                tracingParameters.Add("jobAccountName", jobAccountName);
-                tracingParameters.Add("parameters", parameters);
-                TracingAdapter.Enter(invocationId, this, "BeginCreateOrUpdateAsync", tracingParameters);
+                tracingParameters.Add("databaseName", databaseName);
+                tracingParameters.Add("linkId", linkId);
+                TracingAdapter.Enter(invocationId, this, "BeginFailoverAsync", tracingParameters);
             }
             
             // Construct URL
@@ -152,10 +137,13 @@ namespace Microsoft.Azure.Management.Sql
             url = url + "Microsoft.Sql";
             url = url + "/servers/";
             url = url + Uri.EscapeDataString(serverName);
-            url = url + "/jobAccounts/";
-            url = url + Uri.EscapeDataString(jobAccountName);
+            url = url + "/databases/";
+            url = url + Uri.EscapeDataString(databaseName);
+            url = url + "/replicationLinks/";
+            url = url + Uri.EscapeDataString(linkId);
+            url = url + "/failover";
             List<string> queryParameters = new List<string>();
-            queryParameters.Add("api-version=2015-05-01-preview");
+            queryParameters.Add("api-version=2014-04-01");
             if (queryParameters.Count > 0)
             {
                 url = url + "?" + string.Join("&", queryParameters);
@@ -178,7 +166,7 @@ namespace Microsoft.Azure.Management.Sql
             try
             {
                 httpRequest = new HttpRequestMessage();
-                httpRequest.Method = HttpMethod.Put;
+                httpRequest.Method = HttpMethod.Post;
                 httpRequest.RequestUri = new Uri(url);
                 
                 // Set Headers
@@ -186,36 +174,6 @@ namespace Microsoft.Azure.Management.Sql
                 // Set Credentials
                 cancellationToken.ThrowIfCancellationRequested();
                 await this.Client.Credentials.ProcessHttpRequestAsync(httpRequest, cancellationToken).ConfigureAwait(false);
-                
-                // Serialize Request
-                string requestContent = null;
-                JToken requestDoc = null;
-                
-                JObject jobAccountCreateOrUpdateParametersValue = new JObject();
-                requestDoc = jobAccountCreateOrUpdateParametersValue;
-                
-                JObject propertiesValue = new JObject();
-                jobAccountCreateOrUpdateParametersValue["properties"] = propertiesValue;
-                
-                propertiesValue["databaseId"] = parameters.Properties.DatabaseId;
-                
-                jobAccountCreateOrUpdateParametersValue["location"] = parameters.Location;
-                
-                if (parameters.Tags != null)
-                {
-                    JObject tagsDictionary = new JObject();
-                    foreach (KeyValuePair<string, string> pair in parameters.Tags)
-                    {
-                        string tagsKey = pair.Key;
-                        string tagsValue = pair.Value;
-                        tagsDictionary[tagsKey] = tagsValue;
-                    }
-                    jobAccountCreateOrUpdateParametersValue["tags"] = tagsDictionary;
-                }
-                
-                requestContent = requestDoc.ToString(Newtonsoft.Json.Formatting.Indented);
-                httpRequest.Content = new StringContent(requestContent, Encoding.UTF8);
-                httpRequest.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
                 
                 // Send Request
                 HttpResponseMessage httpResponse = null;
@@ -232,10 +190,10 @@ namespace Microsoft.Azure.Management.Sql
                         TracingAdapter.ReceiveResponse(invocationId, httpResponse);
                     }
                     HttpStatusCode statusCode = httpResponse.StatusCode;
-                    if (statusCode != HttpStatusCode.OK && statusCode != HttpStatusCode.Created && statusCode != HttpStatusCode.Accepted)
+                    if (statusCode != HttpStatusCode.Accepted && statusCode != HttpStatusCode.NoContent)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
-                        CloudException ex = CloudException.Create(httpRequest, requestContent, httpResponse, await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false));
+                        CloudException ex = CloudException.Create(httpRequest, null, httpResponse, await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false));
                         if (shouldTrace)
                         {
                             TracingAdapter.Error(invocationId, ex);
@@ -244,103 +202,9 @@ namespace Microsoft.Azure.Management.Sql
                     }
                     
                     // Create Result
-                    JobAccountOperationResponse result = null;
+                    ReplicationLinkFailoverResponse result = null;
                     // Deserialize Response
-                    if (statusCode == HttpStatusCode.OK || statusCode == HttpStatusCode.Created || statusCode == HttpStatusCode.Accepted)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        string responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                        result = new JobAccountOperationResponse();
-                        JToken responseDoc = null;
-                        if (string.IsNullOrEmpty(responseContent) == false)
-                        {
-                            responseDoc = JToken.Parse(responseContent);
-                        }
-                        
-                        if (responseDoc != null && responseDoc.Type != JTokenType.Null)
-                        {
-                            ErrorResponse errorInstance = new ErrorResponse();
-                            result.Error = errorInstance;
-                            
-                            JToken codeValue = responseDoc["code"];
-                            if (codeValue != null && codeValue.Type != JTokenType.Null)
-                            {
-                                string codeInstance = ((string)codeValue);
-                                errorInstance.Code = codeInstance;
-                            }
-                            
-                            JToken messageValue = responseDoc["message"];
-                            if (messageValue != null && messageValue.Type != JTokenType.Null)
-                            {
-                                string messageInstance = ((string)messageValue);
-                                errorInstance.Message = messageInstance;
-                            }
-                            
-                            JToken targetValue = responseDoc["target"];
-                            if (targetValue != null && targetValue.Type != JTokenType.Null)
-                            {
-                                string targetInstance = ((string)targetValue);
-                                errorInstance.Target = targetInstance;
-                            }
-                            
-                            JobAccount jobAccountInstance = new JobAccount();
-                            result.JobAccount = jobAccountInstance;
-                            
-                            JToken propertiesValue2 = responseDoc["properties"];
-                            if (propertiesValue2 != null && propertiesValue2.Type != JTokenType.Null)
-                            {
-                                JobAccountProperties propertiesInstance = new JobAccountProperties();
-                                jobAccountInstance.Properties = propertiesInstance;
-                                
-                                JToken databaseIdValue = propertiesValue2["databaseId"];
-                                if (databaseIdValue != null && databaseIdValue.Type != JTokenType.Null)
-                                {
-                                    string databaseIdInstance = ((string)databaseIdValue);
-                                    propertiesInstance.DatabaseId = databaseIdInstance;
-                                }
-                            }
-                            
-                            JToken idValue = responseDoc["id"];
-                            if (idValue != null && idValue.Type != JTokenType.Null)
-                            {
-                                string idInstance = ((string)idValue);
-                                jobAccountInstance.Id = idInstance;
-                            }
-                            
-                            JToken nameValue = responseDoc["name"];
-                            if (nameValue != null && nameValue.Type != JTokenType.Null)
-                            {
-                                string nameInstance = ((string)nameValue);
-                                jobAccountInstance.Name = nameInstance;
-                            }
-                            
-                            JToken typeValue = responseDoc["type"];
-                            if (typeValue != null && typeValue.Type != JTokenType.Null)
-                            {
-                                string typeInstance = ((string)typeValue);
-                                jobAccountInstance.Type = typeInstance;
-                            }
-                            
-                            JToken locationValue = responseDoc["location"];
-                            if (locationValue != null && locationValue.Type != JTokenType.Null)
-                            {
-                                string locationInstance = ((string)locationValue);
-                                jobAccountInstance.Location = locationInstance;
-                            }
-                            
-                            JToken tagsSequenceElement = ((JToken)responseDoc["tags"]);
-                            if (tagsSequenceElement != null && tagsSequenceElement.Type != JTokenType.Null)
-                            {
-                                foreach (JProperty property in tagsSequenceElement)
-                                {
-                                    string tagsKey2 = ((string)property.Name);
-                                    string tagsValue2 = ((string)property.Value);
-                                    jobAccountInstance.Tags.Add(tagsKey2, tagsValue2);
-                                }
-                            }
-                        }
-                        
-                    }
+                    result = new ReplicationLinkFailoverResponse();
                     result.StatusCode = statusCode;
                     if (httpResponse.Headers.Contains("Location"))
                     {
@@ -354,11 +218,7 @@ namespace Microsoft.Azure.Management.Sql
                     {
                         result.RequestId = httpResponse.Headers.GetValues("x-ms-request-id").FirstOrDefault();
                     }
-                    if (statusCode == HttpStatusCode.Created)
-                    {
-                        result.Status = OperationStatus.Succeeded;
-                    }
-                    if (statusCode == HttpStatusCode.OK)
+                    if (statusCode == HttpStatusCode.NoContent)
                     {
                         result.Status = OperationStatus.Succeeded;
                     }
@@ -387,28 +247,32 @@ namespace Microsoft.Azure.Management.Sql
         }
         
         /// <summary>
-        /// Begins deleting the Azure SQL Job Account with the given name. To
-        /// determine the status of the operation call
-        /// GetJobAccountOperationStatus.
+        /// Begins a forced failover of the Azure SQL Database Replication Link
+        /// with the given id which may result in data loss.
         /// </summary>
         /// <param name='resourceGroupName'>
         /// Required. The name of the Resource Group to which the Azure SQL
-        /// Database Server belongs.
+        /// Server belongs.
         /// </param>
         /// <param name='serverName'>
-        /// Required. The name of the Azure SQL Database Server that the Job
-        /// Account is hosted in.
+        /// Required. The name of the Azure SQL Server on which the Azure SQL
+        /// Database is hosted.
         /// </param>
-        /// <param name='jobAccountName'>
-        /// Required. The name of the Azure SQL Job Account to be deleted.
+        /// <param name='databaseName'>
+        /// Required. The name of the Azure SQL Database that has the
+        /// replication link to be failed over.
+        /// </param>
+        /// <param name='linkId'>
+        /// Required. The id of the replication link to be failed over.
         /// </param>
         /// <param name='cancellationToken'>
         /// Cancellation token.
         /// </param>
         /// <returns>
-        /// Response for long running Azure Sql Job Account operations.
+        /// Response for long running Azure Sql Database replication failover
+        /// operations.
         /// </returns>
-        public async Task<JobAccountOperationResponse> BeginDeleteAsync(string resourceGroupName, string serverName, string jobAccountName, CancellationToken cancellationToken)
+        public async Task<ReplicationLinkFailoverResponse> BeginFailoverAllowDataLossAsync(string resourceGroupName, string serverName, string databaseName, string linkId, CancellationToken cancellationToken)
         {
             // Validate
             if (resourceGroupName == null)
@@ -419,9 +283,13 @@ namespace Microsoft.Azure.Management.Sql
             {
                 throw new ArgumentNullException("serverName");
             }
-            if (jobAccountName == null)
+            if (databaseName == null)
             {
-                throw new ArgumentNullException("jobAccountName");
+                throw new ArgumentNullException("databaseName");
+            }
+            if (linkId == null)
+            {
+                throw new ArgumentNullException("linkId");
             }
             
             // Tracing
@@ -433,8 +301,9 @@ namespace Microsoft.Azure.Management.Sql
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("resourceGroupName", resourceGroupName);
                 tracingParameters.Add("serverName", serverName);
-                tracingParameters.Add("jobAccountName", jobAccountName);
-                TracingAdapter.Enter(invocationId, this, "BeginDeleteAsync", tracingParameters);
+                tracingParameters.Add("databaseName", databaseName);
+                tracingParameters.Add("linkId", linkId);
+                TracingAdapter.Enter(invocationId, this, "BeginFailoverAllowDataLossAsync", tracingParameters);
             }
             
             // Construct URL
@@ -450,10 +319,193 @@ namespace Microsoft.Azure.Management.Sql
             url = url + "Microsoft.Sql";
             url = url + "/servers/";
             url = url + Uri.EscapeDataString(serverName);
-            url = url + "/jobAccounts/";
-            url = url + Uri.EscapeDataString(jobAccountName);
+            url = url + "/databases/";
+            url = url + Uri.EscapeDataString(databaseName);
+            url = url + "/replicationLinks/";
+            url = url + Uri.EscapeDataString(linkId);
+            url = url + "/forceFailoverAllowDataLoss";
             List<string> queryParameters = new List<string>();
-            queryParameters.Add("api-version=2015-05-01-preview");
+            queryParameters.Add("api-version=2014-04-01");
+            if (queryParameters.Count > 0)
+            {
+                url = url + "?" + string.Join("&", queryParameters);
+            }
+            string baseUrl = this.Client.BaseUri.AbsoluteUri;
+            // Trim '/' character from the end of baseUrl and beginning of url.
+            if (baseUrl[baseUrl.Length - 1] == '/')
+            {
+                baseUrl = baseUrl.Substring(0, baseUrl.Length - 1);
+            }
+            if (url[0] == '/')
+            {
+                url = url.Substring(1);
+            }
+            url = baseUrl + "/" + url;
+            url = url.Replace(" ", "%20");
+            
+            // Create HTTP transport objects
+            HttpRequestMessage httpRequest = null;
+            try
+            {
+                httpRequest = new HttpRequestMessage();
+                httpRequest.Method = HttpMethod.Post;
+                httpRequest.RequestUri = new Uri(url);
+                
+                // Set Headers
+                
+                // Set Credentials
+                cancellationToken.ThrowIfCancellationRequested();
+                await this.Client.Credentials.ProcessHttpRequestAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+                
+                // Send Request
+                HttpResponseMessage httpResponse = null;
+                try
+                {
+                    if (shouldTrace)
+                    {
+                        TracingAdapter.SendRequest(invocationId, httpRequest);
+                    }
+                    cancellationToken.ThrowIfCancellationRequested();
+                    httpResponse = await this.Client.HttpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+                    if (shouldTrace)
+                    {
+                        TracingAdapter.ReceiveResponse(invocationId, httpResponse);
+                    }
+                    HttpStatusCode statusCode = httpResponse.StatusCode;
+                    if (statusCode != HttpStatusCode.Accepted && statusCode != HttpStatusCode.NoContent)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        CloudException ex = CloudException.Create(httpRequest, null, httpResponse, await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false));
+                        if (shouldTrace)
+                        {
+                            TracingAdapter.Error(invocationId, ex);
+                        }
+                        throw ex;
+                    }
+                    
+                    // Create Result
+                    ReplicationLinkFailoverResponse result = null;
+                    // Deserialize Response
+                    result = new ReplicationLinkFailoverResponse();
+                    result.StatusCode = statusCode;
+                    if (httpResponse.Headers.Contains("Location"))
+                    {
+                        result.OperationStatusLink = httpResponse.Headers.GetValues("Location").FirstOrDefault();
+                    }
+                    if (httpResponse.Headers.Contains("Retry-After"))
+                    {
+                        result.RetryAfter = int.Parse(httpResponse.Headers.GetValues("Retry-After").FirstOrDefault(), CultureInfo.InvariantCulture);
+                    }
+                    if (httpResponse.Headers.Contains("x-ms-request-id"))
+                    {
+                        result.RequestId = httpResponse.Headers.GetValues("x-ms-request-id").FirstOrDefault();
+                    }
+                    if (statusCode == HttpStatusCode.NoContent)
+                    {
+                        result.Status = OperationStatus.Succeeded;
+                    }
+                    
+                    if (shouldTrace)
+                    {
+                        TracingAdapter.Exit(invocationId, result);
+                    }
+                    return result;
+                }
+                finally
+                {
+                    if (httpResponse != null)
+                    {
+                        httpResponse.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (httpRequest != null)
+                {
+                    httpRequest.Dispose();
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Deletes the Azure SQL Database Replication Link with the given id.
+        /// </summary>
+        /// <param name='resourceGroupName'>
+        /// Required. The name of the Resource Group to which the Azure SQL
+        /// Server belongs.
+        /// </param>
+        /// <param name='serverName'>
+        /// Required. The name of the Azure SQL Server on which the Azure SQL
+        /// Database is hosted.
+        /// </param>
+        /// <param name='databaseName'>
+        /// Required. The name of the Azure SQL Database that has the
+        /// replication link to be dropped.
+        /// </param>
+        /// <param name='linkId'>
+        /// Required. The id of the replication link to be deleted.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// Cancellation token.
+        /// </param>
+        /// <returns>
+        /// A standard service response including an HTTP status code and
+        /// request ID.
+        /// </returns>
+        public async Task<AzureOperationResponse> DeleteAsync(string resourceGroupName, string serverName, string databaseName, string linkId, CancellationToken cancellationToken)
+        {
+            // Validate
+            if (resourceGroupName == null)
+            {
+                throw new ArgumentNullException("resourceGroupName");
+            }
+            if (serverName == null)
+            {
+                throw new ArgumentNullException("serverName");
+            }
+            if (databaseName == null)
+            {
+                throw new ArgumentNullException("databaseName");
+            }
+            if (linkId == null)
+            {
+                throw new ArgumentNullException("linkId");
+            }
+            
+            // Tracing
+            bool shouldTrace = TracingAdapter.IsEnabled;
+            string invocationId = null;
+            if (shouldTrace)
+            {
+                invocationId = TracingAdapter.NextInvocationId.ToString();
+                Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
+                tracingParameters.Add("resourceGroupName", resourceGroupName);
+                tracingParameters.Add("serverName", serverName);
+                tracingParameters.Add("databaseName", databaseName);
+                tracingParameters.Add("linkId", linkId);
+                TracingAdapter.Enter(invocationId, this, "DeleteAsync", tracingParameters);
+            }
+            
+            // Construct URL
+            string url = "";
+            url = url + "/subscriptions/";
+            if (this.Client.Credentials.SubscriptionId != null)
+            {
+                url = url + Uri.EscapeDataString(this.Client.Credentials.SubscriptionId);
+            }
+            url = url + "/resourceGroups/";
+            url = url + Uri.EscapeDataString(resourceGroupName);
+            url = url + "/providers/";
+            url = url + "Microsoft.Sql";
+            url = url + "/servers/";
+            url = url + Uri.EscapeDataString(serverName);
+            url = url + "/databases/";
+            url = url + Uri.EscapeDataString(databaseName);
+            url = url + "/replicationLinks/";
+            url = url + Uri.EscapeDataString(linkId);
+            List<string> queryParameters = new List<string>();
+            queryParameters.Add("api-version=2014-04-01");
             if (queryParameters.Count > 0)
             {
                 url = url + "?" + string.Join("&", queryParameters);
@@ -500,7 +552,7 @@ namespace Microsoft.Azure.Management.Sql
                         TracingAdapter.ReceiveResponse(invocationId, httpResponse);
                     }
                     HttpStatusCode statusCode = httpResponse.StatusCode;
-                    if (statusCode != HttpStatusCode.OK && statusCode != HttpStatusCode.Accepted && statusCode != HttpStatusCode.NoContent)
+                    if (statusCode != HttpStatusCode.OK && statusCode != HttpStatusCode.NoContent)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                         CloudException ex = CloudException.Create(httpRequest, null, httpResponse, await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false));
@@ -512,67 +564,13 @@ namespace Microsoft.Azure.Management.Sql
                     }
                     
                     // Create Result
-                    JobAccountOperationResponse result = null;
+                    AzureOperationResponse result = null;
                     // Deserialize Response
-                    if (statusCode == HttpStatusCode.OK || statusCode == HttpStatusCode.Accepted || statusCode == HttpStatusCode.NoContent)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        string responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                        result = new JobAccountOperationResponse();
-                        JToken responseDoc = null;
-                        if (string.IsNullOrEmpty(responseContent) == false)
-                        {
-                            responseDoc = JToken.Parse(responseContent);
-                        }
-                        
-                        if (responseDoc != null && responseDoc.Type != JTokenType.Null)
-                        {
-                            ErrorResponse errorInstance = new ErrorResponse();
-                            result.Error = errorInstance;
-                            
-                            JToken codeValue = responseDoc["code"];
-                            if (codeValue != null && codeValue.Type != JTokenType.Null)
-                            {
-                                string codeInstance = ((string)codeValue);
-                                errorInstance.Code = codeInstance;
-                            }
-                            
-                            JToken messageValue = responseDoc["message"];
-                            if (messageValue != null && messageValue.Type != JTokenType.Null)
-                            {
-                                string messageInstance = ((string)messageValue);
-                                errorInstance.Message = messageInstance;
-                            }
-                            
-                            JToken targetValue = responseDoc["target"];
-                            if (targetValue != null && targetValue.Type != JTokenType.Null)
-                            {
-                                string targetInstance = ((string)targetValue);
-                                errorInstance.Target = targetInstance;
-                            }
-                        }
-                        
-                    }
+                    result = new AzureOperationResponse();
                     result.StatusCode = statusCode;
-                    if (httpResponse.Headers.Contains("Location"))
-                    {
-                        result.OperationStatusLink = httpResponse.Headers.GetValues("Location").FirstOrDefault();
-                    }
-                    if (httpResponse.Headers.Contains("Retry-After"))
-                    {
-                        result.RetryAfter = int.Parse(httpResponse.Headers.GetValues("Retry-After").FirstOrDefault(), CultureInfo.InvariantCulture);
-                    }
                     if (httpResponse.Headers.Contains("x-ms-request-id"))
                     {
                         result.RequestId = httpResponse.Headers.GetValues("x-ms-request-id").FirstOrDefault();
-                    }
-                    if (statusCode == HttpStatusCode.NoContent)
-                    {
-                        result.Status = OperationStatus.Succeeded;
-                    }
-                    if (statusCode == HttpStatusCode.OK)
-                    {
-                        result.Status = OperationStatus.Succeeded;
                     }
                     
                     if (shouldTrace)
@@ -599,32 +597,32 @@ namespace Microsoft.Azure.Management.Sql
         }
         
         /// <summary>
-        /// Creates a new Azure SQL Job Account or updates an existing Azure
-        /// SQL Job Account.
+        /// Fails over the Azure SQL Database Replication Link with the given
+        /// id.
         /// </summary>
         /// <param name='resourceGroupName'>
-        /// Required. The name of the Resource Group to which the server
-        /// belongs.
+        /// Required. The name of the Resource Group to which the Azure SQL
+        /// Server belongs.
         /// </param>
         /// <param name='serverName'>
-        /// Required. The name of the Azure SQL Job Database Server that the
-        /// Job Account is hosted in.
+        /// Required. The name of the Azure SQL Server on which the Azure SQL
+        /// Database is hosted.
         /// </param>
-        /// <param name='jobAccountName'>
-        /// Required. The name of the Azure SQL Job Account to be created or
-        /// updated.
+        /// <param name='databaseName'>
+        /// Required. The name of the Azure SQL Database that has the
+        /// replication link to be failed over.
         /// </param>
-        /// <param name='parameters'>
-        /// Required. The required parameters for creating or updating a Job
-        /// Account.
+        /// <param name='linkId'>
+        /// Required. The id of the replication link to be failed over.
         /// </param>
         /// <param name='cancellationToken'>
         /// Cancellation token.
         /// </param>
         /// <returns>
-        /// Response for long running Azure Sql Job Account operations.
+        /// Response for long running Azure Sql Database replication failover
+        /// operations.
         /// </returns>
-        public async Task<JobAccountOperationResponse> CreateOrUpdateAsync(string resourceGroupName, string serverName, string jobAccountName, JobAccountCreateOrUpdateParameters parameters, CancellationToken cancellationToken)
+        public async Task<ReplicationLinkFailoverResponse> FailoverAsync(string resourceGroupName, string serverName, string databaseName, string linkId, CancellationToken cancellationToken)
         {
             SqlManagementClient client = this.Client;
             bool shouldTrace = TracingAdapter.IsEnabled;
@@ -635,19 +633,19 @@ namespace Microsoft.Azure.Management.Sql
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("resourceGroupName", resourceGroupName);
                 tracingParameters.Add("serverName", serverName);
-                tracingParameters.Add("jobAccountName", jobAccountName);
-                tracingParameters.Add("parameters", parameters);
-                TracingAdapter.Enter(invocationId, this, "CreateOrUpdateAsync", tracingParameters);
+                tracingParameters.Add("databaseName", databaseName);
+                tracingParameters.Add("linkId", linkId);
+                TracingAdapter.Enter(invocationId, this, "FailoverAsync", tracingParameters);
             }
             
             cancellationToken.ThrowIfCancellationRequested();
-            JobAccountOperationResponse response = await client.JobAccounts.BeginCreateOrUpdateAsync(resourceGroupName, serverName, jobAccountName, parameters, cancellationToken).ConfigureAwait(false);
+            ReplicationLinkFailoverResponse response = await client.DatabaseReplicationLinks.BeginFailoverAsync(resourceGroupName, serverName, databaseName, linkId, cancellationToken).ConfigureAwait(false);
             if (response.Status == OperationStatus.Succeeded)
             {
                 return response;
             }
             cancellationToken.ThrowIfCancellationRequested();
-            JobAccountOperationResponse result = await client.JobAccounts.GetJobAccountOperationStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
+            ReplicationLinkFailoverResponse result = await client.DatabaseReplicationLinks.GetReplicationLinkOperationStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
             int delayInSeconds = response.RetryAfter;
             if (delayInSeconds == 0)
             {
@@ -660,9 +658,9 @@ namespace Microsoft.Azure.Management.Sql
             while (result.Status == OperationStatus.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
-                result = await client.JobAccounts.GetJobAccountOperationStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
+                result = await client.DatabaseReplicationLinks.GetReplicationLinkOperationStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = result.RetryAfter;
                 if (delayInSeconds == 0)
                 {
@@ -683,28 +681,32 @@ namespace Microsoft.Azure.Management.Sql
         }
         
         /// <summary>
-        /// Creates a new Azure SQL Job Account or updates an existing Azure
-        /// SQL Job Account.
+        /// Forces failover of the Azure SQL Database Replication Link with the
+        /// given id which may result in data loss.
         /// </summary>
         /// <param name='resourceGroupName'>
-        /// Required. The name of the Resource Group to which the server
-        /// belongs.
+        /// Required. The name of the Resource Group to which the Azure SQL
+        /// Server belongs.
         /// </param>
         /// <param name='serverName'>
-        /// Required. The name of the Azure SQL Job Database Server that the
-        /// Job Account is hosted in.
+        /// Required. The name of the Azure SQL Server on which the Azure SQL
+        /// Database is hosted.
         /// </param>
-        /// <param name='jobAccountName'>
-        /// Required. The name of the Azure SQL Job Account to be created or
-        /// updated.
+        /// <param name='databaseName'>
+        /// Required. The name of the Azure SQL Database that has the
+        /// replication link to be failed over.
+        /// </param>
+        /// <param name='linkId'>
+        /// Required. The id of the replication link to be failed over.
         /// </param>
         /// <param name='cancellationToken'>
         /// Cancellation token.
         /// </param>
         /// <returns>
-        /// Response for long running Azure Sql Job Account operations.
+        /// Response for long running Azure Sql Database replication failover
+        /// operations.
         /// </returns>
-        public async Task<JobAccountOperationResponse> DeleteAsync(string resourceGroupName, string serverName, string jobAccountName, CancellationToken cancellationToken)
+        public async Task<ReplicationLinkFailoverResponse> FailoverAllowDataLossAsync(string resourceGroupName, string serverName, string databaseName, string linkId, CancellationToken cancellationToken)
         {
             SqlManagementClient client = this.Client;
             bool shouldTrace = TracingAdapter.IsEnabled;
@@ -715,18 +717,19 @@ namespace Microsoft.Azure.Management.Sql
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("resourceGroupName", resourceGroupName);
                 tracingParameters.Add("serverName", serverName);
-                tracingParameters.Add("jobAccountName", jobAccountName);
-                TracingAdapter.Enter(invocationId, this, "DeleteAsync", tracingParameters);
+                tracingParameters.Add("databaseName", databaseName);
+                tracingParameters.Add("linkId", linkId);
+                TracingAdapter.Enter(invocationId, this, "FailoverAllowDataLossAsync", tracingParameters);
             }
             
             cancellationToken.ThrowIfCancellationRequested();
-            JobAccountOperationResponse response = await client.JobAccounts.BeginDeleteAsync(resourceGroupName, serverName, jobAccountName, cancellationToken).ConfigureAwait(false);
+            ReplicationLinkFailoverResponse response = await client.DatabaseReplicationLinks.BeginFailoverAllowDataLossAsync(resourceGroupName, serverName, databaseName, linkId, cancellationToken).ConfigureAwait(false);
             if (response.Status == OperationStatus.Succeeded)
             {
                 return response;
             }
             cancellationToken.ThrowIfCancellationRequested();
-            JobAccountOperationResponse result = await client.JobAccounts.GetJobAccountOperationStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
+            ReplicationLinkFailoverResponse result = await client.DatabaseReplicationLinks.GetReplicationLinkOperationStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
             int delayInSeconds = response.RetryAfter;
             if (delayInSeconds == 0)
             {
@@ -739,9 +742,9 @@ namespace Microsoft.Azure.Management.Sql
             while (result.Status == OperationStatus.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
-                result = await client.JobAccounts.GetJobAccountOperationStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
+                result = await client.DatabaseReplicationLinks.GetReplicationLinkOperationStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = result.RetryAfter;
                 if (delayInSeconds == 0)
                 {
@@ -762,26 +765,30 @@ namespace Microsoft.Azure.Management.Sql
         }
         
         /// <summary>
-        /// Returns information about an Azure SQL Job Account.
+        /// Returns information about an Azure SQL Database Replication Link.
         /// </summary>
         /// <param name='resourceGroupName'>
         /// Required. The name of the Resource Group to which the server
         /// belongs.
         /// </param>
         /// <param name='serverName'>
-        /// Required. The name of the Azure SQL Database Server that the Job
-        /// Account is hosted in.
+        /// Required. The name of the Azure SQL Server on which the database is
+        /// hosted.
         /// </param>
-        /// <param name='jobAccountName'>
-        /// Required. The name of the Azure SQL Job Account to be retrieved.
+        /// <param name='databaseName'>
+        /// Required. The name of the Azure SQL Database to get the link for.
+        /// </param>
+        /// <param name='linkId'>
+        /// Required. The replication link id to be retrieved.
         /// </param>
         /// <param name='cancellationToken'>
         /// Cancellation token.
         /// </param>
         /// <returns>
-        /// Represents the response to a Get Azure Sql Job Account request.
+        /// Represents the response to a Get Azure Sql Database Replication
+        /// Link request.
         /// </returns>
-        public async Task<JobAccountGetResponse> GetAsync(string resourceGroupName, string serverName, string jobAccountName, CancellationToken cancellationToken)
+        public async Task<ReplicationLinkGetResponse> GetAsync(string resourceGroupName, string serverName, string databaseName, string linkId, CancellationToken cancellationToken)
         {
             // Validate
             if (resourceGroupName == null)
@@ -792,9 +799,13 @@ namespace Microsoft.Azure.Management.Sql
             {
                 throw new ArgumentNullException("serverName");
             }
-            if (jobAccountName == null)
+            if (databaseName == null)
             {
-                throw new ArgumentNullException("jobAccountName");
+                throw new ArgumentNullException("databaseName");
+            }
+            if (linkId == null)
+            {
+                throw new ArgumentNullException("linkId");
             }
             
             // Tracing
@@ -806,7 +817,8 @@ namespace Microsoft.Azure.Management.Sql
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("resourceGroupName", resourceGroupName);
                 tracingParameters.Add("serverName", serverName);
-                tracingParameters.Add("jobAccountName", jobAccountName);
+                tracingParameters.Add("databaseName", databaseName);
+                tracingParameters.Add("linkId", linkId);
                 TracingAdapter.Enter(invocationId, this, "GetAsync", tracingParameters);
             }
             
@@ -823,10 +835,12 @@ namespace Microsoft.Azure.Management.Sql
             url = url + "Microsoft.Sql";
             url = url + "/servers/";
             url = url + Uri.EscapeDataString(serverName);
-            url = url + "/jobAccounts/";
-            url = url + Uri.EscapeDataString(jobAccountName);
+            url = url + "/databases/";
+            url = url + Uri.EscapeDataString(databaseName);
+            url = url + "/replicationLinks/";
+            url = url + Uri.EscapeDataString(linkId);
             List<string> queryParameters = new List<string>();
-            queryParameters.Add("api-version=2015-05-01-preview");
+            queryParameters.Add("api-version=2014-04-01");
             if (queryParameters.Count > 0)
             {
                 url = url + "?" + string.Join("&", queryParameters);
@@ -885,13 +899,13 @@ namespace Microsoft.Azure.Management.Sql
                     }
                     
                     // Create Result
-                    JobAccountGetResponse result = null;
+                    ReplicationLinkGetResponse result = null;
                     // Deserialize Response
                     if (statusCode == HttpStatusCode.OK)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                         string responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                        result = new JobAccountGetResponse();
+                        result = new ReplicationLinkGetResponse();
                         JToken responseDoc = null;
                         if (string.IsNullOrEmpty(responseContent) == false)
                         {
@@ -900,20 +914,69 @@ namespace Microsoft.Azure.Management.Sql
                         
                         if (responseDoc != null && responseDoc.Type != JTokenType.Null)
                         {
-                            JobAccount jobAccountInstance = new JobAccount();
-                            result.JobAccount = jobAccountInstance;
+                            ReplicationLink replicationLinkInstance = new ReplicationLink();
+                            result.ReplicationLink = replicationLinkInstance;
                             
                             JToken propertiesValue = responseDoc["properties"];
                             if (propertiesValue != null && propertiesValue.Type != JTokenType.Null)
                             {
-                                JobAccountProperties propertiesInstance = new JobAccountProperties();
-                                jobAccountInstance.Properties = propertiesInstance;
+                                ReplicationLinkProperties propertiesInstance = new ReplicationLinkProperties();
+                                replicationLinkInstance.Properties = propertiesInstance;
                                 
-                                JToken databaseIdValue = propertiesValue["databaseId"];
-                                if (databaseIdValue != null && databaseIdValue.Type != JTokenType.Null)
+                                JToken partnerServerValue = propertiesValue["partnerServer"];
+                                if (partnerServerValue != null && partnerServerValue.Type != JTokenType.Null)
                                 {
-                                    string databaseIdInstance = ((string)databaseIdValue);
-                                    propertiesInstance.DatabaseId = databaseIdInstance;
+                                    string partnerServerInstance = ((string)partnerServerValue);
+                                    propertiesInstance.PartnerServer = partnerServerInstance;
+                                }
+                                
+                                JToken partnerDatabaseValue = propertiesValue["partnerDatabase"];
+                                if (partnerDatabaseValue != null && partnerDatabaseValue.Type != JTokenType.Null)
+                                {
+                                    string partnerDatabaseInstance = ((string)partnerDatabaseValue);
+                                    propertiesInstance.PartnerDatabase = partnerDatabaseInstance;
+                                }
+                                
+                                JToken partnerLocationValue = propertiesValue["partnerLocation"];
+                                if (partnerLocationValue != null && partnerLocationValue.Type != JTokenType.Null)
+                                {
+                                    string partnerLocationInstance = ((string)partnerLocationValue);
+                                    propertiesInstance.PartnerLocation = partnerLocationInstance;
+                                }
+                                
+                                JToken roleValue = propertiesValue["role"];
+                                if (roleValue != null && roleValue.Type != JTokenType.Null)
+                                {
+                                    string roleInstance = ((string)roleValue);
+                                    propertiesInstance.Role = roleInstance;
+                                }
+                                
+                                JToken partnerRoleValue = propertiesValue["partnerRole"];
+                                if (partnerRoleValue != null && partnerRoleValue.Type != JTokenType.Null)
+                                {
+                                    string partnerRoleInstance = ((string)partnerRoleValue);
+                                    propertiesInstance.PartnerRole = partnerRoleInstance;
+                                }
+                                
+                                JToken startTimeValue = propertiesValue["startTime"];
+                                if (startTimeValue != null && startTimeValue.Type != JTokenType.Null)
+                                {
+                                    DateTime startTimeInstance = ((DateTime)startTimeValue);
+                                    propertiesInstance.StartTime = startTimeInstance;
+                                }
+                                
+                                JToken percentCompleteValue = propertiesValue["percentComplete"];
+                                if (percentCompleteValue != null && percentCompleteValue.Type != JTokenType.Null)
+                                {
+                                    string percentCompleteInstance = ((string)percentCompleteValue);
+                                    propertiesInstance.PercentComplete = percentCompleteInstance;
+                                }
+                                
+                                JToken replicationStateValue = propertiesValue["replicationState"];
+                                if (replicationStateValue != null && replicationStateValue.Type != JTokenType.Null)
+                                {
+                                    string replicationStateInstance = ((string)replicationStateValue);
+                                    propertiesInstance.ReplicationState = replicationStateInstance;
                                 }
                             }
                             
@@ -921,28 +984,28 @@ namespace Microsoft.Azure.Management.Sql
                             if (idValue != null && idValue.Type != JTokenType.Null)
                             {
                                 string idInstance = ((string)idValue);
-                                jobAccountInstance.Id = idInstance;
+                                replicationLinkInstance.Id = idInstance;
                             }
                             
                             JToken nameValue = responseDoc["name"];
                             if (nameValue != null && nameValue.Type != JTokenType.Null)
                             {
                                 string nameInstance = ((string)nameValue);
-                                jobAccountInstance.Name = nameInstance;
+                                replicationLinkInstance.Name = nameInstance;
                             }
                             
                             JToken typeValue = responseDoc["type"];
                             if (typeValue != null && typeValue.Type != JTokenType.Null)
                             {
                                 string typeInstance = ((string)typeValue);
-                                jobAccountInstance.Type = typeInstance;
+                                replicationLinkInstance.Type = typeInstance;
                             }
                             
                             JToken locationValue = responseDoc["location"];
                             if (locationValue != null && locationValue.Type != JTokenType.Null)
                             {
                                 string locationInstance = ((string)locationValue);
-                                jobAccountInstance.Location = locationInstance;
+                                replicationLinkInstance.Location = locationInstance;
                             }
                             
                             JToken tagsSequenceElement = ((JToken)responseDoc["tags"]);
@@ -952,7 +1015,7 @@ namespace Microsoft.Azure.Management.Sql
                                 {
                                     string tagsKey = ((string)property.Name);
                                     string tagsValue = ((string)property.Value);
-                                    jobAccountInstance.Tags.Add(tagsKey, tagsValue);
+                                    replicationLinkInstance.Tags.Add(tagsKey, tagsValue);
                                 }
                             }
                         }
@@ -988,7 +1051,7 @@ namespace Microsoft.Azure.Management.Sql
         }
         
         /// <summary>
-        /// Gets the status of an Azure Sql Job Account create or update
+        /// Gets the status of an Azure SQL Database replication link failover
         /// operation.
         /// </summary>
         /// <param name='operationStatusLink'>
@@ -998,9 +1061,10 @@ namespace Microsoft.Azure.Management.Sql
         /// Cancellation token.
         /// </param>
         /// <returns>
-        /// Response for long running Azure Sql Job Account operations.
+        /// Response for long running Azure Sql Database replication failover
+        /// operations.
         /// </returns>
-        public async Task<JobAccountOperationResponse> GetJobAccountOperationStatusAsync(string operationStatusLink, CancellationToken cancellationToken)
+        public async Task<ReplicationLinkFailoverResponse> GetReplicationLinkOperationStatusAsync(string operationStatusLink, CancellationToken cancellationToken)
         {
             // Validate
             if (operationStatusLink == null)
@@ -1016,7 +1080,7 @@ namespace Microsoft.Azure.Management.Sql
                 invocationId = TracingAdapter.NextInvocationId.ToString();
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("operationStatusLink", operationStatusLink);
-                TracingAdapter.Enter(invocationId, this, "GetJobAccountOperationStatusAsync", tracingParameters);
+                TracingAdapter.Enter(invocationId, this, "GetReplicationLinkOperationStatusAsync", tracingParameters);
             }
             
             // Construct URL
@@ -1053,7 +1117,7 @@ namespace Microsoft.Azure.Management.Sql
                         TracingAdapter.ReceiveResponse(invocationId, httpResponse);
                     }
                     HttpStatusCode statusCode = httpResponse.StatusCode;
-                    if (statusCode != HttpStatusCode.OK && statusCode != HttpStatusCode.Created && statusCode != HttpStatusCode.Accepted && statusCode != HttpStatusCode.NoContent)
+                    if (statusCode != HttpStatusCode.Accepted && statusCode != HttpStatusCode.NoContent)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                         CloudException ex = CloudException.Create(httpRequest, null, httpResponse, await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false));
@@ -1065,117 +1129,15 @@ namespace Microsoft.Azure.Management.Sql
                     }
                     
                     // Create Result
-                    JobAccountOperationResponse result = null;
+                    ReplicationLinkFailoverResponse result = null;
                     // Deserialize Response
-                    if (statusCode == HttpStatusCode.OK || statusCode == HttpStatusCode.Created || statusCode == HttpStatusCode.Accepted || statusCode == HttpStatusCode.NoContent)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        string responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                        result = new JobAccountOperationResponse();
-                        JToken responseDoc = null;
-                        if (string.IsNullOrEmpty(responseContent) == false)
-                        {
-                            responseDoc = JToken.Parse(responseContent);
-                        }
-                        
-                        if (responseDoc != null && responseDoc.Type != JTokenType.Null)
-                        {
-                            ErrorResponse errorInstance = new ErrorResponse();
-                            result.Error = errorInstance;
-                            
-                            JToken codeValue = responseDoc["code"];
-                            if (codeValue != null && codeValue.Type != JTokenType.Null)
-                            {
-                                string codeInstance = ((string)codeValue);
-                                errorInstance.Code = codeInstance;
-                            }
-                            
-                            JToken messageValue = responseDoc["message"];
-                            if (messageValue != null && messageValue.Type != JTokenType.Null)
-                            {
-                                string messageInstance = ((string)messageValue);
-                                errorInstance.Message = messageInstance;
-                            }
-                            
-                            JToken targetValue = responseDoc["target"];
-                            if (targetValue != null && targetValue.Type != JTokenType.Null)
-                            {
-                                string targetInstance = ((string)targetValue);
-                                errorInstance.Target = targetInstance;
-                            }
-                            
-                            JobAccount jobAccountInstance = new JobAccount();
-                            result.JobAccount = jobAccountInstance;
-                            
-                            JToken propertiesValue = responseDoc["properties"];
-                            if (propertiesValue != null && propertiesValue.Type != JTokenType.Null)
-                            {
-                                JobAccountProperties propertiesInstance = new JobAccountProperties();
-                                jobAccountInstance.Properties = propertiesInstance;
-                                
-                                JToken databaseIdValue = propertiesValue["databaseId"];
-                                if (databaseIdValue != null && databaseIdValue.Type != JTokenType.Null)
-                                {
-                                    string databaseIdInstance = ((string)databaseIdValue);
-                                    propertiesInstance.DatabaseId = databaseIdInstance;
-                                }
-                            }
-                            
-                            JToken idValue = responseDoc["id"];
-                            if (idValue != null && idValue.Type != JTokenType.Null)
-                            {
-                                string idInstance = ((string)idValue);
-                                jobAccountInstance.Id = idInstance;
-                            }
-                            
-                            JToken nameValue = responseDoc["name"];
-                            if (nameValue != null && nameValue.Type != JTokenType.Null)
-                            {
-                                string nameInstance = ((string)nameValue);
-                                jobAccountInstance.Name = nameInstance;
-                            }
-                            
-                            JToken typeValue = responseDoc["type"];
-                            if (typeValue != null && typeValue.Type != JTokenType.Null)
-                            {
-                                string typeInstance = ((string)typeValue);
-                                jobAccountInstance.Type = typeInstance;
-                            }
-                            
-                            JToken locationValue = responseDoc["location"];
-                            if (locationValue != null && locationValue.Type != JTokenType.Null)
-                            {
-                                string locationInstance = ((string)locationValue);
-                                jobAccountInstance.Location = locationInstance;
-                            }
-                            
-                            JToken tagsSequenceElement = ((JToken)responseDoc["tags"]);
-                            if (tagsSequenceElement != null && tagsSequenceElement.Type != JTokenType.Null)
-                            {
-                                foreach (JProperty property in tagsSequenceElement)
-                                {
-                                    string tagsKey = ((string)property.Name);
-                                    string tagsValue = ((string)property.Value);
-                                    jobAccountInstance.Tags.Add(tagsKey, tagsValue);
-                                }
-                            }
-                        }
-                        
-                    }
+                    result = new ReplicationLinkFailoverResponse();
                     result.StatusCode = statusCode;
                     if (httpResponse.Headers.Contains("x-ms-request-id"))
                     {
                         result.RequestId = httpResponse.Headers.GetValues("x-ms-request-id").FirstOrDefault();
                     }
                     if (statusCode == HttpStatusCode.NoContent)
-                    {
-                        result.Status = OperationStatus.Succeeded;
-                    }
-                    if (statusCode == HttpStatusCode.Created)
-                    {
-                        result.Status = OperationStatus.Succeeded;
-                    }
-                    if (statusCode == HttpStatusCode.OK)
                     {
                         result.Status = OperationStatus.Succeeded;
                     }
@@ -1204,23 +1166,27 @@ namespace Microsoft.Azure.Management.Sql
         }
         
         /// <summary>
-        /// Returns information about Azure SQL Job Accounts.
+        /// Returns information about Azure SQL Database Replication Links.
         /// </summary>
         /// <param name='resourceGroupName'>
         /// Required. The name of the Resource Group to which the server
         /// belongs.
         /// </param>
         /// <param name='serverName'>
-        /// Required. The name of the Azure SQL Database Server that the Job
-        /// Accounts are hosted in.
+        /// Required. The name of the Azure SQL Server in which the Azure SQL
+        /// Database is hosted.
+        /// </param>
+        /// <param name='databaseName'>
+        /// Required. The name of the Azure SQL Database to retrieve links for.
         /// </param>
         /// <param name='cancellationToken'>
         /// Cancellation token.
         /// </param>
         /// <returns>
-        /// Represents the response to a List Azure Sql Job Accounts request.
+        /// Represents the response to a List Azure Sql Database Replication
+        /// Link request.
         /// </returns>
-        public async Task<JobAccountListResponse> ListAsync(string resourceGroupName, string serverName, CancellationToken cancellationToken)
+        public async Task<ReplicationLinkListResponse> ListAsync(string resourceGroupName, string serverName, string databaseName, CancellationToken cancellationToken)
         {
             // Validate
             if (resourceGroupName == null)
@@ -1230,6 +1196,10 @@ namespace Microsoft.Azure.Management.Sql
             if (serverName == null)
             {
                 throw new ArgumentNullException("serverName");
+            }
+            if (databaseName == null)
+            {
+                throw new ArgumentNullException("databaseName");
             }
             
             // Tracing
@@ -1241,6 +1211,7 @@ namespace Microsoft.Azure.Management.Sql
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("resourceGroupName", resourceGroupName);
                 tracingParameters.Add("serverName", serverName);
+                tracingParameters.Add("databaseName", databaseName);
                 TracingAdapter.Enter(invocationId, this, "ListAsync", tracingParameters);
             }
             
@@ -1257,9 +1228,11 @@ namespace Microsoft.Azure.Management.Sql
             url = url + "Microsoft.Sql";
             url = url + "/servers/";
             url = url + Uri.EscapeDataString(serverName);
-            url = url + "/jobAccounts";
+            url = url + "/databases/";
+            url = url + Uri.EscapeDataString(databaseName);
+            url = url + "/replicationLinks";
             List<string> queryParameters = new List<string>();
-            queryParameters.Add("api-version=2015-05-01-preview");
+            queryParameters.Add("api-version=2014-04-01");
             if (queryParameters.Count > 0)
             {
                 url = url + "?" + string.Join("&", queryParameters);
@@ -1318,13 +1291,13 @@ namespace Microsoft.Azure.Management.Sql
                     }
                     
                     // Create Result
-                    JobAccountListResponse result = null;
+                    ReplicationLinkListResponse result = null;
                     // Deserialize Response
                     if (statusCode == HttpStatusCode.OK)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                         string responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                        result = new JobAccountListResponse();
+                        result = new ReplicationLinkListResponse();
                         JToken responseDoc = null;
                         if (string.IsNullOrEmpty(responseContent) == false)
                         {
@@ -1338,20 +1311,69 @@ namespace Microsoft.Azure.Management.Sql
                             {
                                 foreach (JToken valueValue in ((JArray)valueArray))
                                 {
-                                    JobAccount jobAccountInstance = new JobAccount();
-                                    result.JobAccounts.Add(jobAccountInstance);
+                                    ReplicationLink replicationLinkInstance = new ReplicationLink();
+                                    result.ReplicationLinks.Add(replicationLinkInstance);
                                     
                                     JToken propertiesValue = valueValue["properties"];
                                     if (propertiesValue != null && propertiesValue.Type != JTokenType.Null)
                                     {
-                                        JobAccountProperties propertiesInstance = new JobAccountProperties();
-                                        jobAccountInstance.Properties = propertiesInstance;
+                                        ReplicationLinkProperties propertiesInstance = new ReplicationLinkProperties();
+                                        replicationLinkInstance.Properties = propertiesInstance;
                                         
-                                        JToken databaseIdValue = propertiesValue["databaseId"];
-                                        if (databaseIdValue != null && databaseIdValue.Type != JTokenType.Null)
+                                        JToken partnerServerValue = propertiesValue["partnerServer"];
+                                        if (partnerServerValue != null && partnerServerValue.Type != JTokenType.Null)
                                         {
-                                            string databaseIdInstance = ((string)databaseIdValue);
-                                            propertiesInstance.DatabaseId = databaseIdInstance;
+                                            string partnerServerInstance = ((string)partnerServerValue);
+                                            propertiesInstance.PartnerServer = partnerServerInstance;
+                                        }
+                                        
+                                        JToken partnerDatabaseValue = propertiesValue["partnerDatabase"];
+                                        if (partnerDatabaseValue != null && partnerDatabaseValue.Type != JTokenType.Null)
+                                        {
+                                            string partnerDatabaseInstance = ((string)partnerDatabaseValue);
+                                            propertiesInstance.PartnerDatabase = partnerDatabaseInstance;
+                                        }
+                                        
+                                        JToken partnerLocationValue = propertiesValue["partnerLocation"];
+                                        if (partnerLocationValue != null && partnerLocationValue.Type != JTokenType.Null)
+                                        {
+                                            string partnerLocationInstance = ((string)partnerLocationValue);
+                                            propertiesInstance.PartnerLocation = partnerLocationInstance;
+                                        }
+                                        
+                                        JToken roleValue = propertiesValue["role"];
+                                        if (roleValue != null && roleValue.Type != JTokenType.Null)
+                                        {
+                                            string roleInstance = ((string)roleValue);
+                                            propertiesInstance.Role = roleInstance;
+                                        }
+                                        
+                                        JToken partnerRoleValue = propertiesValue["partnerRole"];
+                                        if (partnerRoleValue != null && partnerRoleValue.Type != JTokenType.Null)
+                                        {
+                                            string partnerRoleInstance = ((string)partnerRoleValue);
+                                            propertiesInstance.PartnerRole = partnerRoleInstance;
+                                        }
+                                        
+                                        JToken startTimeValue = propertiesValue["startTime"];
+                                        if (startTimeValue != null && startTimeValue.Type != JTokenType.Null)
+                                        {
+                                            DateTime startTimeInstance = ((DateTime)startTimeValue);
+                                            propertiesInstance.StartTime = startTimeInstance;
+                                        }
+                                        
+                                        JToken percentCompleteValue = propertiesValue["percentComplete"];
+                                        if (percentCompleteValue != null && percentCompleteValue.Type != JTokenType.Null)
+                                        {
+                                            string percentCompleteInstance = ((string)percentCompleteValue);
+                                            propertiesInstance.PercentComplete = percentCompleteInstance;
+                                        }
+                                        
+                                        JToken replicationStateValue = propertiesValue["replicationState"];
+                                        if (replicationStateValue != null && replicationStateValue.Type != JTokenType.Null)
+                                        {
+                                            string replicationStateInstance = ((string)replicationStateValue);
+                                            propertiesInstance.ReplicationState = replicationStateInstance;
                                         }
                                     }
                                     
@@ -1359,28 +1381,28 @@ namespace Microsoft.Azure.Management.Sql
                                     if (idValue != null && idValue.Type != JTokenType.Null)
                                     {
                                         string idInstance = ((string)idValue);
-                                        jobAccountInstance.Id = idInstance;
+                                        replicationLinkInstance.Id = idInstance;
                                     }
                                     
                                     JToken nameValue = valueValue["name"];
                                     if (nameValue != null && nameValue.Type != JTokenType.Null)
                                     {
                                         string nameInstance = ((string)nameValue);
-                                        jobAccountInstance.Name = nameInstance;
+                                        replicationLinkInstance.Name = nameInstance;
                                     }
                                     
                                     JToken typeValue = valueValue["type"];
                                     if (typeValue != null && typeValue.Type != JTokenType.Null)
                                     {
                                         string typeInstance = ((string)typeValue);
-                                        jobAccountInstance.Type = typeInstance;
+                                        replicationLinkInstance.Type = typeInstance;
                                     }
                                     
                                     JToken locationValue = valueValue["location"];
                                     if (locationValue != null && locationValue.Type != JTokenType.Null)
                                     {
                                         string locationInstance = ((string)locationValue);
-                                        jobAccountInstance.Location = locationInstance;
+                                        replicationLinkInstance.Location = locationInstance;
                                     }
                                     
                                     JToken tagsSequenceElement = ((JToken)valueValue["tags"]);
@@ -1390,7 +1412,7 @@ namespace Microsoft.Azure.Management.Sql
                                         {
                                             string tagsKey = ((string)property.Name);
                                             string tagsValue = ((string)property.Value);
-                                            jobAccountInstance.Tags.Add(tagsKey, tagsValue);
+                                            replicationLinkInstance.Tags.Add(tagsKey, tagsValue);
                                         }
                                     }
                                 }

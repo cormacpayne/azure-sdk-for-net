@@ -6,6 +6,7 @@
 *.user
 *.sln.docstates
 developer/
+*.lock.json
 
 # Build results
 binaries/

@@ -1,0 +1,58 @@
+{
+	"version": "1.0.0-*",
+	"description": "Sql.Tests Class Library",
+	"authors": [ "Microsoft Corporation" ],
+
+	"packOptions": {
+		"summary": "Sql.Tests Tests",
+		"tags": [ "" ],
+		"projectUrl": "",
+		"licenseUrl": ""
+	},
+
+	"buildOptions": {
+		"delaySign": true,
+		"publicSign": false,
+		"keyFile": "../../../../tools/MSSharedLibKey.snk",
+		"compile": "../../../../tools/DisableTestRunParallel.cs"
+	},
+
+	"testRunner": "xunit",
+	"frameworks": {
+	    "net45": {
+	      "buildOptions": {
+	        "debugType": "portable"
+	      },
+        "dependencies": {
+          "TestDependencies": {
+            "target": "project"
+          }
+        }
+	    },
+	    "netstandard1.5": {
+	      "buildOptions": {
+	        "define": [ "NETSTANDARD15", "PORTABLE" ],
+	        "debugType": "portable"
+	      },
+	      "imports": [ "dnxcore50" ],
+	      "dependencies": {
+	        "NETStandard.Library": "1.6.1"
+	      }
+	    },
+	    "netstandard1.1": {
+	      "buildOptions": {
+	        "define": [ "NETSTANDARD11", "PORTABLE" ],
+	        "debugType": "portable"
+	      },
+	      "imports": [ "dnxcore50" ],
+	      "dependencies": {
+	        "NETStandard.Library": "1.6.1"
+	      }
+	    }
+	  },
+
+	"dependencies": {
+    "Microsoft.Azure.Management.Sql": "0.55.0-prerelease",
+    "xunit": "2.2.0"
+	}
+}

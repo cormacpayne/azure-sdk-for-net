@@ -38,20 +38,19 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Management.Sql
 {
     /// <summary>
-    /// Represents all the operations for operating on Azure SQL Server
-    /// disaster recovery configurations. Contains operations to: Create,
-    /// Retrieve, Update, Failover, and Delete.
+    /// Represents all the operations for operating on Azure SQL Job Accounts.
+    /// Contains operations to: Create, Retrieve, Update, and Delete Job
+    /// Accounts
     /// </summary>
-    internal partial class ServerDisasterRecoveryConfigurationOperations : IServiceOperations<SqlManagementClient>, IServerDisasterRecoveryConfigurationOperations
+    internal partial class JobAccountOperations : IServiceOperations<SqlManagementClient>, IJobAccountOperations
     {
         /// <summary>
-        /// Initializes a new instance of the
-        /// ServerDisasterRecoveryConfigurationOperations class.
+        /// Initializes a new instance of the JobAccountOperations class.
         /// </summary>
         /// <param name='client'>
         /// Reference to the service client.
         /// </param>
-        internal ServerDisasterRecoveryConfigurationOperations(SqlManagementClient client)
+        internal JobAccountOperations(SqlManagementClient client)
         {
             this._client = client;
         }
@@ -68,34 +67,33 @@ namespace Microsoft.Azure.Management.Sql
         }
         
         /// <summary>
-        /// Begins creating a new or updating an existing Azure SQL Server
-        /// disaster recovery configuration. To determine the status of the
-        /// operation call
-        /// GetServerDisasterRecoveryConfigurationOperationStatus.
+        /// Begins creating a new Azure SQL Job Account or updating an existing
+        /// Azure SQL Job Account. To determine the status of the operation
+        /// call GetJobAccountOperationStatus.
         /// </summary>
         /// <param name='resourceGroupName'>
         /// Required. The name of the Resource Group to which the Azure SQL
-        /// Server belongs.
+        /// Database Server belongs.
         /// </param>
         /// <param name='serverName'>
-        /// Required. The name of the Azure SQL Server.
+        /// Required. The name of the Azure SQL Database Server that the Job
+        /// Account is hosted in.
         /// </param>
-        /// <param name='serverDisasterRecoveryConfigurationName'>
-        /// Required. The name of the Azure SQL Server disaster recovery
-        /// configuration to be operated on (Updated or created).
+        /// <param name='jobAccountName'>
+        /// Required. The name of the Azure SQL Job Account to be created or
+        /// updated.
         /// </param>
         /// <param name='parameters'>
-        /// Required. The required parameters for creating or updating a Server
-        /// disaster recovery configuration.
+        /// Required. The required parameters for creating or updating a Job
+        /// Account.
         /// </param>
         /// <param name='cancellationToken'>
         /// Cancellation token.
         /// </param>
         /// <returns>
-        /// Response for long running Azure Sql server disaster recovery
-        /// configuration operation.
+        /// Response for long running Azure Sql Job Account operations.
         /// </returns>
-        public async Task<ServerDisasterRecoveryConfigurationCreateOrUpdateResponse> BeginCreateOrUpdateAsync(string resourceGroupName, string serverName, string serverDisasterRecoveryConfigurationName, ServerDisasterRecoveryConfigurationCreateOrUpdateParameters parameters, CancellationToken cancellationToken)
+        public async Task<JobAccountOperationResponse> BeginCreateOrUpdateAsync(string resourceGroupName, string serverName, string jobAccountName, JobAccountCreateOrUpdateParameters parameters, CancellationToken cancellationToken)
         {
             // Validate
             if (resourceGroupName == null)
@@ -106,9 +104,9 @@ namespace Microsoft.Azure.Management.Sql
             {
                 throw new ArgumentNullException("serverName");
             }
-            if (serverDisasterRecoveryConfigurationName == null)
+            if (jobAccountName == null)
             {
-                throw new ArgumentNullException("serverDisasterRecoveryConfigurationName");
+                throw new ArgumentNullException("jobAccountName");
             }
             if (parameters == null)
             {
@@ -122,6 +120,10 @@ namespace Microsoft.Azure.Management.Sql
             {
                 throw new ArgumentNullException("parameters.Properties");
             }
+            if (parameters.Properties.DatabaseId == null)
+            {
+                throw new ArgumentNullException("parameters.Properties.DatabaseId");
+            }
             
             // Tracing
             bool shouldTrace = TracingAdapter.IsEnabled;
@@ -132,7 +134,7 @@ namespace Microsoft.Azure.Management.Sql
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("resourceGroupName", resourceGroupName);
                 tracingParameters.Add("serverName", serverName);
-                tracingParameters.Add("serverDisasterRecoveryConfigurationName", serverDisasterRecoveryConfigurationName);
+                tracingParameters.Add("jobAccountName", jobAccountName);
                 tracingParameters.Add("parameters", parameters);
                 TracingAdapter.Enter(invocationId, this, "BeginCreateOrUpdateAsync", tracingParameters);
             }
@@ -150,10 +152,10 @@ namespace Microsoft.Azure.Management.Sql
             url = url + "Microsoft.Sql";
             url = url + "/servers/";
             url = url + Uri.EscapeDataString(serverName);
-            url = url + "/disasterRecoveryConfiguration/";
-            url = url + Uri.EscapeDataString(serverDisasterRecoveryConfigurationName);
+            url = url + "/jobAccounts/";
+            url = url + Uri.EscapeDataString(jobAccountName);
             List<string> queryParameters = new List<string>();
-            queryParameters.Add("api-version=2014-04-01");
+            queryParameters.Add("api-version=2015-05-01-preview");
             if (queryParameters.Count > 0)
             {
                 url = url + "?" + string.Join("&", queryParameters);
@@ -189,43 +191,15 @@ namespace Microsoft.Azure.Management.Sql
                 string requestContent = null;
                 JToken requestDoc = null;
                 
-                JObject serverDisasterRecoveryConfigurationCreateOrUpdateParametersValue = new JObject();
-                requestDoc = serverDisasterRecoveryConfigurationCreateOrUpdateParametersValue;
+                JObject jobAccountCreateOrUpdateParametersValue = new JObject();
+                requestDoc = jobAccountCreateOrUpdateParametersValue;
                 
                 JObject propertiesValue = new JObject();
-                serverDisasterRecoveryConfigurationCreateOrUpdateParametersValue["properties"] = propertiesValue;
+                jobAccountCreateOrUpdateParametersValue["properties"] = propertiesValue;
                 
-                if (parameters.Properties.AutoFailover != null)
-                {
-                    propertiesValue["autoFailover"] = parameters.Properties.AutoFailover;
-                }
+                propertiesValue["databaseId"] = parameters.Properties.DatabaseId;
                 
-                if (parameters.Properties.FailoverPolicy != null)
-                {
-                    propertiesValue["failoverPolicy"] = parameters.Properties.FailoverPolicy;
-                }
-                
-                if (parameters.Properties.PartnerLogicalServerName != null)
-                {
-                    propertiesValue["partnerLogicalServerName"] = parameters.Properties.PartnerLogicalServerName;
-                }
-                
-                if (parameters.Properties.PartnerServerId != null)
-                {
-                    propertiesValue["partnerServerId"] = parameters.Properties.PartnerServerId;
-                }
-                
-                if (parameters.Properties.Role != null)
-                {
-                    propertiesValue["role"] = parameters.Properties.Role;
-                }
-                
-                if (parameters.Properties.Type != null)
-                {
-                    propertiesValue["type"] = parameters.Properties.Type;
-                }
-                
-                serverDisasterRecoveryConfigurationCreateOrUpdateParametersValue["location"] = parameters.Location;
+                jobAccountCreateOrUpdateParametersValue["location"] = parameters.Location;
                 
                 if (parameters.Tags != null)
                 {
@@ -236,7 +210,7 @@ namespace Microsoft.Azure.Management.Sql
                         string tagsValue = pair.Value;
                         tagsDictionary[tagsKey] = tagsValue;
                     }
-                    serverDisasterRecoveryConfigurationCreateOrUpdateParametersValue["tags"] = tagsDictionary;
+                    jobAccountCreateOrUpdateParametersValue["tags"] = tagsDictionary;
                 }
                 
                 requestContent = requestDoc.ToString(Newtonsoft.Json.Formatting.Indented);
@@ -270,9 +244,103 @@ namespace Microsoft.Azure.Management.Sql
                     }
                     
                     // Create Result
-                    ServerDisasterRecoveryConfigurationCreateOrUpdateResponse result = null;
+                    JobAccountOperationResponse result = null;
                     // Deserialize Response
-                    result = new ServerDisasterRecoveryConfigurationCreateOrUpdateResponse();
+                    if (statusCode == HttpStatusCode.OK || statusCode == HttpStatusCode.Created || statusCode == HttpStatusCode.Accepted)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        string responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                        result = new JobAccountOperationResponse();
+                        JToken responseDoc = null;
+                        if (string.IsNullOrEmpty(responseContent) == false)
+                        {
+                            responseDoc = JToken.Parse(responseContent);
+                        }
+                        
+                        if (responseDoc != null && responseDoc.Type != JTokenType.Null)
+                        {
+                            ErrorResponse errorInstance = new ErrorResponse();
+                            result.Error = errorInstance;
+                            
+                            JToken codeValue = responseDoc["code"];
+                            if (codeValue != null && codeValue.Type != JTokenType.Null)
+                            {
+                                string codeInstance = ((string)codeValue);
+                                errorInstance.Code = codeInstance;
+                            }
+                            
+                            JToken messageValue = responseDoc["message"];
+                            if (messageValue != null && messageValue.Type != JTokenType.Null)
+                            {
+                                string messageInstance = ((string)messageValue);
+                                errorInstance.Message = messageInstance;
+                            }
+                            
+                            JToken targetValue = responseDoc["target"];
+                            if (targetValue != null && targetValue.Type != JTokenType.Null)
+                            {
+                                string targetInstance = ((string)targetValue);
+                                errorInstance.Target = targetInstance;
+                            }
+                            
+                            JobAccount jobAccountInstance = new JobAccount();
+                            result.JobAccount = jobAccountInstance;
+                            
+                            JToken propertiesValue2 = responseDoc["properties"];
+                            if (propertiesValue2 != null && propertiesValue2.Type != JTokenType.Null)
+                            {
+                                JobAccountProperties propertiesInstance = new JobAccountProperties();
+                                jobAccountInstance.Properties = propertiesInstance;
+                                
+                                JToken databaseIdValue = propertiesValue2["databaseId"];
+                                if (databaseIdValue != null && databaseIdValue.Type != JTokenType.Null)
+                                {
+                                    string databaseIdInstance = ((string)databaseIdValue);
+                                    propertiesInstance.DatabaseId = databaseIdInstance;
+                                }
+                            }
+                            
+                            JToken idValue = responseDoc["id"];
+                            if (idValue != null && idValue.Type != JTokenType.Null)
+                            {
+                                string idInstance = ((string)idValue);
+                                jobAccountInstance.Id = idInstance;
+                            }
+                            
+                            JToken nameValue = responseDoc["name"];
+                            if (nameValue != null && nameValue.Type != JTokenType.Null)
+                            {
+                                string nameInstance = ((string)nameValue);
+                                jobAccountInstance.Name = nameInstance;
+                            }
+                            
+                            JToken typeValue = responseDoc["type"];
+                            if (typeValue != null && typeValue.Type != JTokenType.Null)
+                            {
+                                string typeInstance = ((string)typeValue);
+                                jobAccountInstance.Type = typeInstance;
+                            }
+                            
+                            JToken locationValue = responseDoc["location"];
+                            if (locationValue != null && locationValue.Type != JTokenType.Null)
+                            {
+                                string locationInstance = ((string)locationValue);
+                                jobAccountInstance.Location = locationInstance;
+                            }
+                            
+                            JToken tagsSequenceElement = ((JToken)responseDoc["tags"]);
+                            if (tagsSequenceElement != null && tagsSequenceElement.Type != JTokenType.Null)
+                            {
+                                foreach (JProperty property in tagsSequenceElement)
+                                {
+                                    string tagsKey2 = ((string)property.Name);
+                                    string tagsValue2 = ((string)property.Value);
+                                    jobAccountInstance.Tags.Add(tagsKey2, tagsValue2);
+                                }
+                            }
+                        }
+                        
+                    }
                     result.StatusCode = statusCode;
                     if (httpResponse.Headers.Contains("Location"))
                     {
@@ -287,6 +355,10 @@ namespace Microsoft.Azure.Management.Sql
                         result.RequestId = httpResponse.Headers.GetValues("x-ms-request-id").FirstOrDefault();
                     }
                     if (statusCode == HttpStatusCode.Created)
+                    {
+                        result.Status = OperationStatus.Succeeded;
+                    }
+                    if (statusCode == HttpStatusCode.OK)
                     {
                         result.Status = OperationStatus.Succeeded;
                     }
@@ -315,112 +387,28 @@ namespace Microsoft.Azure.Management.Sql
         }
         
         /// <summary>
-        /// Creates a new or updates an existing Azure SQL Server disaster
-        /// recovery configuration.
+        /// Begins deleting the Azure SQL Job Account with the given name. To
+        /// determine the status of the operation call
+        /// GetJobAccountOperationStatus.
         /// </summary>
         /// <param name='resourceGroupName'>
         /// Required. The name of the Resource Group to which the Azure SQL
         /// Database Server belongs.
         /// </param>
         /// <param name='serverName'>
-        /// Required. The name of the Azure SQL Server.
+        /// Required. The name of the Azure SQL Database Server that the Job
+        /// Account is hosted in.
         /// </param>
-        /// <param name='serverDisasterRecoveryConfigurationName'>
-        /// Required. The name of the Azure SQL Server disaster recovery
-        /// configuration to be operated on (Updated or created).
-        /// </param>
-        /// <param name='parameters'>
-        /// Required. The required parameters for creating or updating a Server
-        /// disaster recovery configuration.
+        /// <param name='jobAccountName'>
+        /// Required. The name of the Azure SQL Job Account to be deleted.
         /// </param>
         /// <param name='cancellationToken'>
         /// Cancellation token.
         /// </param>
         /// <returns>
-        /// Response for long running Azure Sql server disaster recovery
-        /// configuration operation.
+        /// Response for long running Azure Sql Job Account operations.
         /// </returns>
-        public async Task<ServerDisasterRecoveryConfigurationCreateOrUpdateResponse> CreateOrUpdateAsync(string resourceGroupName, string serverName, string serverDisasterRecoveryConfigurationName, ServerDisasterRecoveryConfigurationCreateOrUpdateParameters parameters, CancellationToken cancellationToken)
-        {
-            SqlManagementClient client = this.Client;
-            bool shouldTrace = TracingAdapter.IsEnabled;
-            string invocationId = null;
-            if (shouldTrace)
-            {
-                invocationId = TracingAdapter.NextInvocationId.ToString();
-                Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
-                tracingParameters.Add("resourceGroupName", resourceGroupName);
-                tracingParameters.Add("serverName", serverName);
-                tracingParameters.Add("serverDisasterRecoveryConfigurationName", serverDisasterRecoveryConfigurationName);
-                tracingParameters.Add("parameters", parameters);
-                TracingAdapter.Enter(invocationId, this, "CreateOrUpdateAsync", tracingParameters);
-            }
-            
-            cancellationToken.ThrowIfCancellationRequested();
-            ServerDisasterRecoveryConfigurationCreateOrUpdateResponse response = await client.ServerDisasterRecoveryConfigurations.BeginCreateOrUpdateAsync(resourceGroupName, serverName, serverDisasterRecoveryConfigurationName, parameters, cancellationToken).ConfigureAwait(false);
-            if (response.Status == OperationStatus.Succeeded)
-            {
-                return response;
-            }
-            cancellationToken.ThrowIfCancellationRequested();
-            ServerDisasterRecoveryConfigurationCreateOrUpdateResponse result = await client.ServerDisasterRecoveryConfigurations.GetServerDisasterRecoveryConfigurationOperationStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
-            int delayInSeconds = response.RetryAfter;
-            if (delayInSeconds == 0)
-            {
-                delayInSeconds = 30;
-            }
-            if (client.LongRunningOperationInitialTimeout >= 0)
-            {
-                delayInSeconds = client.LongRunningOperationInitialTimeout;
-            }
-            while (result.Status == OperationStatus.InProgress)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
-                cancellationToken.ThrowIfCancellationRequested();
-                result = await client.ServerDisasterRecoveryConfigurations.GetServerDisasterRecoveryConfigurationOperationStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
-                delayInSeconds = result.RetryAfter;
-                if (delayInSeconds == 0)
-                {
-                    delayInSeconds = 15;
-                }
-                if (client.LongRunningOperationRetryTimeout >= 0)
-                {
-                    delayInSeconds = client.LongRunningOperationRetryTimeout;
-                }
-            }
-            
-            if (shouldTrace)
-            {
-                TracingAdapter.Exit(invocationId, result);
-            }
-            
-            return result;
-        }
-        
-        /// <summary>
-        /// Deletes the Azure SQL server disaster recovery configuration with
-        /// the given name.
-        /// </summary>
-        /// <param name='resourceGroupName'>
-        /// Required. The name of the Resource Group to which the Azure SQL
-        /// Server belongs.
-        /// </param>
-        /// <param name='serverName'>
-        /// Required. The name of the Azure SQL Server.
-        /// </param>
-        /// <param name='serverDisasterRecoveryConfigurationName'>
-        /// Required. The name of the Azure SQL server disaster recovery
-        /// configuration to be deleted.
-        /// </param>
-        /// <param name='cancellationToken'>
-        /// Cancellation token.
-        /// </param>
-        /// <returns>
-        /// A standard service response including an HTTP status code and
-        /// request ID.
-        /// </returns>
-        public async Task<AzureOperationResponse> DeleteAsync(string resourceGroupName, string serverName, string serverDisasterRecoveryConfigurationName, CancellationToken cancellationToken)
+        public async Task<JobAccountOperationResponse> BeginDeleteAsync(string resourceGroupName, string serverName, string jobAccountName, CancellationToken cancellationToken)
         {
             // Validate
             if (resourceGroupName == null)
@@ -431,9 +419,9 @@ namespace Microsoft.Azure.Management.Sql
             {
                 throw new ArgumentNullException("serverName");
             }
-            if (serverDisasterRecoveryConfigurationName == null)
+            if (jobAccountName == null)
             {
-                throw new ArgumentNullException("serverDisasterRecoveryConfigurationName");
+                throw new ArgumentNullException("jobAccountName");
             }
             
             // Tracing
@@ -445,8 +433,8 @@ namespace Microsoft.Azure.Management.Sql
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("resourceGroupName", resourceGroupName);
                 tracingParameters.Add("serverName", serverName);
-                tracingParameters.Add("serverDisasterRecoveryConfigurationName", serverDisasterRecoveryConfigurationName);
-                TracingAdapter.Enter(invocationId, this, "DeleteAsync", tracingParameters);
+                tracingParameters.Add("jobAccountName", jobAccountName);
+                TracingAdapter.Enter(invocationId, this, "BeginDeleteAsync", tracingParameters);
             }
             
             // Construct URL
@@ -462,10 +450,10 @@ namespace Microsoft.Azure.Management.Sql
             url = url + "Microsoft.Sql";
             url = url + "/servers/";
             url = url + Uri.EscapeDataString(serverName);
-            url = url + "/disasterRecoveryConfiguration/";
-            url = url + Uri.EscapeDataString(serverDisasterRecoveryConfigurationName);
+            url = url + "/jobAccounts/";
+            url = url + Uri.EscapeDataString(jobAccountName);
             List<string> queryParameters = new List<string>();
-            queryParameters.Add("api-version=2014-04-01");
+            queryParameters.Add("api-version=2015-05-01-preview");
             if (queryParameters.Count > 0)
             {
                 url = url + "?" + string.Join("&", queryParameters);
@@ -512,7 +500,7 @@ namespace Microsoft.Azure.Management.Sql
                         TracingAdapter.ReceiveResponse(invocationId, httpResponse);
                     }
                     HttpStatusCode statusCode = httpResponse.StatusCode;
-                    if (statusCode != HttpStatusCode.OK && statusCode != HttpStatusCode.NoContent)
+                    if (statusCode != HttpStatusCode.OK && statusCode != HttpStatusCode.Accepted && statusCode != HttpStatusCode.NoContent)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                         CloudException ex = CloudException.Create(httpRequest, null, httpResponse, await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false));
@@ -524,13 +512,67 @@ namespace Microsoft.Azure.Management.Sql
                     }
                     
                     // Create Result
-                    AzureOperationResponse result = null;
+                    JobAccountOperationResponse result = null;
                     // Deserialize Response
-                    result = new AzureOperationResponse();
+                    if (statusCode == HttpStatusCode.OK || statusCode == HttpStatusCode.Accepted || statusCode == HttpStatusCode.NoContent)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        string responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                        result = new JobAccountOperationResponse();
+                        JToken responseDoc = null;
+                        if (string.IsNullOrEmpty(responseContent) == false)
+                        {
+                            responseDoc = JToken.Parse(responseContent);
+                        }
+                        
+                        if (responseDoc != null && responseDoc.Type != JTokenType.Null)
+                        {
+                            ErrorResponse errorInstance = new ErrorResponse();
+                            result.Error = errorInstance;
+                            
+                            JToken codeValue = responseDoc["code"];
+                            if (codeValue != null && codeValue.Type != JTokenType.Null)
+                            {
+                                string codeInstance = ((string)codeValue);
+                                errorInstance.Code = codeInstance;
+                            }
+                            
+                            JToken messageValue = responseDoc["message"];
+                            if (messageValue != null && messageValue.Type != JTokenType.Null)
+                            {
+                                string messageInstance = ((string)messageValue);
+                                errorInstance.Message = messageInstance;
+                            }
+                            
+                            JToken targetValue = responseDoc["target"];
+                            if (targetValue != null && targetValue.Type != JTokenType.Null)
+                            {
+                                string targetInstance = ((string)targetValue);
+                                errorInstance.Target = targetInstance;
+                            }
+                        }
+                        
+                    }
                     result.StatusCode = statusCode;
+                    if (httpResponse.Headers.Contains("Location"))
+                    {
+                        result.OperationStatusLink = httpResponse.Headers.GetValues("Location").FirstOrDefault();
+                    }
+                    if (httpResponse.Headers.Contains("Retry-After"))
+                    {
+                        result.RetryAfter = int.Parse(httpResponse.Headers.GetValues("Retry-After").FirstOrDefault(), CultureInfo.InvariantCulture);
+                    }
                     if (httpResponse.Headers.Contains("x-ms-request-id"))
                     {
                         result.RequestId = httpResponse.Headers.GetValues("x-ms-request-id").FirstOrDefault();
+                    }
+                    if (statusCode == HttpStatusCode.NoContent)
+                    {
+                        result.Status = OperationStatus.Succeeded;
+                    }
+                    if (statusCode == HttpStatusCode.OK)
+                    {
+                        result.Status = OperationStatus.Succeeded;
                     }
                     
                     if (shouldTrace)
@@ -557,346 +599,189 @@ namespace Microsoft.Azure.Management.Sql
         }
         
         /// <summary>
-        /// Begins failover for the Azure SQL server disaster recovery
-        /// configuration with the given name.
-        /// </summary>
-        /// <param name='resourceGroupName'>
-        /// Required. The name of the Resource Group to which the Azure SQL
-        /// Server belongs.
-        /// </param>
-        /// <param name='serverName'>
-        /// Required. The name of the Azure SQL Server.
-        /// </param>
-        /// <param name='serverDisasterRecoveryConfigurationName'>
-        /// Required. The name of the Azure SQL server disaster recovery
-        /// configuration to start failover.
-        /// </param>
-        /// <param name='cancellationToken'>
-        /// Cancellation token.
-        /// </param>
-        /// <returns>
-        /// A standard service response including an HTTP status code and
-        /// request ID.
-        /// </returns>
-        public async Task<AzureOperationResponse> FailoverAsync(string resourceGroupName, string serverName, string serverDisasterRecoveryConfigurationName, CancellationToken cancellationToken)
-        {
-            // Validate
-            if (resourceGroupName == null)
-            {
-                throw new ArgumentNullException("resourceGroupName");
-            }
-            if (serverName == null)
-            {
-                throw new ArgumentNullException("serverName");
-            }
-            if (serverDisasterRecoveryConfigurationName == null)
-            {
-                throw new ArgumentNullException("serverDisasterRecoveryConfigurationName");
-            }
-            
-            // Tracing
-            bool shouldTrace = TracingAdapter.IsEnabled;
-            string invocationId = null;
-            if (shouldTrace)
-            {
-                invocationId = TracingAdapter.NextInvocationId.ToString();
-                Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
-                tracingParameters.Add("resourceGroupName", resourceGroupName);
-                tracingParameters.Add("serverName", serverName);
-                tracingParameters.Add("serverDisasterRecoveryConfigurationName", serverDisasterRecoveryConfigurationName);
-                TracingAdapter.Enter(invocationId, this, "FailoverAsync", tracingParameters);
-            }
-            
-            // Construct URL
-            string url = "";
-            url = url + "/subscriptions/";
-            if (this.Client.Credentials.SubscriptionId != null)
-            {
-                url = url + Uri.EscapeDataString(this.Client.Credentials.SubscriptionId);
-            }
-            url = url + "/resourceGroups/";
-            url = url + Uri.EscapeDataString(resourceGroupName);
-            url = url + "/providers/";
-            url = url + "Microsoft.Sql";
-            url = url + "/servers/";
-            url = url + Uri.EscapeDataString(serverName);
-            url = url + "/disasterRecoveryConfiguration/";
-            url = url + Uri.EscapeDataString(serverDisasterRecoveryConfigurationName);
-            url = url + "/failover";
-            List<string> queryParameters = new List<string>();
-            queryParameters.Add("api-version=2014-04-01");
-            if (queryParameters.Count > 0)
-            {
-                url = url + "?" + string.Join("&", queryParameters);
-            }
-            string baseUrl = this.Client.BaseUri.AbsoluteUri;
-            // Trim '/' character from the end of baseUrl and beginning of url.
-            if (baseUrl[baseUrl.Length - 1] == '/')
-            {
-                baseUrl = baseUrl.Substring(0, baseUrl.Length - 1);
-            }
-            if (url[0] == '/')
-            {
-                url = url.Substring(1);
-            }
-            url = baseUrl + "/" + url;
-            url = url.Replace(" ", "%20");
-            
-            // Create HTTP transport objects
-            HttpRequestMessage httpRequest = null;
-            try
-            {
-                httpRequest = new HttpRequestMessage();
-                httpRequest.Method = HttpMethod.Post;
-                httpRequest.RequestUri = new Uri(url);
-                
-                // Set Headers
-                
-                // Set Credentials
-                cancellationToken.ThrowIfCancellationRequested();
-                await this.Client.Credentials.ProcessHttpRequestAsync(httpRequest, cancellationToken).ConfigureAwait(false);
-                
-                // Send Request
-                HttpResponseMessage httpResponse = null;
-                try
-                {
-                    if (shouldTrace)
-                    {
-                        TracingAdapter.SendRequest(invocationId, httpRequest);
-                    }
-                    cancellationToken.ThrowIfCancellationRequested();
-                    httpResponse = await this.Client.HttpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
-                    if (shouldTrace)
-                    {
-                        TracingAdapter.ReceiveResponse(invocationId, httpResponse);
-                    }
-                    HttpStatusCode statusCode = httpResponse.StatusCode;
-                    if (statusCode != HttpStatusCode.OK && statusCode != HttpStatusCode.NoContent)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        CloudException ex = CloudException.Create(httpRequest, null, httpResponse, await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false));
-                        if (shouldTrace)
-                        {
-                            TracingAdapter.Error(invocationId, ex);
-                        }
-                        throw ex;
-                    }
-                    
-                    // Create Result
-                    AzureOperationResponse result = null;
-                    // Deserialize Response
-                    result = new AzureOperationResponse();
-                    result.StatusCode = statusCode;
-                    if (httpResponse.Headers.Contains("x-ms-request-id"))
-                    {
-                        result.RequestId = httpResponse.Headers.GetValues("x-ms-request-id").FirstOrDefault();
-                    }
-                    
-                    if (shouldTrace)
-                    {
-                        TracingAdapter.Exit(invocationId, result);
-                    }
-                    return result;
-                }
-                finally
-                {
-                    if (httpResponse != null)
-                    {
-                        httpResponse.Dispose();
-                    }
-                }
-            }
-            finally
-            {
-                if (httpRequest != null)
-                {
-                    httpRequest.Dispose();
-                }
-            }
-        }
-        
-        /// <summary>
-        /// Begins failover for the Azure SQL server disaster recovery
-        /// configuration with the given name.
-        /// </summary>
-        /// <param name='resourceGroupName'>
-        /// Required. The name of the Resource Group to which the Azure SQL
-        /// Server belongs.
-        /// </param>
-        /// <param name='serverName'>
-        /// Required. The name of the Azure SQL Server.
-        /// </param>
-        /// <param name='serverDisasterRecoveryConfigurationName'>
-        /// Required. The name of the Azure SQL server disaster recovery
-        /// configuration to start failover.
-        /// </param>
-        /// <param name='cancellationToken'>
-        /// Cancellation token.
-        /// </param>
-        /// <returns>
-        /// A standard service response including an HTTP status code and
-        /// request ID.
-        /// </returns>
-        public async Task<AzureOperationResponse> FailoverAllowDataLossAsync(string resourceGroupName, string serverName, string serverDisasterRecoveryConfigurationName, CancellationToken cancellationToken)
-        {
-            // Validate
-            if (resourceGroupName == null)
-            {
-                throw new ArgumentNullException("resourceGroupName");
-            }
-            if (serverName == null)
-            {
-                throw new ArgumentNullException("serverName");
-            }
-            if (serverDisasterRecoveryConfigurationName == null)
-            {
-                throw new ArgumentNullException("serverDisasterRecoveryConfigurationName");
-            }
-            
-            // Tracing
-            bool shouldTrace = TracingAdapter.IsEnabled;
-            string invocationId = null;
-            if (shouldTrace)
-            {
-                invocationId = TracingAdapter.NextInvocationId.ToString();
-                Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
-                tracingParameters.Add("resourceGroupName", resourceGroupName);
-                tracingParameters.Add("serverName", serverName);
-                tracingParameters.Add("serverDisasterRecoveryConfigurationName", serverDisasterRecoveryConfigurationName);
-                TracingAdapter.Enter(invocationId, this, "FailoverAllowDataLossAsync", tracingParameters);
-            }
-            
-            // Construct URL
-            string url = "";
-            url = url + "/subscriptions/";
-            if (this.Client.Credentials.SubscriptionId != null)
-            {
-                url = url + Uri.EscapeDataString(this.Client.Credentials.SubscriptionId);
-            }
-            url = url + "/resourceGroups/";
-            url = url + Uri.EscapeDataString(resourceGroupName);
-            url = url + "/providers/";
-            url = url + "Microsoft.Sql";
-            url = url + "/servers/";
-            url = url + Uri.EscapeDataString(serverName);
-            url = url + "/disasterRecoveryConfiguration/";
-            url = url + Uri.EscapeDataString(serverDisasterRecoveryConfigurationName);
-            url = url + "/forceFailoverAllowDataLoss";
-            List<string> queryParameters = new List<string>();
-            queryParameters.Add("api-version=2014-04-01");
-            if (queryParameters.Count > 0)
-            {
-                url = url + "?" + string.Join("&", queryParameters);
-            }
-            string baseUrl = this.Client.BaseUri.AbsoluteUri;
-            // Trim '/' character from the end of baseUrl and beginning of url.
-            if (baseUrl[baseUrl.Length - 1] == '/')
-            {
-                baseUrl = baseUrl.Substring(0, baseUrl.Length - 1);
-            }
-            if (url[0] == '/')
-            {
-                url = url.Substring(1);
-            }
-            url = baseUrl + "/" + url;
-            url = url.Replace(" ", "%20");
-            
-            // Create HTTP transport objects
-            HttpRequestMessage httpRequest = null;
-            try
-            {
-                httpRequest = new HttpRequestMessage();
-                httpRequest.Method = HttpMethod.Post;
-                httpRequest.RequestUri = new Uri(url);
-                
-                // Set Headers
-                
-                // Set Credentials
-                cancellationToken.ThrowIfCancellationRequested();
-                await this.Client.Credentials.ProcessHttpRequestAsync(httpRequest, cancellationToken).ConfigureAwait(false);
-                
-                // Send Request
-                HttpResponseMessage httpResponse = null;
-                try
-                {
-                    if (shouldTrace)
-                    {
-                        TracingAdapter.SendRequest(invocationId, httpRequest);
-                    }
-                    cancellationToken.ThrowIfCancellationRequested();
-                    httpResponse = await this.Client.HttpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
-                    if (shouldTrace)
-                    {
-                        TracingAdapter.ReceiveResponse(invocationId, httpResponse);
-                    }
-                    HttpStatusCode statusCode = httpResponse.StatusCode;
-                    if (statusCode != HttpStatusCode.OK && statusCode != HttpStatusCode.NoContent)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        CloudException ex = CloudException.Create(httpRequest, null, httpResponse, await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false));
-                        if (shouldTrace)
-                        {
-                            TracingAdapter.Error(invocationId, ex);
-                        }
-                        throw ex;
-                    }
-                    
-                    // Create Result
-                    AzureOperationResponse result = null;
-                    // Deserialize Response
-                    result = new AzureOperationResponse();
-                    result.StatusCode = statusCode;
-                    if (httpResponse.Headers.Contains("x-ms-request-id"))
-                    {
-                        result.RequestId = httpResponse.Headers.GetValues("x-ms-request-id").FirstOrDefault();
-                    }
-                    
-                    if (shouldTrace)
-                    {
-                        TracingAdapter.Exit(invocationId, result);
-                    }
-                    return result;
-                }
-                finally
-                {
-                    if (httpResponse != null)
-                    {
-                        httpResponse.Dispose();
-                    }
-                }
-            }
-            finally
-            {
-                if (httpRequest != null)
-                {
-                    httpRequest.Dispose();
-                }
-            }
-        }
-        
-        /// <summary>
-        /// Returns information about an Azure SQL Server disaster recovery
-        /// configurations.
+        /// Creates a new Azure SQL Job Account or updates an existing Azure
+        /// SQL Job Account.
         /// </summary>
         /// <param name='resourceGroupName'>
         /// Required. The name of the Resource Group to which the server
         /// belongs.
         /// </param>
         /// <param name='serverName'>
-        /// Required. The name of the Azure SQL Server.
+        /// Required. The name of the Azure SQL Job Database Server that the
+        /// Job Account is hosted in.
         /// </param>
-        /// <param name='serverDisasterRecoveryConfigurationName'>
-        /// Required. The name of the Azure SQL server disaster recovery
-        /// configuration to be retrieved.
+        /// <param name='jobAccountName'>
+        /// Required. The name of the Azure SQL Job Account to be created or
+        /// updated.
+        /// </param>
+        /// <param name='parameters'>
+        /// Required. The required parameters for creating or updating a Job
+        /// Account.
         /// </param>
         /// <param name='cancellationToken'>
         /// Cancellation token.
         /// </param>
         /// <returns>
-        /// Represents the response to a get server disaster recovery
-        /// configuration request.
+        /// Response for long running Azure Sql Job Account operations.
         /// </returns>
-        public async Task<ServerDisasterRecoveryConfigurationGetResponse> GetAsync(string resourceGroupName, string serverName, string serverDisasterRecoveryConfigurationName, CancellationToken cancellationToken)
+        public async Task<JobAccountOperationResponse> CreateOrUpdateAsync(string resourceGroupName, string serverName, string jobAccountName, JobAccountCreateOrUpdateParameters parameters, CancellationToken cancellationToken)
+        {
+            SqlManagementClient client = this.Client;
+            bool shouldTrace = TracingAdapter.IsEnabled;
+            string invocationId = null;
+            if (shouldTrace)
+            {
+                invocationId = TracingAdapter.NextInvocationId.ToString();
+                Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
+                tracingParameters.Add("resourceGroupName", resourceGroupName);
+                tracingParameters.Add("serverName", serverName);
+                tracingParameters.Add("jobAccountName", jobAccountName);
+                tracingParameters.Add("parameters", parameters);
+                TracingAdapter.Enter(invocationId, this, "CreateOrUpdateAsync", tracingParameters);
+            }
+            
+            cancellationToken.ThrowIfCancellationRequested();
+            JobAccountOperationResponse response = await client.JobAccounts.BeginCreateOrUpdateAsync(resourceGroupName, serverName, jobAccountName, parameters, cancellationToken).ConfigureAwait(false);
+            if (response.Status == OperationStatus.Succeeded)
+            {
+                return response;
+            }
+            cancellationToken.ThrowIfCancellationRequested();
+            JobAccountOperationResponse result = await client.JobAccounts.GetJobAccountOperationStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
+            int delayInSeconds = response.RetryAfter;
+            if (delayInSeconds == 0)
+            {
+                delayInSeconds = 30;
+            }
+            if (client.LongRunningOperationInitialTimeout >= 0)
+            {
+                delayInSeconds = client.LongRunningOperationInitialTimeout;
+            }
+            while (result.Status == OperationStatus.InProgress)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
+                result = await client.JobAccounts.GetJobAccountOperationStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
+                delayInSeconds = result.RetryAfter;
+                if (delayInSeconds == 0)
+                {
+                    delayInSeconds = 15;
+                }
+                if (client.LongRunningOperationRetryTimeout >= 0)
+                {
+                    delayInSeconds = client.LongRunningOperationRetryTimeout;
+                }
+            }
+            
+            if (shouldTrace)
+            {
+                TracingAdapter.Exit(invocationId, result);
+            }
+            
+            return result;
+        }
+        
+        /// <summary>
+        /// Creates a new Azure SQL Job Account or updates an existing Azure
+        /// SQL Job Account.
+        /// </summary>
+        /// <param name='resourceGroupName'>
+        /// Required. The name of the Resource Group to which the server
+        /// belongs.
+        /// </param>
+        /// <param name='serverName'>
+        /// Required. The name of the Azure SQL Job Database Server that the
+        /// Job Account is hosted in.
+        /// </param>
+        /// <param name='jobAccountName'>
+        /// Required. The name of the Azure SQL Job Account to be created or
+        /// updated.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// Cancellation token.
+        /// </param>
+        /// <returns>
+        /// Response for long running Azure Sql Job Account operations.
+        /// </returns>
+        public async Task<JobAccountOperationResponse> DeleteAsync(string resourceGroupName, string serverName, string jobAccountName, CancellationToken cancellationToken)
+        {
+            SqlManagementClient client = this.Client;
+            bool shouldTrace = TracingAdapter.IsEnabled;
+            string invocationId = null;
+            if (shouldTrace)
+            {
+                invocationId = TracingAdapter.NextInvocationId.ToString();
+                Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
+                tracingParameters.Add("resourceGroupName", resourceGroupName);
+                tracingParameters.Add("serverName", serverName);
+                tracingParameters.Add("jobAccountName", jobAccountName);
+                TracingAdapter.Enter(invocationId, this, "DeleteAsync", tracingParameters);
+            }
+            
+            cancellationToken.ThrowIfCancellationRequested();
+            JobAccountOperationResponse response = await client.JobAccounts.BeginDeleteAsync(resourceGroupName, serverName, jobAccountName, cancellationToken).ConfigureAwait(false);
+            if (response.Status == OperationStatus.Succeeded)
+            {
+                return response;
+            }
+            cancellationToken.ThrowIfCancellationRequested();
+            JobAccountOperationResponse result = await client.JobAccounts.GetJobAccountOperationStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
+            int delayInSeconds = response.RetryAfter;
+            if (delayInSeconds == 0)
+            {
+                delayInSeconds = 30;
+            }
+            if (client.LongRunningOperationInitialTimeout >= 0)
+            {
+                delayInSeconds = client.LongRunningOperationInitialTimeout;
+            }
+            while (result.Status == OperationStatus.InProgress)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
+                result = await client.JobAccounts.GetJobAccountOperationStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
+                delayInSeconds = result.RetryAfter;
+                if (delayInSeconds == 0)
+                {
+                    delayInSeconds = 15;
+                }
+                if (client.LongRunningOperationRetryTimeout >= 0)
+                {
+                    delayInSeconds = client.LongRunningOperationRetryTimeout;
+                }
+            }
+            
+            if (shouldTrace)
+            {
+                TracingAdapter.Exit(invocationId, result);
+            }
+            
+            return result;
+        }
+        
+        /// <summary>
+        /// Returns information about an Azure SQL Job Account.
+        /// </summary>
+        /// <param name='resourceGroupName'>
+        /// Required. The name of the Resource Group to which the server
+        /// belongs.
+        /// </param>
+        /// <param name='serverName'>
+        /// Required. The name of the Azure SQL Database Server that the Job
+        /// Account is hosted in.
+        /// </param>
+        /// <param name='jobAccountName'>
+        /// Required. The name of the Azure SQL Job Account to be retrieved.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// Cancellation token.
+        /// </param>
+        /// <returns>
+        /// Represents the response to a Get Azure Sql Job Account request.
+        /// </returns>
+        public async Task<JobAccountGetResponse> GetAsync(string resourceGroupName, string serverName, string jobAccountName, CancellationToken cancellationToken)
         {
             // Validate
             if (resourceGroupName == null)
@@ -907,9 +792,9 @@ namespace Microsoft.Azure.Management.Sql
             {
                 throw new ArgumentNullException("serverName");
             }
-            if (serverDisasterRecoveryConfigurationName == null)
+            if (jobAccountName == null)
             {
-                throw new ArgumentNullException("serverDisasterRecoveryConfigurationName");
+                throw new ArgumentNullException("jobAccountName");
             }
             
             // Tracing
@@ -921,7 +806,7 @@ namespace Microsoft.Azure.Management.Sql
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("resourceGroupName", resourceGroupName);
                 tracingParameters.Add("serverName", serverName);
-                tracingParameters.Add("serverDisasterRecoveryConfigurationName", serverDisasterRecoveryConfigurationName);
+                tracingParameters.Add("jobAccountName", jobAccountName);
                 TracingAdapter.Enter(invocationId, this, "GetAsync", tracingParameters);
             }
             
@@ -938,10 +823,10 @@ namespace Microsoft.Azure.Management.Sql
             url = url + "Microsoft.Sql";
             url = url + "/servers/";
             url = url + Uri.EscapeDataString(serverName);
-            url = url + "/disasterRecoveryConfiguration/";
-            url = url + Uri.EscapeDataString(serverDisasterRecoveryConfigurationName);
+            url = url + "/jobAccounts/";
+            url = url + Uri.EscapeDataString(jobAccountName);
             List<string> queryParameters = new List<string>();
-            queryParameters.Add("api-version=2014-04-01");
+            queryParameters.Add("api-version=2015-05-01-preview");
             if (queryParameters.Count > 0)
             {
                 url = url + "?" + string.Join("&", queryParameters);
@@ -1000,13 +885,13 @@ namespace Microsoft.Azure.Management.Sql
                     }
                     
                     // Create Result
-                    ServerDisasterRecoveryConfigurationGetResponse result = null;
+                    JobAccountGetResponse result = null;
                     // Deserialize Response
                     if (statusCode == HttpStatusCode.OK)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                         string responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                        result = new ServerDisasterRecoveryConfigurationGetResponse();
+                        result = new JobAccountGetResponse();
                         JToken responseDoc = null;
                         if (string.IsNullOrEmpty(responseContent) == false)
                         {
@@ -1015,55 +900,20 @@ namespace Microsoft.Azure.Management.Sql
                         
                         if (responseDoc != null && responseDoc.Type != JTokenType.Null)
                         {
-                            ServerDisasterRecoveryConfiguration serverDisasterRecoveryConfigurationInstance = new ServerDisasterRecoveryConfiguration();
-                            result.ServerDisasterRecoveryConfiguration = serverDisasterRecoveryConfigurationInstance;
+                            JobAccount jobAccountInstance = new JobAccount();
+                            result.JobAccount = jobAccountInstance;
                             
                             JToken propertiesValue = responseDoc["properties"];
                             if (propertiesValue != null && propertiesValue.Type != JTokenType.Null)
                             {
-                                ServerDisasterRecoveryConfigurationProperties propertiesInstance = new ServerDisasterRecoveryConfigurationProperties();
-                                serverDisasterRecoveryConfigurationInstance.Properties = propertiesInstance;
+                                JobAccountProperties propertiesInstance = new JobAccountProperties();
+                                jobAccountInstance.Properties = propertiesInstance;
                                 
-                                JToken autoFailoverValue = propertiesValue["autoFailover"];
-                                if (autoFailoverValue != null && autoFailoverValue.Type != JTokenType.Null)
+                                JToken databaseIdValue = propertiesValue["databaseId"];
+                                if (databaseIdValue != null && databaseIdValue.Type != JTokenType.Null)
                                 {
-                                    string autoFailoverInstance = ((string)autoFailoverValue);
-                                    propertiesInstance.AutoFailover = autoFailoverInstance;
-                                }
-                                
-                                JToken failoverPolicyValue = propertiesValue["failoverPolicy"];
-                                if (failoverPolicyValue != null && failoverPolicyValue.Type != JTokenType.Null)
-                                {
-                                    string failoverPolicyInstance = ((string)failoverPolicyValue);
-                                    propertiesInstance.FailoverPolicy = failoverPolicyInstance;
-                                }
-                                
-                                JToken partnerLogicalServerNameValue = propertiesValue["partnerLogicalServerName"];
-                                if (partnerLogicalServerNameValue != null && partnerLogicalServerNameValue.Type != JTokenType.Null)
-                                {
-                                    string partnerLogicalServerNameInstance = ((string)partnerLogicalServerNameValue);
-                                    propertiesInstance.PartnerLogicalServerName = partnerLogicalServerNameInstance;
-                                }
-                                
-                                JToken partnerServerIdValue = propertiesValue["partnerServerId"];
-                                if (partnerServerIdValue != null && partnerServerIdValue.Type != JTokenType.Null)
-                                {
-                                    string partnerServerIdInstance = ((string)partnerServerIdValue);
-                                    propertiesInstance.PartnerServerId = partnerServerIdInstance;
-                                }
-                                
-                                JToken roleValue = propertiesValue["role"];
-                                if (roleValue != null && roleValue.Type != JTokenType.Null)
-                                {
-                                    string roleInstance = ((string)roleValue);
-                                    propertiesInstance.Role = roleInstance;
-                                }
-                                
-                                JToken typeValue = propertiesValue["type"];
-                                if (typeValue != null && typeValue.Type != JTokenType.Null)
-                                {
-                                    string typeInstance = ((string)typeValue);
-                                    propertiesInstance.Type = typeInstance;
+                                    string databaseIdInstance = ((string)databaseIdValue);
+                                    propertiesInstance.DatabaseId = databaseIdInstance;
                                 }
                             }
                             
@@ -1071,28 +921,28 @@ namespace Microsoft.Azure.Management.Sql
                             if (idValue != null && idValue.Type != JTokenType.Null)
                             {
                                 string idInstance = ((string)idValue);
-                                serverDisasterRecoveryConfigurationInstance.Id = idInstance;
+                                jobAccountInstance.Id = idInstance;
                             }
                             
                             JToken nameValue = responseDoc["name"];
                             if (nameValue != null && nameValue.Type != JTokenType.Null)
                             {
                                 string nameInstance = ((string)nameValue);
-                                serverDisasterRecoveryConfigurationInstance.Name = nameInstance;
+                                jobAccountInstance.Name = nameInstance;
                             }
                             
-                            JToken typeValue2 = responseDoc["type"];
-                            if (typeValue2 != null && typeValue2.Type != JTokenType.Null)
+                            JToken typeValue = responseDoc["type"];
+                            if (typeValue != null && typeValue.Type != JTokenType.Null)
                             {
-                                string typeInstance2 = ((string)typeValue2);
-                                serverDisasterRecoveryConfigurationInstance.Type = typeInstance2;
+                                string typeInstance = ((string)typeValue);
+                                jobAccountInstance.Type = typeInstance;
                             }
                             
                             JToken locationValue = responseDoc["location"];
                             if (locationValue != null && locationValue.Type != JTokenType.Null)
                             {
                                 string locationInstance = ((string)locationValue);
-                                serverDisasterRecoveryConfigurationInstance.Location = locationInstance;
+                                jobAccountInstance.Location = locationInstance;
                             }
                             
                             JToken tagsSequenceElement = ((JToken)responseDoc["tags"]);
@@ -1102,7 +952,7 @@ namespace Microsoft.Azure.Management.Sql
                                 {
                                     string tagsKey = ((string)property.Name);
                                     string tagsValue = ((string)property.Value);
-                                    serverDisasterRecoveryConfigurationInstance.Tags.Add(tagsKey, tagsValue);
+                                    jobAccountInstance.Tags.Add(tagsKey, tagsValue);
                                 }
                             }
                         }
@@ -1138,8 +988,8 @@ namespace Microsoft.Azure.Management.Sql
         }
         
         /// <summary>
-        /// Gets the status of an Azure Sql Server disaster recovery
-        /// configuration create or update operation.
+        /// Gets the status of an Azure Sql Job Account create or update
+        /// operation.
         /// </summary>
         /// <param name='operationStatusLink'>
         /// Required. Location value returned by the Begin operation
@@ -1148,10 +998,9 @@ namespace Microsoft.Azure.Management.Sql
         /// Cancellation token.
         /// </param>
         /// <returns>
-        /// Response for long running Azure Sql server disaster recovery
-        /// configuration operation.
+        /// Response for long running Azure Sql Job Account operations.
         /// </returns>
-        public async Task<ServerDisasterRecoveryConfigurationCreateOrUpdateResponse> GetServerDisasterRecoveryConfigurationOperationStatusAsync(string operationStatusLink, CancellationToken cancellationToken)
+        public async Task<JobAccountOperationResponse> GetJobAccountOperationStatusAsync(string operationStatusLink, CancellationToken cancellationToken)
         {
             // Validate
             if (operationStatusLink == null)
@@ -1167,7 +1016,7 @@ namespace Microsoft.Azure.Management.Sql
                 invocationId = TracingAdapter.NextInvocationId.ToString();
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("operationStatusLink", operationStatusLink);
-                TracingAdapter.Enter(invocationId, this, "GetServerDisasterRecoveryConfigurationOperationStatusAsync", tracingParameters);
+                TracingAdapter.Enter(invocationId, this, "GetJobAccountOperationStatusAsync", tracingParameters);
             }
             
             // Construct URL
@@ -1204,7 +1053,7 @@ namespace Microsoft.Azure.Management.Sql
                         TracingAdapter.ReceiveResponse(invocationId, httpResponse);
                     }
                     HttpStatusCode statusCode = httpResponse.StatusCode;
-                    if (statusCode != HttpStatusCode.OK && statusCode != HttpStatusCode.Created && statusCode != HttpStatusCode.Accepted)
+                    if (statusCode != HttpStatusCode.OK && statusCode != HttpStatusCode.Created && statusCode != HttpStatusCode.Accepted && statusCode != HttpStatusCode.NoContent)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                         CloudException ex = CloudException.Create(httpRequest, null, httpResponse, await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false));
@@ -1216,13 +1065,111 @@ namespace Microsoft.Azure.Management.Sql
                     }
                     
                     // Create Result
-                    ServerDisasterRecoveryConfigurationCreateOrUpdateResponse result = null;
+                    JobAccountOperationResponse result = null;
                     // Deserialize Response
-                    result = new ServerDisasterRecoveryConfigurationCreateOrUpdateResponse();
+                    if (statusCode == HttpStatusCode.OK || statusCode == HttpStatusCode.Created || statusCode == HttpStatusCode.Accepted || statusCode == HttpStatusCode.NoContent)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        string responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                        result = new JobAccountOperationResponse();
+                        JToken responseDoc = null;
+                        if (string.IsNullOrEmpty(responseContent) == false)
+                        {
+                            responseDoc = JToken.Parse(responseContent);
+                        }
+                        
+                        if (responseDoc != null && responseDoc.Type != JTokenType.Null)
+                        {
+                            ErrorResponse errorInstance = new ErrorResponse();
+                            result.Error = errorInstance;
+                            
+                            JToken codeValue = responseDoc["code"];
+                            if (codeValue != null && codeValue.Type != JTokenType.Null)
+                            {
+                                string codeInstance = ((string)codeValue);
+                                errorInstance.Code = codeInstance;
+                            }
+                            
+                            JToken messageValue = responseDoc["message"];
+                            if (messageValue != null && messageValue.Type != JTokenType.Null)
+                            {
+                                string messageInstance = ((string)messageValue);
+                                errorInstance.Message = messageInstance;
+                            }
+                            
+                            JToken targetValue = responseDoc["target"];
+                            if (targetValue != null && targetValue.Type != JTokenType.Null)
+                            {
+                                string targetInstance = ((string)targetValue);
+                                errorInstance.Target = targetInstance;
+                            }
+                            
+                            JobAccount jobAccountInstance = new JobAccount();
+                            result.JobAccount = jobAccountInstance;
+                            
+                            JToken propertiesValue = responseDoc["properties"];
+                            if (propertiesValue != null && propertiesValue.Type != JTokenType.Null)
+                            {
+                                JobAccountProperties propertiesInstance = new JobAccountProperties();
+                                jobAccountInstance.Properties = propertiesInstance;
+                                
+                                JToken databaseIdValue = propertiesValue["databaseId"];
+                                if (databaseIdValue != null && databaseIdValue.Type != JTokenType.Null)
+                                {
+                                    string databaseIdInstance = ((string)databaseIdValue);
+                                    propertiesInstance.DatabaseId = databaseIdInstance;
+                                }
+                            }
+                            
+                            JToken idValue = responseDoc["id"];
+                            if (idValue != null && idValue.Type != JTokenType.Null)
+                            {
+                                string idInstance = ((string)idValue);
+                                jobAccountInstance.Id = idInstance;
+                            }
+                            
+                            JToken nameValue = responseDoc["name"];
+                            if (nameValue != null && nameValue.Type != JTokenType.Null)
+                            {
+                                string nameInstance = ((string)nameValue);
+                                jobAccountInstance.Name = nameInstance;
+                            }
+                            
+                            JToken typeValue = responseDoc["type"];
+                            if (typeValue != null && typeValue.Type != JTokenType.Null)
+                            {
+                                string typeInstance = ((string)typeValue);
+                                jobAccountInstance.Type = typeInstance;
+                            }
+                            
+                            JToken locationValue = responseDoc["location"];
+                            if (locationValue != null && locationValue.Type != JTokenType.Null)
+                            {
+                                string locationInstance = ((string)locationValue);
+                                jobAccountInstance.Location = locationInstance;
+                            }
+                            
+                            JToken tagsSequenceElement = ((JToken)responseDoc["tags"]);
+                            if (tagsSequenceElement != null && tagsSequenceElement.Type != JTokenType.Null)
+                            {
+                                foreach (JProperty property in tagsSequenceElement)
+                                {
+                                    string tagsKey = ((string)property.Name);
+                                    string tagsValue = ((string)property.Value);
+                                    jobAccountInstance.Tags.Add(tagsKey, tagsValue);
+                                }
+                            }
+                        }
+                        
+                    }
                     result.StatusCode = statusCode;
                     if (httpResponse.Headers.Contains("x-ms-request-id"))
                     {
                         result.RequestId = httpResponse.Headers.GetValues("x-ms-request-id").FirstOrDefault();
+                    }
+                    if (statusCode == HttpStatusCode.NoContent)
+                    {
+                        result.Status = OperationStatus.Succeeded;
                     }
                     if (statusCode == HttpStatusCode.Created)
                     {
@@ -1257,24 +1204,23 @@ namespace Microsoft.Azure.Management.Sql
         }
         
         /// <summary>
-        /// Returns information about Azure SQL Server disaster recovery
-        /// configurations.
+        /// Returns information about Azure SQL Job Accounts.
         /// </summary>
         /// <param name='resourceGroupName'>
-        /// Required. The name of the Resource Group to which the Azure SQL
-        /// Server belongs.
+        /// Required. The name of the Resource Group to which the server
+        /// belongs.
         /// </param>
         /// <param name='serverName'>
-        /// Required. The name of the Azure SQL Server.
+        /// Required. The name of the Azure SQL Database Server that the Job
+        /// Accounts are hosted in.
         /// </param>
         /// <param name='cancellationToken'>
         /// Cancellation token.
         /// </param>
         /// <returns>
-        /// Represents the response to a List Azure Sql Server disaster
-        /// recovery configuration request.
+        /// Represents the response to a List Azure Sql Job Accounts request.
         /// </returns>
-        public async Task<ServerDisasterRecoveryConfigurationListResponse> ListAsync(string resourceGroupName, string serverName, CancellationToken cancellationToken)
+        public async Task<JobAccountListResponse> ListAsync(string resourceGroupName, string serverName, CancellationToken cancellationToken)
         {
             // Validate
             if (resourceGroupName == null)
@@ -1311,9 +1257,9 @@ namespace Microsoft.Azure.Management.Sql
             url = url + "Microsoft.Sql";
             url = url + "/servers/";
             url = url + Uri.EscapeDataString(serverName);
-            url = url + "/disasterRecoveryConfiguration";
+            url = url + "/jobAccounts";
             List<string> queryParameters = new List<string>();
-            queryParameters.Add("api-version=2014-04-01");
+            queryParameters.Add("api-version=2015-05-01-preview");
             if (queryParameters.Count > 0)
             {
                 url = url + "?" + string.Join("&", queryParameters);
@@ -1372,13 +1318,13 @@ namespace Microsoft.Azure.Management.Sql
                     }
                     
                     // Create Result
-                    ServerDisasterRecoveryConfigurationListResponse result = null;
+                    JobAccountListResponse result = null;
                     // Deserialize Response
                     if (statusCode == HttpStatusCode.OK)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                         string responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                        result = new ServerDisasterRecoveryConfigurationListResponse();
+                        result = new JobAccountListResponse();
                         JToken responseDoc = null;
                         if (string.IsNullOrEmpty(responseContent) == false)
                         {
@@ -1392,55 +1338,20 @@ namespace Microsoft.Azure.Management.Sql
                             {
                                 foreach (JToken valueValue in ((JArray)valueArray))
                                 {
-                                    ServerDisasterRecoveryConfiguration serverDisasterRecoveryConfigurationInstance = new ServerDisasterRecoveryConfiguration();
-                                    result.ServerDisasterRecoveryConfigurations.Add(serverDisasterRecoveryConfigurationInstance);
+                                    JobAccount jobAccountInstance = new JobAccount();
+                                    result.JobAccounts.Add(jobAccountInstance);
                                     
                                     JToken propertiesValue = valueValue["properties"];
                                     if (propertiesValue != null && propertiesValue.Type != JTokenType.Null)
                                     {
-                                        ServerDisasterRecoveryConfigurationProperties propertiesInstance = new ServerDisasterRecoveryConfigurationProperties();
-                                        serverDisasterRecoveryConfigurationInstance.Properties = propertiesInstance;
+                                        JobAccountProperties propertiesInstance = new JobAccountProperties();
+                                        jobAccountInstance.Properties = propertiesInstance;
                                         
-                                        JToken autoFailoverValue = propertiesValue["autoFailover"];
-                                        if (autoFailoverValue != null && autoFailoverValue.Type != JTokenType.Null)
+                                        JToken databaseIdValue = propertiesValue["databaseId"];
+                                        if (databaseIdValue != null && databaseIdValue.Type != JTokenType.Null)
                                         {
-                                            string autoFailoverInstance = ((string)autoFailoverValue);
-                                            propertiesInstance.AutoFailover = autoFailoverInstance;
-                                        }
-                                        
-                                        JToken failoverPolicyValue = propertiesValue["failoverPolicy"];
-                                        if (failoverPolicyValue != null && failoverPolicyValue.Type != JTokenType.Null)
-                                        {
-                                            string failoverPolicyInstance = ((string)failoverPolicyValue);
-                                            propertiesInstance.FailoverPolicy = failoverPolicyInstance;
-                                        }
-                                        
-                                        JToken partnerLogicalServerNameValue = propertiesValue["partnerLogicalServerName"];
-                                        if (partnerLogicalServerNameValue != null && partnerLogicalServerNameValue.Type != JTokenType.Null)
-                                        {
-                                            string partnerLogicalServerNameInstance = ((string)partnerLogicalServerNameValue);
-                                            propertiesInstance.PartnerLogicalServerName = partnerLogicalServerNameInstance;
-                                        }
-                                        
-                                        JToken partnerServerIdValue = propertiesValue["partnerServerId"];
-                                        if (partnerServerIdValue != null && partnerServerIdValue.Type != JTokenType.Null)
-                                        {
-                                            string partnerServerIdInstance = ((string)partnerServerIdValue);
-                                            propertiesInstance.PartnerServerId = partnerServerIdInstance;
-                                        }
-                                        
-                                        JToken roleValue = propertiesValue["role"];
-                                        if (roleValue != null && roleValue.Type != JTokenType.Null)
-                                        {
-                                            string roleInstance = ((string)roleValue);
-                                            propertiesInstance.Role = roleInstance;
-                                        }
-                                        
-                                        JToken typeValue = propertiesValue["type"];
-                                        if (typeValue != null && typeValue.Type != JTokenType.Null)
-                                        {
-                                            string typeInstance = ((string)typeValue);
-                                            propertiesInstance.Type = typeInstance;
+                                            string databaseIdInstance = ((string)databaseIdValue);
+                                            propertiesInstance.DatabaseId = databaseIdInstance;
                                         }
                                     }
                                     
@@ -1448,28 +1359,28 @@ namespace Microsoft.Azure.Management.Sql
                                     if (idValue != null && idValue.Type != JTokenType.Null)
                                     {
                                         string idInstance = ((string)idValue);
-                                        serverDisasterRecoveryConfigurationInstance.Id = idInstance;
+                                        jobAccountInstance.Id = idInstance;
                                     }
                                     
                                     JToken nameValue = valueValue["name"];
                                     if (nameValue != null && nameValue.Type != JTokenType.Null)
                                     {
                                         string nameInstance = ((string)nameValue);
-                                        serverDisasterRecoveryConfigurationInstance.Name = nameInstance;
+                                        jobAccountInstance.Name = nameInstance;
                                     }
                                     
-                                    JToken typeValue2 = valueValue["type"];
-                                    if (typeValue2 != null && typeValue2.Type != JTokenType.Null)
+                                    JToken typeValue = valueValue["type"];
+                                    if (typeValue != null && typeValue.Type != JTokenType.Null)
                                     {
-                                        string typeInstance2 = ((string)typeValue2);
-                                        serverDisasterRecoveryConfigurationInstance.Type = typeInstance2;
+                                        string typeInstance = ((string)typeValue);
+                                        jobAccountInstance.Type = typeInstance;
                                     }
                                     
                                     JToken locationValue = valueValue["location"];
                                     if (locationValue != null && locationValue.Type != JTokenType.Null)
                                     {
                                         string locationInstance = ((string)locationValue);
-                                        serverDisasterRecoveryConfigurationInstance.Location = locationInstance;
+                                        jobAccountInstance.Location = locationInstance;
                                     }
                                     
                                     JToken tagsSequenceElement = ((JToken)valueValue["tags"]);
@@ -1479,7 +1390,7 @@ namespace Microsoft.Azure.Management.Sql
                                         {
                                             string tagsKey = ((string)property.Name);
                                             string tagsValue = ((string)property.Value);
-                                            serverDisasterRecoveryConfigurationInstance.Tags.Add(tagsKey, tagsValue);
+                                            jobAccountInstance.Tags.Add(tagsKey, tagsValue);
                                         }
                                     }
                                 }
