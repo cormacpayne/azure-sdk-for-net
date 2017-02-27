@@ -15,14 +15,16 @@
 
 using System;
 using System.Net;
-using Microsoft.Azure.Management.Resources;
-using Microsoft.Azure.Management.Resources.Models;
+using Microsoft.Azure.Management.ResourceManager;
+using Microsoft.Azure.Management.ResourceManager.Models;
 using Microsoft.Azure.Management.Sql;
 using Microsoft.Azure.Management.Sql.Models;
 using Microsoft.Azure.Test;
 using Xunit;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
+using Sql.Tests.Helpers;
 
 namespace Sql2.Tests.ScenarioTests
 {
@@ -35,10 +37,8 @@ namespace Sql2.Tests.ScenarioTests
         public void FailoverGroupCrud()
         {
             var handler = new BasicDelegatingHandler();
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 string failoverGroupName = TestUtilities.GenerateName("csm-sql-fgcrud1");
                 string failoverGroup2Name = TestUtilities.GenerateName("csm-sql-fgcrud2");
                 string serverName = TestUtilities.GenerateName("csm-sql-fgcrud-server");
@@ -53,6 +53,7 @@ namespace Sql2.Tests.ScenarioTests
                 //});
 
                 Sql2ScenarioHelper.RunServerTestInEnvironment(
+                    context,
                     handler,
                     "12.0",
                     "North Europe",
@@ -106,7 +107,7 @@ namespace Sql2.Tests.ScenarioTests
                                 Properties = failoverGroup1Properties
                             });
 
-                            TestUtilities.ValidateOperationResponse(failoverGroup1, HttpStatusCode.Created);
+                            HyakTestUtilities.ValidateOperationResponse(failoverGroup1, HttpStatusCode.Created);
 
                             var failoverGroup2 = sqlClient.FailoverGroups.CreateOrUpdate(resGroupName, server.Name, failoverGroup2Name, new FailoverGroupCreateOrUpdateParameters()
                             {
@@ -114,7 +115,7 @@ namespace Sql2.Tests.ScenarioTests
                                 Properties = failoverGroup1Properties
                             });
 
-                            TestUtilities.ValidateOperationResponse(failoverGroup2, HttpStatusCode.Created);
+                            HyakTestUtilities.ValidateOperationResponse(failoverGroup2, HttpStatusCode.Created);
                             ValidateFailoverGroup(
                                 failoverGroup2.FailoverGroup,
                                 failoverGroup2Name,
@@ -137,7 +138,7 @@ namespace Sql2.Tests.ScenarioTests
                             });
 
 
-                            TestUtilities.ValidateOperationResponse(failoverGroup3, HttpStatusCode.Created);
+                            HyakTestUtilities.ValidateOperationResponse(failoverGroup3, HttpStatusCode.Created);
                             ValidateFailoverGroup(
                                 failoverGroup3.FailoverGroup,
                                 failoverGroupName,
@@ -152,7 +153,7 @@ namespace Sql2.Tests.ScenarioTests
                             var failoverGroup4 = sqlClient.FailoverGroups.Get(resGroupName, server.Name, failoverGroupName);
 
 
-                            TestUtilities.ValidateOperationResponse(failoverGroup4, HttpStatusCode.Created);
+                            HyakTestUtilities.ValidateOperationResponse(failoverGroup4, HttpStatusCode.Created);
                             ValidateFailoverGroup(
                                 failoverGroup3.FailoverGroup,
                                 failoverGroupName,
@@ -166,7 +167,7 @@ namespace Sql2.Tests.ScenarioTests
                             // Get Failover Groups Test.
                             var failoverGroups = sqlClient.FailoverGroups.List(resGroupName, server.Name);
 
-                            TestUtilities.ValidateOperationResponse(failoverGroups, HttpStatusCode.OK);
+                            HyakTestUtilities.ValidateOperationResponse(failoverGroups, HttpStatusCode.OK);
                             Assert.Equal(2, failoverGroups.FailoverGroups.Count);
 
                             //////////////////////////////////////////////////////////////////////
@@ -185,16 +186,15 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 string failoverGroupName = TestUtilities.GenerateName("csm-sql-fgdb");
                 string serverName = TestUtilities.GenerateName("csm-sql-fgdb-server");
                 var databaseName = TestUtilities.GenerateName("csm-sql-fgdb-db");
                 var database2Name = TestUtilities.GenerateName("csm-sql-fgdb-db");
 
                 Sql2ScenarioHelper.RunServerTestInEnvironment(
+                    context,
                     handler,
                     "12.0",
                     "North Europe",
@@ -249,7 +249,7 @@ namespace Sql2.Tests.ScenarioTests
                             Location = server.Location,
                             Properties = failoverGroup1Properties
                         });
-                        TestUtilities.ValidateOperationResponse(failoverGroup1, HttpStatusCode.Created);
+                        HyakTestUtilities.ValidateOperationResponse(failoverGroup1, HttpStatusCode.Created);
 
                         ////////////////////////////////////////////////////////////////////
                         // Create database
@@ -262,7 +262,7 @@ namespace Sql2.Tests.ScenarioTests
                             }
                         });
 
-                        TestUtilities.ValidateOperationResponse(db1, HttpStatusCode.Created);
+                        HyakTestUtilities.ValidateOperationResponse(db1, HttpStatusCode.Created);
 
                         var db2 = sqlClient.Databases.CreateOrUpdate(resGroupName, server.Name, database2Name, new DatabaseCreateOrUpdateParameters()
                         {
@@ -273,7 +273,7 @@ namespace Sql2.Tests.ScenarioTests
                             }
                         });
 
-                        TestUtilities.ValidateOperationResponse(db2, HttpStatusCode.Created);
+                        HyakTestUtilities.ValidateOperationResponse(db2, HttpStatusCode.Created);
 
                         //Add database ids into a list 
                         List<string> dbs = new List<string>();
@@ -292,7 +292,7 @@ namespace Sql2.Tests.ScenarioTests
                             }
                         });
 
-                        TestUtilities.ValidateOperationResponse(moveResult, HttpStatusCode.OK);
+                        HyakTestUtilities.ValidateOperationResponse(moveResult, HttpStatusCode.OK);
                         Assert.True(VerifyDbsEqual(moveResult.FailoverGroup.Properties.Databases, dbs));
 
                         //////////////////////////////////////////////////////////////////////
@@ -308,7 +308,7 @@ namespace Sql2.Tests.ScenarioTests
                             }
                         });
 
-                        TestUtilities.ValidateOperationResponse(moveResult, HttpStatusCode.OK);
+                        HyakTestUtilities.ValidateOperationResponse(moveResult, HttpStatusCode.OK);
                         Assert.True(VerifyDbsEqual(removeResult.FailoverGroup.Properties.Databases, dbs));
 
                         //////////////////////////////////////////////////////////////////////

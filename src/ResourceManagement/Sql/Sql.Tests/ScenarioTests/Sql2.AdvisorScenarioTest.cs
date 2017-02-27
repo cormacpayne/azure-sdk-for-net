@@ -5,12 +5,14 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Azure.Management.Resources;
-using Microsoft.Azure.Management.Resources.Models;
+using Microsoft.Azure.Management.ResourceManager;
+using Microsoft.Azure.Management.ResourceManager.Models;
 using Microsoft.Azure.Management.Sql;
 using Microsoft.Azure.Management.Sql.Models;
 using Microsoft.Azure.Test;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
 using Xunit;
+using Sql.Tests.Helpers;
 
 namespace Sql2.Tests.ScenarioTests
 {
@@ -36,11 +38,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void ListAdvisorsForServer()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var handler = new BasicDelegatingHandler();
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context,handler);
                 var response = sqlClient.ServerAdvisors.List(ResourceGroupName, ServerName, expand: null);
 
                 ValidateAdvisorList(response.Advisors, ServerAdvisorType);
@@ -53,11 +54,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void ListAdvisorsForServerExpandedWithRecommendedActions()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var handler = new BasicDelegatingHandler();
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
                 var response = sqlClient.ServerAdvisors.List(ResourceGroupName, ServerName, expand: ExpandKey);
 
                 ValidateAdvisorList(response.Advisors, ServerAdvisorType);
@@ -71,11 +71,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void GetSingleAdvisorForServer()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var handler = new BasicDelegatingHandler();
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
                 var response = sqlClient.ServerAdvisors.Get(ResourceGroupName, ServerName, AdvisorName, expand: null);
 
                 ValidateSingleAdvisor(response.Advisor, ServerAdvisorType);
@@ -88,11 +87,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void UpdateStatusOfServerAdvisor()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var handler = new BasicDelegatingHandler();
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
                 AdvisorUpdateParameters updateParameters = new AdvisorUpdateParameters()
                 {
                     Properties = new AdvisorUpdateProperties()
@@ -112,11 +110,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void ListAdvisorsForDatabase()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var handler = new BasicDelegatingHandler();
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
                 var response = sqlClient.DatabaseAdvisors.List(ResourceGroupName, ServerName, DatabaseName, expand: null);
 
                 ValidateAdvisorList(response.Advisors, DatabaseAdvisorType);
@@ -129,11 +126,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void ListAdvisorsForDatabaseExpandedWithRecommendedActions()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var handler = new BasicDelegatingHandler();
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
                 var response = sqlClient.DatabaseAdvisors.List(ResourceGroupName, ServerName, DatabaseName, expand: ExpandKey);
 
                 ValidateAdvisorList(response.Advisors, DatabaseAdvisorType);
@@ -147,11 +143,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void GetSingleAdvisorForDatabase()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var handler = new BasicDelegatingHandler();
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
                 var response = sqlClient.DatabaseAdvisors.Get(ResourceGroupName, ServerName, DatabaseName, AdvisorName, expand: null);
 
                 ValidateSingleAdvisor(response.Advisor, DatabaseAdvisorType);
@@ -164,11 +159,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void UpdateStatusOfDatabaseAdvisor()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var handler = new BasicDelegatingHandler();
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
                 AdvisorUpdateParameters updateParameters = new AdvisorUpdateParameters()
                 {
                     Properties = new AdvisorUpdateProperties()
@@ -188,11 +182,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void ListAdvisorsForElasticPool()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var handler = new BasicDelegatingHandler();
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
                 var response = sqlClient.ElasticPoolAdvisors.List(ResourceGroupName, ServerName, ElasticPoolName, expand: null);
 
                 ValidateAdvisorList(response.Advisors, ElasticPoolAdvisorType);
@@ -205,11 +198,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void ListAdvisorsForElasticPoolExpandedWithRecommendedActions()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var handler = new BasicDelegatingHandler();
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
                 var response = sqlClient.ElasticPoolAdvisors.List(ResourceGroupName, ServerName, ElasticPoolName, expand: ExpandKey);
 
                 ValidateAdvisorList(response.Advisors, ElasticPoolAdvisorType);
@@ -223,11 +215,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void GetSingleAdvisorForElasticPool()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var handler = new BasicDelegatingHandler();
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
                 var response = sqlClient.ElasticPoolAdvisors.Get(ResourceGroupName, ServerName, ElasticPoolName, AdvisorName, expand: null);
 
                 ValidateSingleAdvisor(response.Advisor, ElasticPoolAdvisorType);
@@ -240,11 +231,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void UpdateStatusOfElasticPoolAdvisor()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var handler = new BasicDelegatingHandler();
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
                 AdvisorUpdateParameters updateParameters = new AdvisorUpdateParameters()
                 {
                     Properties = new AdvisorUpdateProperties()

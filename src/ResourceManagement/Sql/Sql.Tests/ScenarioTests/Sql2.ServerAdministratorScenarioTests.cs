@@ -14,11 +14,13 @@
 //
 
 using Microsoft.Azure;
-using Microsoft.Azure.Management.Resources;
-using Microsoft.Azure.Management.Resources.Models;
+using Microsoft.Azure.Management.ResourceManager;
+using Microsoft.Azure.Management.ResourceManager.Models;
 using Microsoft.Azure.Management.Sql;
 using Microsoft.Azure.Management.Sql.Models;
 using Microsoft.Azure.Test;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
+using Sql.Tests.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,11 +43,10 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 Sql2ScenarioHelper.RunServerTestInEnvironment(
+                   context,
                    handler,
                    "12.0",
                    "North Europe",
@@ -70,14 +71,14 @@ namespace Sql2.Tests.ScenarioTests
                            },
                        });
 
-                       TestUtilities.ValidateOperationResponse(createResponse, HttpStatusCode.OK);
+                       HyakTestUtilities.ValidateOperationResponse(createResponse, HttpStatusCode.OK);
                        VerifyServerAdministratorInformation(activeDirectoryServerAdminLogin, activeDirectoryServerAdminSid, activeDirectoryTenantId, createResponse.ServerAdministrator);
 
                        // Get single server active directory administrator
                        var getAdminResponse = sqlClient.ServerAdministrators.Get(resGroupName, server.Name, ActiveDirectoryDefaultName);
 
                        // Verify that the Get request contains the right information.
-                       TestUtilities.ValidateOperationResponse(getAdminResponse, HttpStatusCode.OK);
+                       HyakTestUtilities.ValidateOperationResponse(getAdminResponse, HttpStatusCode.OK);
                        VerifyServerAdministratorInformation(activeDirectoryServerAdminLogin, activeDirectoryServerAdminSid, activeDirectoryTenantId, getAdminResponse.Administrator);
 
                        // Get list Azure SQL Server Active Directory Administrator
@@ -87,7 +88,7 @@ namespace Sql2.Tests.ScenarioTests
                        Assert.Equal(getAdminResponseList.Administrators.Count, 1);
 
                        // Verify that the Get request contains the right information.
-                       TestUtilities.ValidateOperationResponse(getAdminResponseList, HttpStatusCode.OK);
+                       HyakTestUtilities.ValidateOperationResponse(getAdminResponseList, HttpStatusCode.OK);
                        VerifyServerAdministratorInformation(activeDirectoryServerAdminLogin, activeDirectoryServerAdminSid, activeDirectoryTenantId, getAdminResponseList.Administrators[0]);
                        ///////////////////////////////////////////////////////////////////////
 
@@ -96,12 +97,12 @@ namespace Sql2.Tests.ScenarioTests
                        var deleteResponse = sqlClient.ServerAdministrators.Delete(resGroupName, server.Name, ActiveDirectoryDefaultName);
 
                        // Verify that the delete operation works.
-                       TestUtilities.ValidateOperationResponse(deleteResponse, HttpStatusCode.NoContent);
+                       HyakTestUtilities.ValidateOperationResponse(deleteResponse, HttpStatusCode.NoContent);
                        /////////////////////////////////////////////////////////////////////
 
                        // Verify that the Azure SQL Active Directory administrator is deleted.  
                        var getNoAdminResponse = sqlClient.ServerAdministrators.List(resGroupName, server.Name);
-                       TestUtilities.ValidateOperationResponse(getNoAdminResponse, HttpStatusCode.OK);
+                       HyakTestUtilities.ValidateOperationResponse(getNoAdminResponse, HttpStatusCode.OK);
 
                        // There should be no Azure SQL Server Active Directory Administrator after delete
                        Assert.Empty(getNoAdminResponse.Administrators);

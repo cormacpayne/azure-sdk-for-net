@@ -18,8 +18,8 @@ using System.Globalization;
 using System.Net;
 using Hyak.Common;
 using Microsoft.Azure;
-using Microsoft.Azure.Management.Resources;
-using Microsoft.Azure.Management.Resources.Models;
+using Microsoft.Azure.Management.ResourceManager;
+using Microsoft.Azure.Management.ResourceManager.Models;
 using Microsoft.Azure.Management.Sql;
 using Microsoft.Azure.Management.Sql.Models;
 using Microsoft.Azure.Test;
@@ -28,6 +28,8 @@ using Sql2.Tests;
 using Sql2.Tests.ScenarioTests;
 using Xunit;
 using Xunit.Sdk;
+using Sql.Tests.Helpers;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
 
 namespace Sql2.Tests.ScenarioTests
 {
@@ -43,91 +45,83 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void ExportDatabaseTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-                ValidateImportExport();
+                ValidateImportExport(context);
             }
         }
 
         [Fact]
         public void ImportBacpacTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-                ValidateImportExport(createDatabase: false, operationName: ImportOperationName);
+                ValidateImportExport(context, createDatabase: false, operationName: ImportOperationName);
             }
         }
 
         [Fact]
         public void ImportBacpacToExistingDatabaseTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-                ValidateImportExport(createDatabase: true, operationName: ImportExistingDbOperationName);
+                ValidateImportExport(context, createDatabase: true, operationName: ImportExistingDbOperationName);
             }
         }
 
         [Fact]
         public void ImportBacpacToExistingDatabaseWhenDatagaseDoesNotExistTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-                ValidateImportExport(createDatabase: false, operationName: ImportExistingDbOperationName, expectedStatueCode: HttpStatusCode.NotFound);
+                ValidateImportExport(context, createDatabase: false, operationName: ImportExistingDbOperationName, expectedStatueCode: HttpStatusCode.NotFound);
             }
         }
 
         [Fact]
         public void ExportDatabaseWhenDatabaseDoesNotExistTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-                ValidateImportExport(createDatabase: false, operationName: ExportOperationName, expectedStatueCode: HttpStatusCode.NotFound);
+                ValidateImportExport(context, createDatabase: false, operationName: ExportOperationName, expectedStatueCode: HttpStatusCode.NotFound);
             }
         }
 
         [Fact]
         public void ExportDatabaseWhenFirewallRuleDoesNotExistTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-                ValidateImportExport(createDatabase: false, createFirewallRule: false, operationName: ExportOperationName, expectedStatueCode: HttpStatusCode.NotFound);
+                ValidateImportExport(context, createDatabase: false, createFirewallRule: false, operationName: ExportOperationName, expectedStatueCode: HttpStatusCode.NotFound);
             }
         }
 
         [Fact]
         public void ExportDatabaseWithMissingFieldsTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-                ValidateImportExport(operationName: ExportOperationName, missingFields: true, expectedStatueCode: HttpStatusCode.BadRequest);
+                ValidateImportExport(context, operationName: ExportOperationName, missingFields: true, expectedStatueCode: HttpStatusCode.BadRequest);
             }
         }
 
         [Fact]
         public void ImportWithMissingFieldsTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-                ValidateImportExport(createDatabase: false, operationName: ImportOperationName, missingFields: true, expectedStatueCode: HttpStatusCode.BadRequest);
+                ValidateImportExport(context, createDatabase: false, operationName: ImportOperationName, missingFields: true, expectedStatueCode: HttpStatusCode.BadRequest);
             }
         }
 
-        private void ValidateImportExport(bool createServer = true, bool createDatabase = true, bool createFirewallRule = true, 
+        private void ValidateImportExport(HyakMockContext context, bool createServer = true, bool createDatabase = true, bool createFirewallRule = true, 
             string operationName = "Export", bool missingFields = false, HttpStatusCode expectedStatueCode = HttpStatusCode.Accepted)
         {
             var handler = new BasicDelegatingHandler();
 
             // Management Clients
-            var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
-            var resClient = Sql2ScenarioHelper.GetResourceClient(handler);
+            var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
+            var resClient = Sql2ScenarioHelper.GetResourceClient(context, handler);
 
             // Variables for server create
             string serverName = TestUtilities.GenerateName("csm-sql-ie");
@@ -188,7 +182,7 @@ namespace Sql2.Tests.ScenarioTests
                             Version = version,
                         }
                     });
-                    TestUtilities.ValidateOperationResponse(createResponse, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(createResponse, HttpStatusCode.Created);
                 }
                 //////////////////////////////////////////////////////////////////////
                 // Create database
@@ -205,7 +199,7 @@ namespace Sql2.Tests.ScenarioTests
                         },
                     });
 
-                    TestUtilities.ValidateOperationResponse(createDbResponse, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(createDbResponse, HttpStatusCode.Created);
                 }
                 //////////////////////////////////////////////////////////////////////
                 // Create firewall rule
@@ -219,7 +213,7 @@ namespace Sql2.Tests.ScenarioTests
                             EndIpAddress = endIp1,
                         }
                     });
-                    TestUtilities.ValidateOperationResponse(firewallCreate, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(firewallCreate, HttpStatusCode.Created);
                 }
                 //////////////////////////////////////////////////////////////////////
                 //Import Export
@@ -299,7 +293,7 @@ namespace Sql2.Tests.ScenarioTests
                         ValidateImportExportOperationStatusResponseProperties(statusResponse.Properties);
                     }
 
-                    TestUtilities.ValidateOperationResponse(importExportResponse, expectedStatueCode);
+                    HyakTestUtilities.ValidateOperationResponse(importExportResponse, expectedStatueCode);
 
                 }
                 catch (CloudException exception)
@@ -309,7 +303,7 @@ namespace Sql2.Tests.ScenarioTests
                 if (operationName == ImportOperationName && !createDatabase && !missingFields)
                 {
                     DatabaseGetResponse databaseGetResponse = sqlClient.Databases.Get(resGroupName, serverName, databaseName);
-                    TestUtilities.ValidateOperationResponse(databaseGetResponse);
+                    HyakTestUtilities.ValidateOperationResponse(databaseGetResponse);
                 }
             }
             finally

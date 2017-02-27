@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-using Microsoft.Azure.Management.Resources;
-using Microsoft.Azure.Management.Resources.Models;
+using Microsoft.Azure.Management.ResourceManager;
+using Microsoft.Azure.Management.ResourceManager.Models;
 using Microsoft.Azure.Management.Sql;
 using Microsoft.Azure.Management.Sql.Models;
 using Microsoft.Azure.Test;
@@ -23,6 +23,8 @@ using System.Linq;
 using System.Net;
 using Sql.Tests;
 using Xunit;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
+using Sql.Tests.Helpers;
 
 namespace Sql2.Tests.ScenarioTests
 {
@@ -39,13 +41,11 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 // Management Clients
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
-                var resClient = Sql2ScenarioHelper.GetResourceClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
+                var resClient = Sql2ScenarioHelper.GetResourceClient(context, handler);
 
                 // Variables for server create
                 string serverName = TestUtilities.GenerateName("csm-sql-jobaccountcrud-server");
@@ -87,7 +87,7 @@ namespace Sql2.Tests.ScenarioTests
                     });
 
                     // Verify the the response from the service contains the right information
-                    TestUtilities.ValidateOperationResponse(createServerResponse, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(createServerResponse, HttpStatusCode.Created);
 
                     //////////////////////////////////////////////////////////////////////
                     // Create database for test.
@@ -105,7 +105,7 @@ namespace Sql2.Tests.ScenarioTests
                         },
                     });
 
-                    TestUtilities.ValidateOperationResponse(createDbResponse, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(createDbResponse, HttpStatusCode.Created);
 
                     //////////////////////////////////////////////////////////////////////
                     // Create job account test.
@@ -120,21 +120,21 @@ namespace Sql2.Tests.ScenarioTests
                             }
                         });
 
-                    TestUtilities.ValidateOperationResponse(createJobResonse, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(createJobResonse, HttpStatusCode.Created);
                     VerifyJobAccountInformation(createJobResonse.JobAccount, jobAccountName, createDbResponse.Database.Id);
 
                     //////////////////////////////////////////////////////////////////////
                     // Get job account test
 
                     var getJobAccountResponse = sqlClient.JobAccounts.Get(resGroupName, serverName, jobAccountName);
-                    TestUtilities.ValidateOperationResponse(getJobAccountResponse);
+                    HyakTestUtilities.ValidateOperationResponse(getJobAccountResponse);
                     VerifyJobAccountInformation(getJobAccountResponse.JobAccount, jobAccountName, createDbResponse.Database.Id);
 
                     //////////////////////////////////////////////////////////////////////
                     // List job account test
 
                     var listJobAccountResponse = sqlClient.JobAccounts.List(resGroupName, serverName);
-                    TestUtilities.ValidateOperationResponse(listJobAccountResponse);
+                    HyakTestUtilities.ValidateOperationResponse(listJobAccountResponse);
                     Assert.Equal(1, listJobAccountResponse.Count());
                     VerifyJobAccountInformation(listJobAccountResponse.JobAccounts[0], jobAccountName, createDbResponse.Database.Id);
 
@@ -142,7 +142,7 @@ namespace Sql2.Tests.ScenarioTests
                     // Delete job account test
 
                     var deleteJobAccountResponse = sqlClient.JobAccounts.Delete(resGroupName, serverName, jobAccountName);
-                    TestUtilities.ValidateOperationResponse(deleteJobAccountResponse);
+                    HyakTestUtilities.ValidateOperationResponse(deleteJobAccountResponse);
                 }
                 finally
                 {

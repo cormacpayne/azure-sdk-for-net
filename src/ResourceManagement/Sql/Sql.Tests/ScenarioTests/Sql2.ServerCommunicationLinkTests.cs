@@ -15,12 +15,14 @@
 
 using System;
 using System.Net;
-using Microsoft.Azure.Management.Resources;
-using Microsoft.Azure.Management.Resources.Models;
+using Microsoft.Azure.Management.ResourceManager;
+using Microsoft.Azure.Management.ResourceManager.Models;
 using Microsoft.Azure.Management.Sql;
 using Microsoft.Azure.Management.Sql.Models;
 using Microsoft.Azure.Test;
 using Xunit;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
+using Sql.Tests.Helpers;
 
 namespace Sql2.Tests.ScenarioTests
 {
@@ -33,13 +35,12 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 string commLinkName = TestUtilities.GenerateName("csm-sql-commlinkcrud-");
 
                 Sql2ScenarioHelper.RunTwoServersTestInEnvironment(
+                    context,
                     handler,
                     "12.0",
                     false,
@@ -58,7 +59,7 @@ namespace Sql2.Tests.ScenarioTests
                             Properties = linkProperties
                         });
 
-                        TestUtilities.ValidateOperationResponse(link1, HttpStatusCode.Created);
+                        HyakTestUtilities.ValidateOperationResponse(link1, HttpStatusCode.Created);
                         ValidateServerCommunicationLink(
                             link1.ServerCommunicationLink,
                             commLinkName,
@@ -68,7 +69,7 @@ namespace Sql2.Tests.ScenarioTests
                         // Get Test.
                         var link2 = sqlClient.CommunicationLinks.Get(resGroupName, server1.Name, commLinkName);
 
-                        TestUtilities.ValidateOperationResponse(link2, HttpStatusCode.OK);
+                        HyakTestUtilities.ValidateOperationResponse(link2, HttpStatusCode.OK);
                         ValidateServerCommunicationLink(
                             link2.ServerCommunicationLink,
                             commLinkName,
@@ -78,13 +79,13 @@ namespace Sql2.Tests.ScenarioTests
                         // List Test.
                         var links = sqlClient.CommunicationLinks.List(resGroupName, server1.Name);
 
-                        TestUtilities.ValidateOperationResponse(links, HttpStatusCode.OK);
+                        HyakTestUtilities.ValidateOperationResponse(links, HttpStatusCode.OK);
                         Assert.Equal(1, links.ServerCommunicationLinks.Count);
 
                         //////////////////////////////////////////////////////////////////////
                         // Delete Test.
                         var resp = sqlClient.CommunicationLinks.Delete(resGroupName, server1.Name, link1.ServerCommunicationLink.Name);
-                        TestUtilities.ValidateOperationResponse(resp, HttpStatusCode.OK);
+                        HyakTestUtilities.ValidateOperationResponse(resp, HttpStatusCode.OK);
                     });
             }
         }

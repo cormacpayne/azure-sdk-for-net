@@ -14,8 +14,8 @@
 //
 
 using Microsoft.Azure;
-using Microsoft.Azure.Management.Resources;
-using Microsoft.Azure.Management.Resources.Models;
+using Microsoft.Azure.Management.ResourceManager;
+using Microsoft.Azure.Management.ResourceManager.Models;
 using Microsoft.Azure.Management.Sql;
 using Microsoft.Azure.Management.Sql.Models;
 using Microsoft.Azure.Test;
@@ -26,6 +26,8 @@ using System.Net;
 using System.Net.Http;
 using Sql.Tests;
 using Xunit;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
+using Sql.Tests.Helpers;
 
 namespace Sql2.Tests.ScenarioTests
 {
@@ -42,13 +44,11 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 // Management Clients
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
-                var resClient = Sql2ScenarioHelper.GetResourceClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
+                var resClient = Sql2ScenarioHelper.GetResourceClient(context, handler);
 
                 // Variables for server create
                 string serverName = TestUtilities.GenerateName("csm-sql-servercrud");
@@ -81,7 +81,7 @@ namespace Sql2.Tests.ScenarioTests
                     });
 
                     // Verify the the response from the service contains the right information
-                    TestUtilities.ValidateOperationResponse(createResponse, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(createResponse, HttpStatusCode.Created);
                     VerifyServerInformation(serverName, serverLocation, adminLogin, adminPass, version, createResponse.Server);
                     //////////////////////////////////////////////////////////////////////
 
@@ -92,13 +92,13 @@ namespace Sql2.Tests.ScenarioTests
                     var getResponse = sqlClient.Servers.Get(resGroupName, serverName);
 
                     // Verify that the Get request contains the right information.
-                    TestUtilities.ValidateOperationResponse(getResponse, HttpStatusCode.OK);
+                    HyakTestUtilities.ValidateOperationResponse(getResponse, HttpStatusCode.OK);
                     VerifyServerInformation(serverName, serverLocation, adminLogin, null, version, getResponse.Server);
 
                     // List all servers
                     var listResponse = sqlClient.Servers.List(resGroupName);
 
-                    TestUtilities.ValidateOperationResponse(listResponse);
+                    HyakTestUtilities.ValidateOperationResponse(listResponse);
                     Assert.Equal(1, listResponse.Servers.Count);
                     VerifyServerInformation(serverName, serverLocation, adminLogin, null, version, listResponse.Servers[0]);
                     ///////////////////////////////////////////////////////////////////////
@@ -114,7 +114,7 @@ namespace Sql2.Tests.ScenarioTests
                         },
                     });
 
-                    TestUtilities.ValidateOperationResponse(updateResponse, HttpStatusCode.OK);
+                    HyakTestUtilities.ValidateOperationResponse(updateResponse, HttpStatusCode.OK);
                     VerifyServerInformation(serverName, serverLocation, adminLogin, adminPass2, version, updateResponse.Server);
                     ///////////////////////////////////////////////////////////////////////
 
@@ -123,7 +123,7 @@ namespace Sql2.Tests.ScenarioTests
                     var deleteResponse = sqlClient.Servers.Delete(resGroupName, serverName);
 
                     // Verify that the delete operation works.
-                    TestUtilities.ValidateOperationResponse(deleteResponse, HttpStatusCode.NoContent);
+                    HyakTestUtilities.ValidateOperationResponse(deleteResponse, HttpStatusCode.NoContent);
                     /////////////////////////////////////////////////////////////////////
                 }
                 finally
@@ -142,13 +142,11 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 // Management Clients
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
-                var resClient = Sql2ScenarioHelper.GetResourceClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
+                var resClient = Sql2ScenarioHelper.GetResourceClient(context, handler);
 
                 // Variables for server create
                 string serverName = TestUtilities.GenerateName("csm-sql-dbcrud-server");
@@ -195,13 +193,13 @@ namespace Sql2.Tests.ScenarioTests
                     });
 
                     // Verify the the response from the service contains the right information
-                    TestUtilities.ValidateOperationResponse(createServerResponse, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(createServerResponse, HttpStatusCode.Created);
                     VerifyServerInformation(serverName, serverLocation, adminLogin, adminPass, version, createServerResponse.Server);
                     //////////////////////////////////////////////////////////////////////
 
                     // Get Service objectives
                     // var serviceObjectivesResponse = sqlClient.ServiceObjectives.List(resGroupName, serverName);
-                    // TestUtilities.ValidateOperationResponse(serviceObjectivesResponse, HttpStatusCode.OK);
+                    // HyakTestUtilities.ValidateOperationResponse(serviceObjectivesResponse, HttpStatusCode.OK);
 
                     //////////////////////////////////////////////////////////////////////
                     // Create database test.
@@ -219,7 +217,7 @@ namespace Sql2.Tests.ScenarioTests
                         },
                     });
 
-                    TestUtilities.ValidateOperationResponse(createDbResponse1, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(createDbResponse1, HttpStatusCode.Created);
                     VerifyDatabaseInformation(createDbResponse1.Database, serverLocation, databaseCollation, databaseEdition, databaseMaxSize, SqlConstants.DbSloS1, SqlConstants.DbSloS1);
 
                     // Create only required
@@ -232,7 +230,7 @@ namespace Sql2.Tests.ScenarioTests
                         },
                     });
 
-                    TestUtilities.ValidateOperationResponse(createDbResponse2, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(createDbResponse2, HttpStatusCode.Created);
                     VerifyDatabaseInformation(createDbResponse2.Database, serverLocation, defaultCollation, databaseEdition, defaultDatabaseSize, SqlConstants.DbSloS0, SqlConstants.DbSloS0);
                     //////////////////////////////////////////////////////////////////////
 
@@ -242,24 +240,24 @@ namespace Sql2.Tests.ScenarioTests
                     // Get first database
                     var getDatabase1 = sqlClient.Databases.Get(resGroupName, serverName, databaseName);
 
-                    TestUtilities.ValidateOperationResponse(getDatabase1);
+                    HyakTestUtilities.ValidateOperationResponse(getDatabase1);
                     VerifyDatabaseInformation(getDatabase1.Database, serverLocation, databaseCollation, databaseEdition, databaseMaxSize, SqlConstants.DbSloS1, SqlConstants.DbSloS1);
 
                     // Get second database
                     var getDatabase2 = sqlClient.Databases.Get(resGroupName, serverName, databaseName2);
 
-                    TestUtilities.ValidateOperationResponse(getDatabase2);
+                    HyakTestUtilities.ValidateOperationResponse(getDatabase2);
                     VerifyDatabaseInformation(getDatabase2.Database, serverLocation, defaultCollation, defaultEdition, defaultDatabaseSize, SqlConstants.DbSloS0, SqlConstants.DbSloS0);
 
                     // Get all databases
                     var listDatabase1 = sqlClient.Databases.List(resGroupName, serverName);
-                    TestUtilities.ValidateOperationResponse(listDatabase1);
+                    HyakTestUtilities.ValidateOperationResponse(listDatabase1);
                     Assert.Equal(3, listDatabase1.Databases.Count);
 
                     //Get database by ID
                     var getById = sqlClient.Databases.GetById(resGroupName, serverName, getDatabase1.Database.Properties.DatabaseId);
 
-                    TestUtilities.ValidateOperationResponse(getById);
+                    HyakTestUtilities.ValidateOperationResponse(getById);
                     Assert.Equal(1, getById.Databases.Count);
                     VerifyDatabaseInformation(getById.Databases[0], serverLocation, databaseCollation, databaseEdition, databaseMaxSize, SqlConstants.DbSloS1, SqlConstants.DbSloS1);
                     //////////////////////////////////////////////////////////////////////
@@ -277,7 +275,7 @@ namespace Sql2.Tests.ScenarioTests
                         },
                     });
 
-                    TestUtilities.ValidateOperationResponse(updateDb1);
+                    HyakTestUtilities.ValidateOperationResponse(updateDb1);
                     VerifyDatabaseInformation(updateDb1.Database, serverLocation, databaseCollation, databaseEdition, databaseMaxSize, SqlConstants.DbSloS2, SqlConstants.DbSloS2);
 
                     //Update Size
@@ -290,7 +288,7 @@ namespace Sql2.Tests.ScenarioTests
                         },
                     });
 
-                    TestUtilities.ValidateOperationResponse(updateDb2);
+                    HyakTestUtilities.ValidateOperationResponse(updateDb2);
                     VerifyDatabaseInformation(updateDb2.Database, serverLocation, databaseCollation, databaseEdition, defaultDatabaseSize, SqlConstants.DbSloS2, SqlConstants.DbSloS2);
 
                     //Update Edition + SLO
@@ -304,7 +302,7 @@ namespace Sql2.Tests.ScenarioTests
                         },
                     });
 
-                    TestUtilities.ValidateOperationResponse(updateDb3);
+                    HyakTestUtilities.ValidateOperationResponse(updateDb3);
                     VerifyDatabaseInformation(updateDb3.Database, serverLocation, defaultCollation, "Basic", defaultDatabaseSize, SqlConstants.DbSloBasic, SqlConstants.DbSloBasic);
                     //////////////////////////////////////////////////////////////////////
 
@@ -312,11 +310,11 @@ namespace Sql2.Tests.ScenarioTests
                     // Delete database test.
                     var deleteDb1 = sqlClient.Databases.Delete(resGroupName, serverName, databaseName);
 
-                    TestUtilities.ValidateOperationResponse(deleteDb1, HttpStatusCode.OK);
+                    HyakTestUtilities.ValidateOperationResponse(deleteDb1, HttpStatusCode.OK);
 
                     var deleteDb2 = sqlClient.Databases.Delete(resGroupName, serverName, databaseName2);
 
-                    TestUtilities.ValidateOperationResponse(deleteDb2, HttpStatusCode.OK);
+                    HyakTestUtilities.ValidateOperationResponse(deleteDb2, HttpStatusCode.OK);
                     //////////////////////////////////////////////////////////////////////
                 }
                 finally
@@ -335,13 +333,11 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 // Management Clients
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
-                var resClient = Sql2ScenarioHelper.GetResourceClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
+                var resClient = Sql2ScenarioHelper.GetResourceClient(context, handler);
 
                 // Variables for server creation.
                 string serverName = TestUtilities.GenerateName("csm-sql-activation");
@@ -382,7 +378,7 @@ namespace Sql2.Tests.ScenarioTests
                     });
 
                     // Verify the the response from the service contains the right information
-                    TestUtilities.ValidateOperationResponse(createResponse, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(createResponse, HttpStatusCode.Created);
                     VerifyServerInformation(serverName, serverLocation, adminLogin, adminPass, version, createResponse.Server);
                     //////////////////////////////////////////////////////////////////////
 
@@ -401,7 +397,7 @@ namespace Sql2.Tests.ScenarioTests
                         },
                     });
 
-                    TestUtilities.ValidateOperationResponse(createDbResponse, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(createDbResponse, HttpStatusCode.Created);
                     VerifyDatabaseInformation(createDbResponse.Database, serverLocation, defaultCollation, databaseEdition, defaultDatabaseSize, dwSlo, dwSlo);
                     //////////////////////////////////////////////////////////////////////
 
@@ -410,7 +406,7 @@ namespace Sql2.Tests.ScenarioTests
                     
                     var pauseResponse = sqlClient.DatabaseActivation.Pause(resGroupName, serverName, databaseName);
 
-                    TestUtilities.ValidateOperationResponse(pauseResponse, HttpStatusCode.OK);
+                    HyakTestUtilities.ValidateOperationResponse(pauseResponse, HttpStatusCode.OK);
                     VerifyDatabaseInformation(pauseResponse.Database, serverLocation, defaultCollation, databaseEdition, defaultDatabaseSize, dwSlo, dwSlo, "Paused");
                     ///////////////////////////////////////////////////////////////////////
 
@@ -419,7 +415,7 @@ namespace Sql2.Tests.ScenarioTests
 
                     var resumeResponse = sqlClient.DatabaseActivation.Resume(resGroupName, serverName, databaseName);
 
-                    TestUtilities.ValidateOperationResponse(resumeResponse, HttpStatusCode.OK);
+                    HyakTestUtilities.ValidateOperationResponse(resumeResponse, HttpStatusCode.OK);
                     VerifyDatabaseInformation(resumeResponse.Database, serverLocation, defaultCollation, databaseEdition, defaultDatabaseSize, dwSlo, dwSlo, "Online");
                     ///////////////////////////////////////////////////////////////////////
                 }
@@ -439,13 +435,11 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 // Management Clients
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
-                var resClient = Sql2ScenarioHelper.GetResourceClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
+                var resClient = Sql2ScenarioHelper.GetResourceClient(context, handler);
 
                 // Variables for server create
                 string serverName = "csm-sql-dbreadscalecrud-server2";
@@ -494,7 +488,7 @@ namespace Sql2.Tests.ScenarioTests
                         },
                     });
 
-                    TestUtilities.ValidateOperationResponse(createDbResponse1, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(createDbResponse1, HttpStatusCode.Created);
                     Assert.Equal(createDbResponse1.Database.Properties.ReadScale, readScaleEnabled);
 
                     //Update Read Scale Option
@@ -506,12 +500,12 @@ namespace Sql2.Tests.ScenarioTests
                             ReadScale = readScaleDisabled
                         },
                     });
-                    TestUtilities.ValidateOperationResponse(updateDb);
+                    HyakTestUtilities.ValidateOperationResponse(updateDb);
                     Assert.Equal(updateDb.Database.Properties.ReadScale, readScaleDisabled);
 
                     // Get first database
                     var getDb1 = sqlClient.Databases.Get(resGroupName, serverName, databaseName);
-                    TestUtilities.ValidateOperationResponse(getDb1);
+                    HyakTestUtilities.ValidateOperationResponse(getDb1);
                     Assert.Equal(getDb1.Database.Properties.ReadScale, readScaleDisabled);
                 }
                 finally
@@ -530,13 +524,11 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 // Management Clients
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
-                var resClient = Sql2ScenarioHelper.GetResourceClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
+                var resClient = Sql2ScenarioHelper.GetResourceClient(context, handler);
 
                 // Variables for server create
                 string serverName = TestUtilities.GenerateName("csm-sql-firewallcrud");
@@ -568,7 +560,7 @@ namespace Sql2.Tests.ScenarioTests
                     });
 
                     // Verify the the response from the service contains the right information
-                    TestUtilities.ValidateOperationResponse(createResponse, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(createResponse, HttpStatusCode.Created);
                     VerifyServerInformation(serverName, serverLocation, adminLogin, adminPass, version, createResponse.Server);
                     //////////////////////////////////////////////////////////////////////
 
@@ -590,7 +582,7 @@ namespace Sql2.Tests.ScenarioTests
                         }
                     });
 
-                    TestUtilities.ValidateOperationResponse(firewallCreate, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(firewallCreate, HttpStatusCode.Created);
                     FirewallRule rule = firewallCreate.FirewallRule;
                     VerifyFirewallRuleInformation(firewallRuleName, startIp1, endIp1, rule);
                     //////////////////////////////////////////////////////////////////////                    
@@ -602,13 +594,13 @@ namespace Sql2.Tests.ScenarioTests
                     var getFirewall = sqlClient.FirewallRules.Get(resGroupName, serverName, firewallRuleName);
 
                     // Verify that the Get request contains the right information.
-                    TestUtilities.ValidateOperationResponse(getFirewall, HttpStatusCode.OK);
+                    HyakTestUtilities.ValidateOperationResponse(getFirewall, HttpStatusCode.OK);
                     VerifyFirewallRuleInformation(firewallRuleName, startIp1, endIp1, getFirewall.FirewallRule);
 
                     // List all firewall rules
                     var listResponse = sqlClient.FirewallRules.List(resGroupName, serverName);
 
-                    TestUtilities.ValidateOperationResponse(listResponse);
+                    HyakTestUtilities.ValidateOperationResponse(listResponse);
                     Assert.Equal(1, listResponse.FirewallRules.Count);
                     VerifyFirewallRuleInformation(firewallRuleName, startIp1, endIp1, listResponse.FirewallRules[0]);
                     ///////////////////////////////////////////////////////////////////////
@@ -624,7 +616,7 @@ namespace Sql2.Tests.ScenarioTests
                         },
                     });
 
-                    TestUtilities.ValidateOperationResponse(updateResponse, HttpStatusCode.OK);
+                    HyakTestUtilities.ValidateOperationResponse(updateResponse, HttpStatusCode.OK);
                     VerifyFirewallRuleInformation(firewallRuleName, startIp2, endIp2, updateResponse.FirewallRule);
                     ///////////////////////////////////////////////////////////////////////
 
@@ -633,7 +625,7 @@ namespace Sql2.Tests.ScenarioTests
                     var deleteResponse = sqlClient.FirewallRules.Delete(resGroupName, serverName, firewallRuleName);
 
                     // Verify that the delete operation works.
-                    TestUtilities.ValidateOperationResponse(deleteResponse, HttpStatusCode.OK);
+                    HyakTestUtilities.ValidateOperationResponse(deleteResponse, HttpStatusCode.OK);
                     /////////////////////////////////////////////////////////////////////
                 }
                 finally
@@ -652,13 +644,11 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 // Management Clients
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
-                var resClient = Sql2ScenarioHelper.GetResourceClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
+                var resClient = Sql2ScenarioHelper.GetResourceClient(context, handler);
 
                 // Variables for server create
                 string serverName = TestUtilities.GenerateName("csm-sql-transparentdataencryptioncrud");
@@ -695,7 +685,7 @@ namespace Sql2.Tests.ScenarioTests
                     });
 
                     // Verify the the response from the service contains the right information
-                    TestUtilities.ValidateOperationResponse(createResponse, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(createResponse, HttpStatusCode.Created);
                     VerifyServerInformation(serverName, serverLocation, adminLogin, adminPass, version, createResponse.Server);
                     //////////////////////////////////////////////////////////////////////
 
@@ -712,7 +702,7 @@ namespace Sql2.Tests.ScenarioTests
                         },
                     });
 
-                    TestUtilities.ValidateOperationResponse(createDbResponse, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(createDbResponse, HttpStatusCode.Created);
                     VerifyDatabaseInformation(createDbResponse.Database, serverLocation, defaultCollation, databaseEdition, defaultDatabaseSize, dbSloS0, dbSloS0);
                     //////////////////////////////////////////////////////////////////////
 
@@ -723,7 +713,7 @@ namespace Sql2.Tests.ScenarioTests
                     var getTde = sqlClient.TransparentDataEncryption.Get(resGroupName, serverName, databaseName);
 
                     // Verify that the Get request contains the right information.
-                    TestUtilities.ValidateOperationResponse(getTde, HttpStatusCode.OK);
+                    HyakTestUtilities.ValidateOperationResponse(getTde, HttpStatusCode.OK);
                     VerifyTransparentDataEncryptionInformation(TransparentDataEncryptionStates.Disabled, getTde.TransparentDataEncryption);
                     ///////////////////////////////////////////////////////////////////////
 
@@ -741,7 +731,7 @@ namespace Sql2.Tests.ScenarioTests
                     // Get Transparent Data Encryption Activity Test
                     var activities = sqlClient.TransparentDataEncryption.ListActivity(resGroupName, serverName, databaseName);
 
-                    TestUtilities.ValidateOperationResponse(activities, HttpStatusCode.OK);
+                    HyakTestUtilities.ValidateOperationResponse(activities, HttpStatusCode.OK);
                     Assert.True(activities.TransparentDataEncryptionActivities.Count > 0);
                     var transparentDataEncryptionActivity = activities.TransparentDataEncryptionActivities[0];
                     VerifyTransparentDataEncryptionActivityInformation(TransparentDataEncryptionActivityStates.Encrypting, transparentDataEncryptionActivity);
@@ -749,7 +739,7 @@ namespace Sql2.Tests.ScenarioTests
                     // Get single transparent data encryption 
                     getTde = sqlClient.TransparentDataEncryption.Get(resGroupName, serverName, databaseName);
 
-                    TestUtilities.ValidateOperationResponse(updateResponse, HttpStatusCode.OK);
+                    HyakTestUtilities.ValidateOperationResponse(updateResponse, HttpStatusCode.OK);
                     VerifyTransparentDataEncryptionInformation(TransparentDataEncryptionStates.Enabled, getTde.TransparentDataEncryption);
                     ///////////////////////////////////////////////////////////////////////
 
@@ -770,13 +760,11 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 // Management Clients
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
-                var resClient = Sql2ScenarioHelper.GetResourceClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
+                var resClient = Sql2ScenarioHelper.GetResourceClient(context, handler);
 
                 // Variables for server create
                 string serverName = TestUtilities.GenerateName("csm-sql-tdeakvcrud");
@@ -815,7 +803,7 @@ namespace Sql2.Tests.ScenarioTests
                         }
                     });
 
-                    TestUtilities.ValidateOperationResponse(createResponse, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(createResponse, HttpStatusCode.Created);
                     VerifyServerInformation(serverName, serverLocation, adminLogin, adminPass, version, createResponse.Server);
                     //////////////////////////////////////////////////////////////////////
 
@@ -830,7 +818,7 @@ namespace Sql2.Tests.ScenarioTests
                         },
                     });
 
-                    TestUtilities.ValidateOperationResponse(createDbResponse, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(createDbResponse, HttpStatusCode.Created);
                     VerifyDatabaseInformation(createDbResponse.Database, serverLocation, defaultCollation, databaseEdition, defaultDatabaseSize, dbSloS0, dbSloS0);
                     //////////////////////////////////////////////////////////////////////
 
@@ -845,21 +833,21 @@ namespace Sql2.Tests.ScenarioTests
                         }
                     });
 
-                    TestUtilities.ValidateOperationResponse(serverKeyCreateResponse, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(serverKeyCreateResponse, HttpStatusCode.Created);
                     VerifyServerKeyInformation(ServerKeyType.AzureKeyVault, serverKeyName, akvUri, serverKeyCreateResponse.ServerKey);
                     //////////////////////////////////////////////////////////////////////
 
                     //////////////////////////////////////////////////////////////////////
                     // Get Server Key tests
                     var getResponse = sqlClient.ServerKey.Get(resGroupName, serverName, serverKeyName);
-                    TestUtilities.ValidateOperationResponse(getResponse, HttpStatusCode.OK);
+                    HyakTestUtilities.ValidateOperationResponse(getResponse, HttpStatusCode.OK);
                     VerifyServerKeyInformation(ServerKeyType.AzureKeyVault, serverKeyName, akvUri, getResponse.ServerKey);
                     //////////////////////////////////////////////////////////////////////
 
                     //////////////////////////////////////////////////////////////////////
                     // List Server Key tests
                     var listResponse = sqlClient.ServerKey.List(resGroupName, serverName);
-                    TestUtilities.ValidateOperationResponse(getResponse, HttpStatusCode.OK);
+                    HyakTestUtilities.ValidateOperationResponse(getResponse, HttpStatusCode.OK);
                     Assert.Equal(2, listResponse.ServerKeys.Count);
                     VerifyServerKeyInformation(ServerKeyType.AzureKeyVault, serverKeyName, akvUri, listResponse.ServerKeys.Where(s => s.Properties.ServerKeyType == ServerKeyType.AzureKeyVault).First());
                     //////////////////////////////////////////////////////////////////////
@@ -867,7 +855,7 @@ namespace Sql2.Tests.ScenarioTests
                     //////////////////////////////////////////////////////////////////////
                     // Delete Server Key tests
                     var deleteResponse = sqlClient.ServerKey.Delete(resGroupName, serverName, serverKeyName);
-                    TestUtilities.ValidateOperationResponse(deleteResponse, HttpStatusCode.OK);
+                    HyakTestUtilities.ValidateOperationResponse(deleteResponse, HttpStatusCode.OK);
                     //////////////////////////////////////////////////////////////////////
                 }
                 finally
@@ -885,13 +873,11 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current) 
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName)) 
             {
-                context.Start();
-
                 // Management Clients
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
-                var resClient = Sql2ScenarioHelper.GetResourceClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
+                var resClient = Sql2ScenarioHelper.GetResourceClient(context, handler);
 
                 // Variables for server create
                 string serverName = TestUtilities.GenerateName("csm-sql-tdeakvcrud");
@@ -929,7 +915,7 @@ namespace Sql2.Tests.ScenarioTests
                         }
                     });
 
-                    TestUtilities.ValidateOperationResponse(createResponse, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(createResponse, HttpStatusCode.Created);
                     VerifyServerInformation(serverName, serverLocation, adminLogin, adminPass, version, createResponse.Server);
                     //////////////////////////////////////////////////////////////////////
 
@@ -944,7 +930,7 @@ namespace Sql2.Tests.ScenarioTests
                         },
                     });
 
-                    TestUtilities.ValidateOperationResponse(createDbResponse, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(createDbResponse, HttpStatusCode.Created);
                     VerifyDatabaseInformation(createDbResponse.Database, serverLocation, defaultCollation, databaseEdition, defaultDatabaseSize, dbSloS0, dbSloS0);
                     //////////////////////////////////////////////////////////////////////
 
@@ -959,7 +945,7 @@ namespace Sql2.Tests.ScenarioTests
                     });
 
                     var getTde = sqlClient.TransparentDataEncryption.Get(resGroupName, serverName, databaseName);
-                    TestUtilities.ValidateOperationResponse(updateResponse, HttpStatusCode.OK);
+                    HyakTestUtilities.ValidateOperationResponse(updateResponse, HttpStatusCode.OK);
                     VerifyTransparentDataEncryptionInformation(TransparentDataEncryptionStates.Enabled, getTde.TransparentDataEncryption);
                     //////////////////////////////////////////////////////////////////////
 
@@ -980,7 +966,7 @@ namespace Sql2.Tests.ScenarioTests
                         }
                     });
 
-                    TestUtilities.ValidateOperationResponse(serverKeyCreateResponse, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(serverKeyCreateResponse, HttpStatusCode.Created);
                     VerifyServerKeyInformation(ServerKeyType.AzureKeyVault, serverKeyName, akvUri, serverKeyCreateResponse.ServerKey);
                     //////////////////////////////////////////////////////////////////////
 
@@ -995,7 +981,7 @@ namespace Sql2.Tests.ScenarioTests
                         }
                     });
 
-                    TestUtilities.ValidateOperationResponse(updateProtectorResponse, HttpStatusCode.OK);
+                    HyakTestUtilities.ValidateOperationResponse(updateProtectorResponse, HttpStatusCode.OK);
                     //////////////////////////////////////////////////////////////////////
 
                     //////////////////////////////////////////////////////////////////////

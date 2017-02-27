@@ -15,12 +15,14 @@
 
 using System;
 using System.Net;
-using Microsoft.Azure.Management.Resources;
-using Microsoft.Azure.Management.Resources.Models;
+using Microsoft.Azure.Management.ResourceManager;
+using Microsoft.Azure.Management.ResourceManager.Models;
 using Microsoft.Azure.Management.Sql;
 using Microsoft.Azure.Management.Sql.Models;
 using Microsoft.Azure.Test;
 using Xunit;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
+using Sql.Tests.Helpers;
 
 namespace Sql2.Tests.ScenarioTests
 {
@@ -34,14 +36,13 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 string resPoolName = TestUtilities.GenerateName("csm-sql-respoolcrud");
                 string resPool2Name = TestUtilities.GenerateName("csm-sql-respoolcrud");
 
                 Sql2ScenarioHelper.RunServerTestInEnvironment(
+                    context,
                     handler,
                     "12.0",
                     (sqlClient, resGroupName, server) =>
@@ -63,7 +64,7 @@ namespace Sql2.Tests.ScenarioTests
                             Properties = pool1Properties
                         });
 
-                        TestUtilities.ValidateOperationResponse(pool1, HttpStatusCode.Created);
+                        HyakTestUtilities.ValidateOperationResponse(pool1, HttpStatusCode.Created);
                         ValidateElasticPool(
                             pool1.ElasticPool,
                             resPoolName,
@@ -84,7 +85,7 @@ namespace Sql2.Tests.ScenarioTests
                             Properties = pool2Properties
                         });
 
-                        TestUtilities.ValidateOperationResponse(pool2, HttpStatusCode.Created);
+                        HyakTestUtilities.ValidateOperationResponse(pool2, HttpStatusCode.Created);
                         ValidateElasticPool(
                             pool2.ElasticPool,
                             resPool2Name,
@@ -106,7 +107,7 @@ namespace Sql2.Tests.ScenarioTests
                             Properties = pool1Properties
                         });
 
-                        TestUtilities.ValidateOperationResponse(pool3, HttpStatusCode.OK);
+                        HyakTestUtilities.ValidateOperationResponse(pool3, HttpStatusCode.OK);
                         ValidateElasticPool(
                             pool3.ElasticPool,
                             resPoolName,
@@ -120,7 +121,7 @@ namespace Sql2.Tests.ScenarioTests
                         // Get Elastic Pool Test.
                         var pool4 = sqlClient.ElasticPools.Get(resGroupName, server.Name, resPoolName);
 
-                        TestUtilities.ValidateOperationResponse(pool4, HttpStatusCode.OK);
+                        HyakTestUtilities.ValidateOperationResponse(pool4, HttpStatusCode.OK);
                         ValidateElasticPool(
                             pool4.ElasticPool,
                             resPoolName,
@@ -134,22 +135,22 @@ namespace Sql2.Tests.ScenarioTests
                         // Get Elastic Pool Test.
                         var pools = sqlClient.ElasticPools.List(resGroupName, server.Name);
 
-                        TestUtilities.ValidateOperationResponse(pools, HttpStatusCode.OK);
+                        HyakTestUtilities.ValidateOperationResponse(pools, HttpStatusCode.OK);
                         Assert.Equal(2, pools.ElasticPools.Count);
 
                         //////////////////////////////////////////////////////////////////////
                         // Get Elastic Pool Activity Test.
                         var activity = sqlClient.ElasticPools.ListActivity(resGroupName, server.Name, resPoolName);
-                        TestUtilities.ValidateOperationResponse(activity, HttpStatusCode.OK);
+                        HyakTestUtilities.ValidateOperationResponse(activity, HttpStatusCode.OK);
                         Assert.True(activity.ElasticPoolActivities.Count > 0);
 
                         //////////////////////////////////////////////////////////////////////
                         // Delete Elastic Pool Test.
                         var resp = sqlClient.ElasticPools.Delete(resGroupName, server.Name, pool1.ElasticPool.Name);
-                        TestUtilities.ValidateOperationResponse(resp, HttpStatusCode.OK);
+                        HyakTestUtilities.ValidateOperationResponse(resp, HttpStatusCode.OK);
 
                         resp = sqlClient.ElasticPools.Delete(resGroupName, server.Name, pool2.ElasticPool.Name);
-                        TestUtilities.ValidateOperationResponse(resp, HttpStatusCode.OK);
+                        HyakTestUtilities.ValidateOperationResponse(resp, HttpStatusCode.OK);
                     });
             }
         }
@@ -159,13 +160,12 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 string resPoolName = TestUtilities.GenerateName("csm-sql-respoolcrud");
 
                 Sql2ScenarioHelper.RunServerTestInEnvironment(
+                    context,
                     handler,
                     "12.0",
                     (sqlClient, resGroupName, server) =>
@@ -187,7 +187,7 @@ namespace Sql2.Tests.ScenarioTests
                             Properties = pool1Properties
                         });
 
-                        TestUtilities.ValidateOperationResponse(pool1, HttpStatusCode.Created);
+                        HyakTestUtilities.ValidateOperationResponse(pool1, HttpStatusCode.Created);
 
                         ////////////////////////////////////////////////////////////////////
                         // Create database in Elastic Pool
@@ -201,7 +201,7 @@ namespace Sql2.Tests.ScenarioTests
                             }
                         });
 
-                        TestUtilities.ValidateOperationResponse(db1, HttpStatusCode.Created);
+                        HyakTestUtilities.ValidateOperationResponse(db1, HttpStatusCode.Created);
 
                         //////////////////////////////////////////////////////////////////////
                         // Move database into Elastic Pool
@@ -214,7 +214,7 @@ namespace Sql2.Tests.ScenarioTests
                                 Edition = "Basic"
                             }
                         });
-                        TestUtilities.ValidateOperationResponse(db2, HttpStatusCode.Created);
+                        HyakTestUtilities.ValidateOperationResponse(db2, HttpStatusCode.Created);
 
                         var moveResult = sqlClient.Databases.CreateOrUpdate(resGroupName, server.Name, database2Name, new DatabaseCreateOrUpdateParameters()
                         {
@@ -224,12 +224,12 @@ namespace Sql2.Tests.ScenarioTests
                                 ElasticPoolName = pool1.ElasticPool.Name,
                             }
                         });
-                        TestUtilities.ValidateOperationResponse(moveResult, HttpStatusCode.OK);
+                        HyakTestUtilities.ValidateOperationResponse(moveResult, HttpStatusCode.OK);
 
                         //////////////////////////////////////////////////////////////////////
                         // Get database acitivity
                         var activity = sqlClient.ElasticPools.ListDatabaseActivity(resGroupName, server.Name, resPoolName);
-                        TestUtilities.ValidateOperationResponse(moveResult, HttpStatusCode.OK);
+                        HyakTestUtilities.ValidateOperationResponse(moveResult, HttpStatusCode.OK);
                         Assert.True(activity.ElasticPoolDatabaseActivities.Count > 0);
                     });
             }

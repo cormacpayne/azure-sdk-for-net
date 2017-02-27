@@ -21,6 +21,8 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Test;
 using Microsoft.Azure.Management.Sql;
 using Xunit;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
+using Sql.Tests.Helpers;
 
 namespace Sql2.Tests.ScenarioTests
 {
@@ -34,17 +36,15 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 // Management Clients
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
 
                 string regionName = "North Europe";
 
                 var capabilities = sqlClient.Capabilities.Get(regionName);
-                TestUtilities.ValidateOperationResponse(capabilities);
+                HyakTestUtilities.ValidateOperationResponse(capabilities);
 
                 // Make sure the right region is returned
                 Assert.True(NormalizedRegionName(capabilities.Capabilities.Name) == NormalizedRegionName(regionName));

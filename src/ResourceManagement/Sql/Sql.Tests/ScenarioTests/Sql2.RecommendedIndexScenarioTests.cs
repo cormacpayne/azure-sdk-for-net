@@ -4,12 +4,14 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Azure.Management.Resources;
-using Microsoft.Azure.Management.Resources.Models;
+using Microsoft.Azure.Management.ResourceManager;
+using Microsoft.Azure.Management.ResourceManager.Models;
 using Microsoft.Azure.Management.Sql;
 using Microsoft.Azure.Management.Sql.Models;
 using Microsoft.Azure.Test;
 using Xunit;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
+using Sql.Tests.Helpers;
 
 namespace Sql2.Tests.ScenarioTests
 {
@@ -29,11 +31,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void ListAllIndexesForServer()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var handler = new BasicDelegatingHandler();
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
                 var response = sqlClient.Databases.ListExpanded(ResourceGroupName, ServerName, Expand);
 
                 var index =
@@ -45,11 +46,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void GetSingleRecommendation()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var handler = new BasicDelegatingHandler();
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
                 var response = sqlClient.RecommendedIndexes.Get(ResourceGroupName, ServerName, DatabaseName, Schema,
                     TableName, IndexName);
 
@@ -61,11 +61,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void UpdateState()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var handler = new BasicDelegatingHandler();
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
 
                 var updateParams = new RecommendedIndexUpdateParameters
                 {

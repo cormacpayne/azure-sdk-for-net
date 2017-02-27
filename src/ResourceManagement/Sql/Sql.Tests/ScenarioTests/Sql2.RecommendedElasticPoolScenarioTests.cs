@@ -4,12 +4,14 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Azure.Management.Resources;
-using Microsoft.Azure.Management.Resources.Models;
+using Microsoft.Azure.Management.ResourceManager;
+using Microsoft.Azure.Management.ResourceManager.Models;
 using Microsoft.Azure.Management.Sql;
 using Microsoft.Azure.Management.Sql.Models;
 using Microsoft.Azure.Test;
 using Xunit;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
+using Sql.Tests.Helpers;
 
 namespace Sql2.Tests.ScenarioTests
 {
@@ -23,17 +25,16 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 Sql2ScenarioHelper.RunServerTestInEnvironment(
+                    context,
                     handler,
                     "12.0",
                     (sqlClient, resGroupName, server) =>
                     {
                         var response = sqlClient.RecommendedElasticPools.List(resGroupName, server.Name);
-                        TestUtilities.ValidateOperationResponse(response, HttpStatusCode.OK);
+                        HyakTestUtilities.ValidateOperationResponse(response, HttpStatusCode.OK);
                         Assert.Equal(2, response.RecommendedElasticPools.Count());
 
                         ValidateRecommendedElasticPool(response.RecommendedElasticPools[0],
@@ -57,17 +58,16 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 Sql2ScenarioHelper.RunServerTestInEnvironment(
+                    context,
                     handler,
                     "12.0",
                     (sqlClient, resGroupName, server) =>
                     {
                         var response = sqlClient.RecommendedElasticPools.ListExpanded(resGroupName, server.Name, "databases,metrics");
-                        TestUtilities.ValidateOperationResponse(response, HttpStatusCode.OK);
+                        HyakTestUtilities.ValidateOperationResponse(response, HttpStatusCode.OK);
                         Assert.Equal(2, response.RecommendedElasticPools.Count());
                         Assert.Equal(0, response.RecommendedElasticPools[0].Properties.Databases.Count);
                         Assert.Equal(3, response.RecommendedElasticPools[0].Properties.Metrics.Count);
@@ -83,17 +83,16 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 Sql2ScenarioHelper.RunServerTestInEnvironment(
+                    context,
                     handler,
                     "12.0",
                     (sqlClient, resGroupName, server) =>
                     {
                         var response = sqlClient.RecommendedElasticPools.Get(resGroupName, server.Name, "ElasticPool1");
-                        TestUtilities.ValidateOperationResponse(response, HttpStatusCode.OK);
+                        HyakTestUtilities.ValidateOperationResponse(response, HttpStatusCode.OK);
                         ValidateRecommendedElasticPool(response.RecommendedElasticPool,
                             "ElasticPool1",
                             "Microsoft.Sql/servers/recommendedElasticPools",
@@ -115,17 +114,16 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 Sql2ScenarioHelper.RunServerTestInEnvironment(
+                    context,
                     handler,
                     "12.0",
                     (sqlClient, resGroupName, server) =>
                     {
                         var response = sqlClient.RecommendedElasticPools.ListDatabases(resGroupName, server.Name, "ElasticPool1");
-                        TestUtilities.ValidateOperationResponse(response, HttpStatusCode.OK);
+                        HyakTestUtilities.ValidateOperationResponse(response, HttpStatusCode.OK);
                         Assert.Equal(1, response.Databases.Count());
                         Assert.Equal("28acaef5-d228-4660-bb67-546ec8482496", response.Databases[0].Properties.DatabaseId);
                     });
@@ -137,17 +135,16 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 Sql2ScenarioHelper.RunServerTestInEnvironment(
+                    context,
                     handler,
                     "12.0",
                     (sqlClient, resGroupName, server) =>
                     {
                         var response = sqlClient.RecommendedElasticPools.ListMetrics(resGroupName, server.Name, "ElasticPool1");
-                        TestUtilities.ValidateOperationResponse(response, HttpStatusCode.OK);
+                        HyakTestUtilities.ValidateOperationResponse(response, HttpStatusCode.OK);
                         Assert.Equal(3, response.RecommendedElasticPoolsMetrics.Count());
                         ValidateRecommendedElasticPoolMetric(
                             response.RecommendedElasticPoolsMetrics[0],

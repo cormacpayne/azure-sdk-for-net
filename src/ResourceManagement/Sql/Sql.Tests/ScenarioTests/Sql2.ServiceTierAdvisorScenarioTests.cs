@@ -4,12 +4,14 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Azure.Management.Resources;
-using Microsoft.Azure.Management.Resources.Models;
+using Microsoft.Azure.Management.ResourceManager;
+using Microsoft.Azure.Management.ResourceManager.Models;
 using Microsoft.Azure.Management.Sql;
 using Microsoft.Azure.Management.Sql.Models;
 using Microsoft.Azure.Test;
 using Xunit;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
+using Sql.Tests.Helpers;
 
 namespace Sql2.Tests.ScenarioTests
 {
@@ -23,17 +25,16 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 Sql2ScenarioHelper.RunServerTestInEnvironment(
+                    context,
                     handler,
                     "12.0",
                     (sqlClient, resGroupName, server) =>
                     {
                         var response = sqlClient.ServiceTierAdvisors.List(resGroupName, server.Name, "AdventureWorks2012");
-                        TestUtilities.ValidateOperationResponse(response, HttpStatusCode.OK);
+                        HyakTestUtilities.ValidateOperationResponse(response, HttpStatusCode.OK);
                         Assert.Equal(1, response.ServiceTierAdvisors.Count);
                         Assert.Equal("current", response.ServiceTierAdvisors[0].Name);
                         Assert.Equal("Web", response.ServiceTierAdvisors[0].Properties.CurrentServiceLevelObjective);
@@ -49,17 +50,16 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 Sql2ScenarioHelper.RunServerTestInEnvironment(
+                    context,
                     handler,
                     "12.0",
                     (sqlClient, resGroupName, server) =>
                     {
                         var response = sqlClient.ServiceTierAdvisors.Get(resGroupName, server.Name, "AdventureWorks2012", "Current");
-                        TestUtilities.ValidateOperationResponse(response, HttpStatusCode.OK);
+                        HyakTestUtilities.ValidateOperationResponse(response, HttpStatusCode.OK);
                         Assert.Equal("current", response.ServiceTierAdvisor.Name);
                         Assert.Equal("Web", response.ServiceTierAdvisor.Properties.CurrentServiceLevelObjective);
                         Assert.Equal("Basic", response.ServiceTierAdvisor.Properties.UsageBasedRecommendationServiceLevelObjective);
@@ -74,17 +74,16 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 Sql2ScenarioHelper.RunServerTestInEnvironment(
+                    context,
                     handler,
                     "12.0",
                     (sqlClient, resGroupName, server) =>
                     {
                         var response = sqlClient.Databases.GetExpanded(resGroupName, server.Name, "AutoScaleSterlingTest4", "upgradeHint,serviceTierAdvisors");
-                        TestUtilities.ValidateOperationResponse(response, HttpStatusCode.OK);
+                        HyakTestUtilities.ValidateOperationResponse(response, HttpStatusCode.OK);
                         Assert.Equal("AutoScaleSterlingTest4", response.Database.Name);
                         Assert.Equal("S2", response.Database.Properties.UpgradeHint.TargetServiceLevelObjective);
                         Assert.Equal(1, response.Database.Properties.ServiceTierAdvisors.Count);
@@ -99,17 +98,16 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 Sql2ScenarioHelper.RunServerTestInEnvironment(
+                    context,
                     handler,
                     "12.0",
                     (sqlClient, resGroupName, server) =>
                     {
                         var response = sqlClient.Databases.ListExpanded(resGroupName, server.Name, "upgradeHint,serviceTierAdvisors");
-                        TestUtilities.ValidateOperationResponse(response, HttpStatusCode.OK);
+                        HyakTestUtilities.ValidateOperationResponse(response, HttpStatusCode.OK);
                         Assert.Equal(12, response.Databases.Count);
                         Assert.Equal("AutoScaleSterlingTest4", response.Databases[0].Name);
                         Assert.Equal("S2", response.Databases[0].Properties.UpgradeHint.TargetServiceLevelObjective);

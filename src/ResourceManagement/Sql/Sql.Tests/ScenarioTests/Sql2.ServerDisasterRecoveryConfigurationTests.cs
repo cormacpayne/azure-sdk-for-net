@@ -24,6 +24,8 @@ using Microsoft.Azure.Management.Sql;
 using Microsoft.Azure.Management.Sql.Models;
 using Microsoft.Azure.Test;
 using Xunit;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
+using Sql.Tests.Helpers;
 
 namespace Sql2.Tests.ScenarioTests
 {
@@ -36,13 +38,12 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 string failoverAliasName = TestUtilities.GenerateName("csm-sql-drc-alias-");
 
                 Sql2ScenarioHelper.RunTwoServersTestInEnvironment(
+                    context,
                     handler,
                     "12.0",
                     true,
@@ -54,7 +55,7 @@ namespace Sql2.Tests.ScenarioTests
                         // Create and verify
                         //
                         ServerDisasterRecoveryConfigurationCreateOrUpdateResponse createResponse = CreateDrc(sqlClient, resGroupName, server1, server2, failoverAliasName);
-                        TestUtilities.ValidateOperationResponse(createResponse, HttpStatusCode.Created);
+                        HyakTestUtilities.ValidateOperationResponse(createResponse, HttpStatusCode.Created);
 
                         GetAndValidateDrc(sqlClient, resGroupName, server1.Name, failoverAliasName, server2.Name, true);
                         GetAndValidateDrc(sqlClient, resGroupName, server2.Name, failoverAliasName, server1.Name, false);
@@ -63,7 +64,7 @@ namespace Sql2.Tests.ScenarioTests
                         // 
                         Assert.Throws<Hyak.Common.CloudException>(() => sqlClient.ServerDisasterRecoveryConfigurations.Failover(resGroupName, server1.Name, failoverAliasName));
                         AzureOperationResponse failoverResponse = sqlClient.ServerDisasterRecoveryConfigurations.Failover(resGroupName, server2.Name, failoverAliasName);
-                        TestUtilities.ValidateOperationResponse(failoverResponse);
+                        HyakTestUtilities.ValidateOperationResponse(failoverResponse);
 
                         GetAndValidateDrc(sqlClient, resGroupName, server1.Name, failoverAliasName, server2.Name, false);
                         GetAndValidateDrc(sqlClient, resGroupName, server2.Name, failoverAliasName, server1.Name, true);
@@ -71,7 +72,7 @@ namespace Sql2.Tests.ScenarioTests
                         // Delete and verify
                         //
                         AzureOperationResponse deleteResponse = sqlClient.ServerDisasterRecoveryConfigurations.Delete(resGroupName, server1.Name, failoverAliasName);
-                        TestUtilities.ValidateOperationResponse(deleteResponse);
+                        HyakTestUtilities.ValidateOperationResponse(deleteResponse);
 
                         validateDrcNotExist(sqlClient, resGroupName, server1.Name, failoverAliasName);
                         validateDrcNotExist(sqlClient, resGroupName, server2.Name, failoverAliasName);

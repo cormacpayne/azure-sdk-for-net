@@ -18,6 +18,7 @@ using Microsoft.Azure.Management.Sql;
 using Microsoft.Azure.Management.Sql.Models;
 using Microsoft.Azure.Test;
 using Xunit;
+using Sql.Tests.Helpers;
 
 namespace Sql2.Tests.ScenarioTests
 {
@@ -38,7 +39,7 @@ namespace Sql2.Tests.ScenarioTests
             DatabaseAuditingPolicyProperties properties = getDefaultDatabasePolicyResponse.AuditingPolicy.Properties;
 
             // Verify that the initial Get request contains the default policy.
-            TestUtilities.ValidateOperationResponse(getDefaultDatabasePolicyResponse, HttpStatusCode.OK);
+            HyakTestUtilities.ValidateOperationResponse(getDefaultDatabasePolicyResponse, HttpStatusCode.OK);
             VerifyDatabaseAuditingPolicyInformation(GetDefaultDatabaseAuditProperties(), properties);
 
             // Modify the policy properties, send and receive, see it its still ok
@@ -49,13 +50,13 @@ namespace Sql2.Tests.ScenarioTests
             var updateResponse = sqlClient.AuditingPolicy.CreateOrUpdateDatabasePolicy(resourceGroupName, server.Name, database.Name, updateParams);
 
             // Verify that the initial Get request contains the default policy.
-            TestUtilities.ValidateOperationResponse(updateResponse, HttpStatusCode.OK);
+            HyakTestUtilities.ValidateOperationResponse(updateResponse, HttpStatusCode.OK);
 
             DatabaseAuditingPolicyGetResponse getUpdatedPolicyResponse = sqlClient.AuditingPolicy.GetDatabasePolicy(resourceGroupName, server.Name, database.Name);
             DatabaseAuditingPolicyProperties updatedProperties = getUpdatedPolicyResponse.AuditingPolicy.Properties;
 
             // Verify that the Get request contains the updated policy.
-            TestUtilities.ValidateOperationResponse(getUpdatedPolicyResponse, HttpStatusCode.OK); 
+            HyakTestUtilities.ValidateOperationResponse(getUpdatedPolicyResponse, HttpStatusCode.OK); 
             VerifyDatabaseAuditingPolicyInformation(properties, updatedProperties);
         }
   
@@ -110,7 +111,7 @@ namespace Sql2.Tests.ScenarioTests
             ServerAuditingPolicyProperties properties = getDefaultServerPolicyResponse.AuditingPolicy.Properties;
 
             // Verify that the initial Get request contains the default policy.
-            TestUtilities.ValidateOperationResponse(getDefaultServerPolicyResponse, HttpStatusCode.OK);
+            HyakTestUtilities.ValidateOperationResponse(getDefaultServerPolicyResponse, HttpStatusCode.OK);
             VerifyServerAuditingPolicyInformation(GetDefaultServerAuditProperties(), properties);
 
             // Modify the policy properties, send and receive, see it its still ok
@@ -121,13 +122,13 @@ namespace Sql2.Tests.ScenarioTests
             var updateResponse = sqlClient.AuditingPolicy.CreateOrUpdateServerPolicy(resourceGroupName, server.Name, updateParams);
 
             // Verify that the initial Get request of contains the default policy.
-            TestUtilities.ValidateOperationResponse(updateResponse, HttpStatusCode.OK);
+            HyakTestUtilities.ValidateOperationResponse(updateResponse, HttpStatusCode.OK);
 
             ServerAuditingPolicyGetResponse getUpdatedPolicyResponse = sqlClient.AuditingPolicy.GetServerPolicy(resourceGroupName, server.Name);
             ServerAuditingPolicyProperties updatedProperties = getUpdatedPolicyResponse.AuditingPolicy.Properties;
 
             // Verify that the Get request contains the updated policy.
-            TestUtilities.ValidateOperationResponse(getUpdatedPolicyResponse, HttpStatusCode.OK);
+            HyakTestUtilities.ValidateOperationResponse(getUpdatedPolicyResponse, HttpStatusCode.OK);
             VerifyServerAuditingPolicyInformation(properties, updatedProperties);
         }
 
@@ -198,10 +199,9 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void ServerAuditingPolicyLifecycleTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-                Sql2ScenarioHelper.RunServerTestInEnvironment(new BasicDelegatingHandler(), "2.0", TestServerAuditingAPIs);
+                Sql2ScenarioHelper.RunServerTestInEnvironment(context, new BasicDelegatingHandler(), "2.0", TestServerAuditingAPIs);
             }
         }
 
@@ -211,10 +211,9 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void DatabaseAuditingPolicyLifecycleTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-                Sql2ScenarioHelper.RunDatabaseTestInEnvironment(new BasicDelegatingHandler(), "2.0", TestDatabaseAuditingAPIs);
+                Sql2ScenarioHelper.RunDatabaseTestInEnvironment(context, new BasicDelegatingHandler(), "2.0", TestDatabaseAuditingAPIs);
             }
         }
     }

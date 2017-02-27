@@ -5,13 +5,15 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Azure.Management.Resources;
-using Microsoft.Azure.Management.Resources.Models;
+using Microsoft.Azure.Management.ResourceManager;
+using Microsoft.Azure.Management.ResourceManager.Models;
 using Microsoft.Azure.Management.Sql;
 using Microsoft.Azure.Management.Sql.Models;
 using Microsoft.Azure.Test;
 using Microsoft.Data.Edm;
 using Xunit;
+using Sql.Tests.Helpers;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
 
 namespace Sql2.Tests.ScenarioTests
 {
@@ -37,11 +39,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void ListRecommendedActionsForServerAdvisor()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var handler = new BasicDelegatingHandler();
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
                 var response = sqlClient.ServerRecommendedActions.List(ResourceGroupName, ServerName, AdvisorName);
 
                 ValidateRecommendedActionList(response.RecommendedActions, ServerRecommendedActionType);
@@ -54,11 +55,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void GetSingleRecommendedActionForServerAdvisor()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var handler = new BasicDelegatingHandler();
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
                 var response = sqlClient.ServerRecommendedActions.Get(ResourceGroupName, ServerName, AdvisorName, RecommendedActionName);
 
                 ValidateSingleRecommendedAction(response.RecommendedAction, ServerRecommendedActionType);
@@ -71,11 +71,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void UpdateServerRecommendedActionState()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var handler = new BasicDelegatingHandler();
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
                 RecommendedActionUpdateParameters updateParameters = new RecommendedActionUpdateParameters()
                 {
                     Properties = new RecommendedActionUpdateProperties()
@@ -98,11 +97,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void ListRecommendedActionsForDatabaseAdvisor()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var handler = new BasicDelegatingHandler();
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
                 var response = sqlClient.DatabaseRecommendedActions.List(ResourceGroupName, ServerName, DatabaseName, AdvisorName);
 
                 ValidateRecommendedActionList(response.RecommendedActions, DatabaseRecommendedActionType);
@@ -115,11 +113,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void GetSingleRecommendedActionForDatabaseAdvisor()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var handler = new BasicDelegatingHandler();
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
                 var response = sqlClient.DatabaseRecommendedActions.Get(ResourceGroupName, ServerName, DatabaseName, AdvisorName, RecommendedActionName);
 
                 ValidateSingleRecommendedAction(response.RecommendedAction, DatabaseRecommendedActionType);
@@ -132,11 +129,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void UpdateDatabaseRecommendedActionState()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var handler = new BasicDelegatingHandler();
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
                 RecommendedActionUpdateParameters updateParameters = new RecommendedActionUpdateParameters()
                 {
                     Properties = new RecommendedActionUpdateProperties()
@@ -159,11 +155,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void ListRecommendedActionsForElasticPoolAdvisor()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var handler = new BasicDelegatingHandler();
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
                 var response = sqlClient.ElasticPoolRecommendedActions.List(ResourceGroupName, ServerName, ElasticPoolName, AdvisorName);
 
                 ValidateRecommendedActionList(response.RecommendedActions, ElasticPoolRecommendedActionType);
@@ -176,11 +171,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void GetSingleRecommendedActionForElasticPoolAdvisor()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var handler = new BasicDelegatingHandler();
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
                 var response = sqlClient.ElasticPoolRecommendedActions.Get(ResourceGroupName, ServerName, ElasticPoolName, AdvisorName, RecommendedActionName);
 
                 ValidateSingleRecommendedAction(response.RecommendedAction, ElasticPoolRecommendedActionType);
@@ -193,11 +187,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void UpdateElasticPoolRecommendedActionState()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var handler = new BasicDelegatingHandler();
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
                 RecommendedActionUpdateParameters updateParameters = new RecommendedActionUpdateParameters()
                 {
                     Properties = new RecommendedActionUpdateProperties()

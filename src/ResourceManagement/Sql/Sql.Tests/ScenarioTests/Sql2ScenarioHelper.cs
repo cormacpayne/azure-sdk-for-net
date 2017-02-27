@@ -13,14 +13,16 @@
 // limitations under the License.
 //
 
-using Microsoft.Azure.Management.Resources;
-using Microsoft.Azure.Management.Resources.Models;
+using Microsoft.Azure.Management.ResourceManager;
+using Microsoft.Azure.Management.ResourceManager.Models;
 using Microsoft.Azure.Management.Sql;
 using Microsoft.Azure.Management.Sql.Models;
 using Microsoft.Azure.Test;
 using System;
 using System.Net.Http;
 using Sql.Tests;
+using Sql.Tests.Helpers;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
 
 namespace Sql2.Tests.ScenarioTests
 {
@@ -38,18 +40,18 @@ namespace Sql2.Tests.ScenarioTests
         /// Generate a SQL Client from the test base to use.
         /// </summary>
         /// <returns>SQL Client</returns>
-        public static SqlManagementClient GetSqlClient(DelegatingHandler handler)
+        public static SqlManagementClient GetSqlClient(HyakMockContext context, DelegatingHandler handler)
         {
-            return TestBase.GetServiceClient<SqlManagementClient>(new CSMTestEnvironmentFactory()).WithHandler(handler);
+            return context.GetGraphServiceClient<SqlManagementClient>().WithHandler(handler);
         }
 
         /// <summary>
         /// Generate a Resource Management client from the test base to use for managing resource groups.
         /// </summary>
         /// <returns>Resource Management client</returns>
-        public static ResourceManagementClient GetResourceClient(DelegatingHandler handler)
+        public static ResourceManagementClient GetResourceClient(HyakMockContext context, DelegatingHandler handler)
         {
-            return TestBase.GetServiceClient<ResourceManagementClient>(new CSMTestEnvironmentFactory()).WithHandler(handler);
+            return context.GetServiceClient<ResourceManagementClient>(TestEnvironmentFactory.GetTestEnvironment(), false, new DelegatingHandler[] { handler });
         }
 
         /// <summary>
@@ -60,9 +62,9 @@ namespace Sql2.Tests.ScenarioTests
         /// <param name="handler">A delegation handler to create a Sql client based on it</param>
         /// <param name="serverVersion">The version of the server being created</param>
         /// <param name="test">A function that receives a sql client, names of a created resource group and server</param>
-        public static void RunServerTestInEnvironment(BasicDelegatingHandler handler, string serverVersion, Action<SqlManagementClient, string, Server> test)
+        public static void RunServerTestInEnvironment(HyakMockContext context, BasicDelegatingHandler handler, string serverVersion, Action<SqlManagementClient, string, Server> test)
         {
-            RunServerTestInEnvironment(handler, serverVersion, TestEnvironmentRegion, test);
+            RunServerTestInEnvironment(context, handler, serverVersion, TestEnvironmentRegion, test);
         }
 
         /// <summary>
@@ -74,11 +76,11 @@ namespace Sql2.Tests.ScenarioTests
         /// <param name="serverVersion">The version of the server being created</param>
         /// <param name="serverLocation">The location of the server being created</param>
         /// <param name="test">A function that receives a sql client, names of a created resource group and server</param>
-        public static void RunServerTestInEnvironment(BasicDelegatingHandler handler, string serverVersion, string serverLocation, Action<SqlManagementClient, string, Server> test)
+        public static void RunServerTestInEnvironment(HyakMockContext context, BasicDelegatingHandler handler, string serverVersion, string serverLocation, Action<SqlManagementClient, string, Server> test)
         {
             // Management Clients
-            var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
-            var resClient = Sql2ScenarioHelper.GetResourceClient(handler);
+            var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
+            var resClient = Sql2ScenarioHelper.GetResourceClient(context, handler);
 
             // Variables for server create
             string serverName = TestUtilities.GenerateName("csm-sql-server-");
@@ -126,9 +128,9 @@ namespace Sql2.Tests.ScenarioTests
         /// <param name="handler">A delegation handler to create a Sql client based on it</param>
         /// <param name="serverVersion">The version of the server being created</param>
         /// <param name="test">A function that receives a sql client, names of a created resource group and server</param>
-        public static void RunTwoServersTestInEnvironment(BasicDelegatingHandler handler, string serverVersion, bool useDifferentEnvironments, Action<SqlManagementClient, string, Server, Server> test)
+        public static void RunTwoServersTestInEnvironment(HyakMockContext context, BasicDelegatingHandler handler, string serverVersion, bool useDifferentEnvironments, Action<SqlManagementClient, string, Server, Server> test)
         {
-            RunTwoServersTestInEnvironment(handler, serverVersion, TestEnvironmentRegion, useDifferentEnvironments ? TestEnvironmentSecondaryRegion: TestEnvironmentRegion, test);
+            RunTwoServersTestInEnvironment(context, handler, serverVersion, TestEnvironmentRegion, useDifferentEnvironments ? TestEnvironmentSecondaryRegion: TestEnvironmentRegion, test);
         }
 
         /// <summary>
@@ -141,11 +143,11 @@ namespace Sql2.Tests.ScenarioTests
         /// <param name="serverLocation">The location of the server being created</param>
         /// <param name="secondaryServerLocation">The location of the second server being created</param>
         /// <param name="test">A function that receives a sql client, names of a created resource group and server</param>
-        public static void RunTwoServersTestInEnvironment(BasicDelegatingHandler handler, string serverVersion, string serverLocation, string secondaryServerLocation, Action<SqlManagementClient, string, Server, Server> test)
+        public static void RunTwoServersTestInEnvironment(HyakMockContext context, BasicDelegatingHandler handler, string serverVersion, string serverLocation, string secondaryServerLocation, Action<SqlManagementClient, string, Server, Server> test)
         {
             // Management Clients
-            var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
-            var resClient = Sql2ScenarioHelper.GetResourceClient(handler);
+            var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
+            var resClient = Sql2ScenarioHelper.GetResourceClient(context, handler);
 
             // Variables for server create.
             string resGroupName = TestUtilities.GenerateName("csm-sql-rg-");
@@ -209,10 +211,10 @@ namespace Sql2.Tests.ScenarioTests
         /// <param name="handler">A delegation handler to create a Sql client based on it</param>
         /// <param name="serverVersion">The version of the server being created</param>
         /// <param name="test">A function that receives a sql client, names of a created resource group, server and database</param>
-        public static void RunDatabaseTestInEnvironment(BasicDelegatingHandler handler, string serverVersion, Action<SqlManagementClient, string, Server, Database> test)
+        public static void RunDatabaseTestInEnvironment(HyakMockContext context, BasicDelegatingHandler handler, string serverVersion, Action<SqlManagementClient, string, Server, Database> test)
         {
             var testAdapter = new Action<SqlManagementClient, string, Server>((sqlClient, rgName, server) => RunDbTest(sqlClient, rgName, server, test));
-            RunServerTestInEnvironment(handler, serverVersion, testAdapter);
+            RunServerTestInEnvironment(context, handler, serverVersion, testAdapter);
         }
 
         /// <summary>
@@ -226,10 +228,10 @@ namespace Sql2.Tests.ScenarioTests
         /// <param name="serverVersion">The version of the server being created</param>
         /// <param name="serverLocation">The location of the server being created</param>
         /// <param name="test">A function that receives a sql client, names of a created resource group, server and database</param>
-        public static void RunDatabaseTestInEnvironment(BasicDelegatingHandler handler, string serverVersion, string serverLocation, Action<SqlManagementClient, string, Server, Database> test)
+        public static void RunDatabaseTestInEnvironment(HyakMockContext context, BasicDelegatingHandler handler, string serverVersion, string serverLocation, Action<SqlManagementClient, string, Server, Database> test)
         {
             var testAdapter = new Action<SqlManagementClient, string, Server>((sqlClient, rgName, server) => RunDbTest(sqlClient, rgName, server, test));
-            RunServerTestInEnvironment(handler, serverVersion, serverLocation, testAdapter);
+            RunServerTestInEnvironment(context, handler, serverVersion, serverLocation, testAdapter);
         }
 
         /// <summary>

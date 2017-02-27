@@ -18,6 +18,7 @@ using Microsoft.Azure.Management.Sql;
 using Microsoft.Azure.Management.Sql.Models;
 using Microsoft.Azure.Test;
 using Xunit;
+using Sql.Tests.Helpers;
 
 namespace Sql2.Tests.ScenarioTests
 {
@@ -37,7 +38,7 @@ namespace Sql2.Tests.ScenarioTests
             DatabaseSecureConnectionPolicyProperties properties = getDefaultSecureConnectionPolicyResponse.SecureConnectionPolicy.Properties;
 
             // Verify that the initial Get request contains the default policy.
-            TestUtilities.ValidateOperationResponse(getDefaultSecureConnectionPolicyResponse, HttpStatusCode.OK);
+            HyakTestUtilities.ValidateOperationResponse(getDefaultSecureConnectionPolicyResponse, HttpStatusCode.OK);
             VerifySecureConnectionPolicyInformation(getDefaultSecureConnectionPolicyProperties(server.Name), properties);
 
             // Modify the policy properties, send and receive, see it its still ok
@@ -48,13 +49,13 @@ namespace Sql2.Tests.ScenarioTests
             var updateResponse = sqlClient.SecureConnection.CreateOrUpdateDatabasePolicy(resourceGroupName, server.Name, database.Name, updateParams);
 
             // Verify that the initial Get request of contains the default policy.
-            TestUtilities.ValidateOperationResponse(updateResponse, HttpStatusCode.OK);
+            HyakTestUtilities.ValidateOperationResponse(updateResponse, HttpStatusCode.OK);
 
             DatabaseSecureConnectionPolicyGetResponse getUpdatedPolicyResponse = sqlClient.SecureConnection.GetDatabasePolicy(resourceGroupName, server.Name, database.Name);
             DatabaseSecureConnectionPolicyProperties updatedProperties = getUpdatedPolicyResponse.SecureConnectionPolicy.Properties;
 
             // Verify that the Get request contains the updated policy.
-            TestUtilities.ValidateOperationResponse(getUpdatedPolicyResponse, HttpStatusCode.OK);
+            HyakTestUtilities.ValidateOperationResponse(getUpdatedPolicyResponse, HttpStatusCode.OK);
             VerifySecureConnectionPolicyInformation(properties, updatedProperties);
         }
 
@@ -102,10 +103,9 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void SecureConnectionPolicyLifecycleTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-                Sql2ScenarioHelper.RunDatabaseTestInEnvironment(new BasicDelegatingHandler(), "2.0", TestSecureConnectionAPIs);
+                Sql2ScenarioHelper.RunDatabaseTestInEnvironment(context, new BasicDelegatingHandler(), "2.0", TestSecureConnectionAPIs);
             }
         }
     }

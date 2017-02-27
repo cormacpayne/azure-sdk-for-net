@@ -14,8 +14,8 @@
 //
 
 using Microsoft.Azure;
-using Microsoft.Azure.Management.Resources;
-using Microsoft.Azure.Management.Resources.Models;
+using Microsoft.Azure.Management.ResourceManager;
+using Microsoft.Azure.Management.ResourceManager.Models;
 using Microsoft.Azure.Management.Sql;
 using Microsoft.Azure.Management.Sql.Models;
 using Microsoft.Azure.Test;
@@ -26,6 +26,8 @@ using System.Net;
 using System.Net.Http;
 using Sql.Tests;
 using Xunit;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
+using Sql.Tests.Helpers;
 
 namespace Sql2.Tests.ScenarioTests
 {
@@ -42,13 +44,11 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 // Management Clients
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
-                var resClient = Sql2ScenarioHelper.GetResourceClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
+                var resClient = Sql2ScenarioHelper.GetResourceClient(context, handler);
 
                 // Variables for server creation.
                 string serverName = TestUtilities.GenerateName("csm-sql-backup");
@@ -92,7 +92,7 @@ namespace Sql2.Tests.ScenarioTests
                     });
 
                     // Verify the the response from the service contains the right information
-                    TestUtilities.ValidateOperationResponse(createResponse, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(createResponse, HttpStatusCode.Created);
                     //////////////////////////////////////////////////////////////////////
 
                     //////////////////////////////////////////////////////////////////////
@@ -110,7 +110,7 @@ namespace Sql2.Tests.ScenarioTests
                         },
                     });
 
-                    TestUtilities.ValidateOperationResponse(createDbResponse, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(createDbResponse, HttpStatusCode.Created);
 
                     // Create standard database
                     createDbResponse = sqlClient.Databases.CreateOrUpdate(resGroupName, serverName, standardDatabaseName, new DatabaseCreateOrUpdateParameters()
@@ -124,7 +124,7 @@ namespace Sql2.Tests.ScenarioTests
                         },
                     });
 
-                    TestUtilities.ValidateOperationResponse(createDbResponse, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(createDbResponse, HttpStatusCode.Created);
                     //////////////////////////////////////////////////////////////////////
 
                     //////////////////////////////////////////////////////////////////////
@@ -133,7 +133,7 @@ namespace Sql2.Tests.ScenarioTests
                     RestorePointListResponse restorePointsListResponse = sqlClient.DatabaseBackup.ListRestorePoints(resGroupName, serverName, databaseName);
 
                     // Creating a data warehouse database should not have any discrete restore points right after.
-                    TestUtilities.ValidateOperationResponse(restorePointsListResponse, HttpStatusCode.OK);
+                    HyakTestUtilities.ValidateOperationResponse(restorePointsListResponse, HttpStatusCode.OK);
                     ValidateRestorePointListResponse(restorePointsListResponse, true, 0);
                     ///////////////////////////////////////////////////////////////////////
 
@@ -142,7 +142,7 @@ namespace Sql2.Tests.ScenarioTests
 
                     restorePointsListResponse = sqlClient.DatabaseBackup.ListRestorePoints(resGroupName, serverName, standardDatabaseName);
 
-                    TestUtilities.ValidateOperationResponse(restorePointsListResponse, HttpStatusCode.OK);
+                    HyakTestUtilities.ValidateOperationResponse(restorePointsListResponse, HttpStatusCode.OK);
                     ValidateRestorePointListResponse(restorePointsListResponse, false, 1);
                     ///////////////////////////////////////////////////////////////////////
                 }
@@ -162,13 +162,11 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 // Management Clients
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
-                var resClient = Sql2ScenarioHelper.GetResourceClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
+                var resClient = Sql2ScenarioHelper.GetResourceClient(context, handler);
 
                 // Use a preconfigured runner server/db in order to test this
                 // Create a resource group/server/db with the following details prior to running this test
@@ -226,7 +224,7 @@ namespace Sql2.Tests.ScenarioTests
                     }
                 });
 
-                TestUtilities.ValidateOperationResponse(geoRestoreDbResponse, HttpStatusCode.Created);
+                HyakTestUtilities.ValidateOperationResponse(geoRestoreDbResponse, HttpStatusCode.Created);
             }
         }
 
@@ -238,13 +236,11 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 // Management Clients
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
-                var resClient = Sql2ScenarioHelper.GetResourceClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
+                var resClient = Sql2ScenarioHelper.GetResourceClient(context, handler);
 
                 // Variables for server creation.
                 string serverName = "csm-sql-backup31415";
@@ -280,7 +276,7 @@ namespace Sql2.Tests.ScenarioTests
                 });
 
                 // Verify the the response from the service contains the right information
-                TestUtilities.ValidateOperationResponse(createResponse, HttpStatusCode.Created);
+                HyakTestUtilities.ValidateOperationResponse(createResponse, HttpStatusCode.Created);
                 //////////////////////////////////////////////////////////////////////
 
                 // Create standard database
@@ -295,13 +291,13 @@ namespace Sql2.Tests.ScenarioTests
                     },
                 });
 
-                TestUtilities.ValidateOperationResponse(createDbResponse, HttpStatusCode.Created);
+                HyakTestUtilities.ValidateOperationResponse(createDbResponse, HttpStatusCode.Created);
                 //////////////////////////////////////////////////////////////////////
 
                 // If first run on a live cluster, wait 10 minutes for backup to be taken (set a breakpoint to stop execution here)
                 var deleteDbResponse = sqlClient.Databases.Delete(resGroupName, serverName, standardDatabaseName);
 
-                TestUtilities.ValidateOperationResponse(deleteDbResponse, HttpStatusCode.OK);
+                HyakTestUtilities.ValidateOperationResponse(deleteDbResponse, HttpStatusCode.OK);
 
                 DeletedDatabaseBackupListResponse deletedDatabaseBackups = sqlClient.DatabaseBackup.ListDeletedDatabaseBackups(resGroupName, serverName);
 
@@ -318,7 +314,7 @@ namespace Sql2.Tests.ScenarioTests
                     }
                 });
 
-                TestUtilities.ValidateOperationResponse(restoreDroppedDbResponse, HttpStatusCode.Created);
+                HyakTestUtilities.ValidateOperationResponse(restoreDroppedDbResponse, HttpStatusCode.Created);
             }
         }
 
@@ -330,13 +326,11 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 // Management Clients
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
-                var resClient = Sql2ScenarioHelper.GetResourceClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
+                var resClient = Sql2ScenarioHelper.GetResourceClient(context, handler);
 
                 // Use a preconfigured runner server/db in order to test this
                 // Create a resource group/server/db/vault with the following details prior to running this test
@@ -367,13 +361,11 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 // Management Clients
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
-                var resClient = Sql2ScenarioHelper.GetResourceClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
+                var resClient = Sql2ScenarioHelper.GetResourceClient(context, handler);
 
                 string serverName = "hchung-testsvr";
                 string resGroupName = "hchung";
@@ -403,13 +395,11 @@ namespace Sql2.Tests.ScenarioTests
         {
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 // Management Clients
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
-                var resClient = Sql2ScenarioHelper.GetResourceClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
+                var resClient = Sql2ScenarioHelper.GetResourceClient(context, handler);
 
                 // Variables for server creation.
                 string serverName = "hchung-testsvr2";
@@ -426,7 +416,7 @@ namespace Sql2.Tests.ScenarioTests
                     },
                 });
 
-                TestUtilities.ValidateOperationResponse(createDbResponse, HttpStatusCode.Created);
+                HyakTestUtilities.ValidateOperationResponse(createDbResponse, HttpStatusCode.Created);
                 //////////////////////////////////////////////////////////////////////
 
                 string databaseId = createDbResponse.Database.Id;
@@ -446,7 +436,7 @@ namespace Sql2.Tests.ScenarioTests
                     }
                 });
 
-                TestUtilities.ValidateOperationResponse(restoreDbResponse, HttpStatusCode.Created);
+                HyakTestUtilities.ValidateOperationResponse(restoreDbResponse, HttpStatusCode.Created);
             }
         }
 
@@ -465,13 +455,11 @@ namespace Sql2.Tests.ScenarioTests
 
             var handler = new BasicDelegatingHandler();
 
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 // Management Clients
-                var sqlClient = Sql2ScenarioHelper.GetSqlClient(handler);
-                var resClient = Sql2ScenarioHelper.GetResourceClient(handler);
+                var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
+                var resClient = Sql2ScenarioHelper.GetResourceClient(context, handler);
 
                 // Retrieve current state of the policy
                 GeoBackupPolicyGetResponse resp = sqlClient.DatabaseBackup.GetGeoBackupPolicy(resourceGroupName, serverName, databaseName, geoBackupPolicyName);

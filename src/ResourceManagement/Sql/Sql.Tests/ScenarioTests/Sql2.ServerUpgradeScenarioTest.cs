@@ -24,6 +24,8 @@ using System.Net;
 using Hyak.Common;
 using Microsoft.Azure.Test.HttpRecorder;
 using Xunit;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
+using Sql.Tests.Helpers;
 
 namespace Sql2.Tests.ScenarioTests
 {
@@ -73,10 +75,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void PositiveTestEmptyServer()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 Sql2ScenarioHelper.RunServerTestInEnvironment(
+                    context,
                     new BasicDelegatingHandler(), 
                     currentVersion, 
                     serverLocation, 
@@ -91,10 +93,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void PositiveTestWithRecommendedDatabase()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 Sql2ScenarioHelper.RunDatabaseTestInEnvironment(
+                    context,
                     new BasicDelegatingHandler(), 
                     currentVersion, 
                     serverLocation, 
@@ -110,10 +112,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void PositiveTestWithElasticPool()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 Sql2ScenarioHelper.RunDatabaseTestInEnvironment(
+                    context,
                     new BasicDelegatingHandler(),
                     currentVersion,
                     serverLocation,
@@ -128,10 +130,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void PositiveTestWithCancel()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 Sql2ScenarioHelper.RunServerTestInEnvironment(
+                    context,
                     new BasicDelegatingHandler(), 
                     currentVersion, 
                     serverLocation, 
@@ -145,10 +147,10 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void NegativeTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 Sql2ScenarioHelper.RunDatabaseTestInEnvironment(
+                    context,
                     new BasicDelegatingHandler(), 
                     currentVersion, 
                     serverLocation, 
@@ -194,22 +196,22 @@ namespace Sql2.Tests.ScenarioTests
                 }
 
                 // status must be Queued or InProgress
-                Assert.True(getUpgradeResponse.Status.Equals(upgradeStatusQueued, StringComparison.InvariantCultureIgnoreCase) ||
-                            getUpgradeResponse.Status.Equals(upgradeStatusInProgress, StringComparison.InvariantCultureIgnoreCase));
+                Assert.True(getUpgradeResponse.Status.Equals(upgradeStatusQueued, StringComparison.OrdinalIgnoreCase) ||
+                            getUpgradeResponse.Status.Equals(upgradeStatusInProgress, StringComparison.OrdinalIgnoreCase));
 
                 System.Threading.Thread.Sleep(TimeSpan.FromSeconds(upgradePollingTimeInSeconds));
             }
 
             // Make sure that server has new version
             var serverGetResponse = sqlClient.Servers.Get(resourceGroupName, server.Name);
-            TestUtilities.ValidateOperationResponse(serverGetResponse);
+            HyakTestUtilities.ValidateOperationResponse(serverGetResponse);
             Assert.Equal(serverGetResponse.Server.Properties.Version, upgradedVersion);
 
             if (recommendedDatabase != null)
             {
                 // Make sure that database has new edition
                 var databaseGetResponse = sqlClient.Databases.Get(resourceGroupName, server.Name, recommendedDatabase.Name);
-                TestUtilities.ValidateOperationResponse(databaseGetResponse);
+                HyakTestUtilities.ValidateOperationResponse(databaseGetResponse);
                 Assert.Equal(databaseGetResponse.Database.Properties.Edition, targetEdition);
             }
         }
@@ -240,22 +242,22 @@ namespace Sql2.Tests.ScenarioTests
                 }
 
                 // status must be Queued or InProgress
-                Assert.True(getUpgradeResponse.Status.Equals(upgradeStatusQueued, StringComparison.InvariantCultureIgnoreCase) ||
-                            getUpgradeResponse.Status.Equals(upgradeStatusInProgress, StringComparison.InvariantCultureIgnoreCase));
+                Assert.True(getUpgradeResponse.Status.Equals(upgradeStatusQueued, StringComparison.OrdinalIgnoreCase) ||
+                            getUpgradeResponse.Status.Equals(upgradeStatusInProgress, StringComparison.OrdinalIgnoreCase));
 
                 System.Threading.Thread.Sleep(TimeSpan.FromSeconds(upgradePollingTimeInSeconds));
             }
 
             // Make sure that server has new version
             var serverGetResponse = sqlClient.Servers.Get(resourceGroupName, server.Name);
-            TestUtilities.ValidateOperationResponse(serverGetResponse);
+            HyakTestUtilities.ValidateOperationResponse(serverGetResponse);
             Assert.Equal(serverGetResponse.Server.Properties.Version, upgradedVersion);
 
             if (databaseInElasticPool != null)
             {
                 // Make sure that elastic pool has desired properties
                 var elasticPoolListGetResponse = sqlClient.ElasticPools.List(resourceGroupName, server.Name);
-                TestUtilities.ValidateOperationResponse(elasticPoolListGetResponse);
+                HyakTestUtilities.ValidateOperationResponse(elasticPoolListGetResponse);
                 Assert.Equal(elasticPoolListGetResponse.ElasticPools.Count, 1);
                 var elasticPool = elasticPoolListGetResponse.ElasticPools.FirstOrDefault();
                 var expectedElasticPool = parameters.Properties.ElasticPoolCollection.FirstOrDefault();
@@ -303,12 +305,12 @@ namespace Sql2.Tests.ScenarioTests
                 if (cancelSent)
                 {
                     // status must be Cancelling
-                    Assert.True(getUpgradeResponse.Status.Equals(upgradeStatusCancelling, StringComparison.InvariantCultureIgnoreCase));
+                    Assert.True(getUpgradeResponse.Status.Equals(upgradeStatusCancelling, StringComparison.OrdinalIgnoreCase));
                 }
                 else
                 {
-                    Assert.True(getUpgradeResponse.Status.Equals(upgradeStatusQueued, StringComparison.InvariantCultureIgnoreCase) ||
-                        getUpgradeResponse.Status.Equals(upgradeStatusInProgress, StringComparison.InvariantCultureIgnoreCase));
+                    Assert.True(getUpgradeResponse.Status.Equals(upgradeStatusQueued, StringComparison.OrdinalIgnoreCase) ||
+                        getUpgradeResponse.Status.Equals(upgradeStatusInProgress, StringComparison.OrdinalIgnoreCase));
 
                     var cancelResponse = sqlClient.ServerUpgrades.Cancel(resourceGroupName, server.Name);
                     Assert.True(cancelResponse.StatusCode == HttpStatusCode.Accepted);
@@ -319,7 +321,7 @@ namespace Sql2.Tests.ScenarioTests
             }
 
             var getResponse = sqlClient.Servers.Get(resourceGroupName, server.Name);
-            TestUtilities.ValidateOperationResponse(getResponse, HttpStatusCode.OK);
+            HyakTestUtilities.ValidateOperationResponse(getResponse, HttpStatusCode.OK);
             // Verify the server version is correct
             Assert.Equal(getResponse.Server.Properties.Version, currentVersion);
         }

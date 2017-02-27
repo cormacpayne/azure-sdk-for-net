@@ -16,6 +16,7 @@
 using Microsoft.Azure.Management.Sql;
 using Microsoft.Azure.Management.Sql.Models;
 using Microsoft.Azure.Test;
+using Sql.Tests.Helpers;
 using Xunit;
 
 namespace Sql2.Tests.ScenarioTests
@@ -35,7 +36,7 @@ namespace Sql2.Tests.ScenarioTests
             var properties = getDefaultDatabaseSecurityAlertPolicyResponse.SecurityAlertPolicy.Properties;
 
             // Verify that the initial Get request contains the default policy.
-            TestUtilities.ValidateOperationResponse(getDefaultDatabaseSecurityAlertPolicyResponse);
+            HyakTestUtilities.ValidateOperationResponse(getDefaultDatabaseSecurityAlertPolicyResponse);
             VerifySecurityAlertPolicyInformation(GetDefaultDatabaseSecurityAlertProperties(), properties);
 
             // Modify the policy properties, send and receive, see it its still ok
@@ -45,13 +46,13 @@ namespace Sql2.Tests.ScenarioTests
             var updateResponse = sqlClient.SecurityAlertPolicy.CreateOrUpdateDatabaseSecurityAlertPolicy(resourceGroupName, server.Name, database.Name, updateParams);
 
             // Verify that the initial Get request contains the default policy.
-            TestUtilities.ValidateOperationResponse(updateResponse);
+            HyakTestUtilities.ValidateOperationResponse(updateResponse);
 
             var getUpdatedPolicyResponse = sqlClient.SecurityAlertPolicy.GetDatabaseSecurityAlertPolicy(resourceGroupName, server.Name, database.Name);
             var updatedProperties = getUpdatedPolicyResponse.SecurityAlertPolicy.Properties;
 
             // Verify that the Get request contains the updated policy.
-            TestUtilities.ValidateOperationResponse(getUpdatedPolicyResponse);
+            HyakTestUtilities.ValidateOperationResponse(getUpdatedPolicyResponse);
             VerifySecurityAlertPolicyInformation(properties, updatedProperties);
         }
 
@@ -65,7 +66,7 @@ namespace Sql2.Tests.ScenarioTests
             var properties = getDefaultDatabaseSecurityAlertPolicyResponse.SecurityAlertPolicy.Properties;
 
             // Verify that the initial Get request contains the default policy.
-            TestUtilities.ValidateOperationResponse(getDefaultDatabaseSecurityAlertPolicyResponse);
+            HyakTestUtilities.ValidateOperationResponse(getDefaultDatabaseSecurityAlertPolicyResponse);
             VerifySecurityAlertPolicyInformation(GetDefaultServerSecurityAlertProperties(), properties);
 
             // Modify the policy properties, send and receive, see it its still ok
@@ -75,13 +76,13 @@ namespace Sql2.Tests.ScenarioTests
             /*var updateResponse = */sqlClient.SecurityAlertPolicy.CreateOrUpdateServerSecurityAlertPolicy(resourceGroupName, server.Name, updateParams);
 
             // Verify that the initial Get request contains the default policy.
-          //  TestUtilities.ValidateOperationResponse(updateResponse);
+          //  HyakTestUtilities.ValidateOperationResponse(updateResponse);
 
             var getUpdatedPolicyResponse = sqlClient.SecurityAlertPolicy.GetServerSecurityAlertPolicy(resourceGroupName, server.Name);
             var updatedProperties = getUpdatedPolicyResponse.SecurityAlertPolicy.Properties;
 
             // Verify that the Get request contains the updated policy.
-            TestUtilities.ValidateOperationResponse(getUpdatedPolicyResponse);
+            HyakTestUtilities.ValidateOperationResponse(getUpdatedPolicyResponse);
             VerifySecurityAlertPolicyInformation(properties, updatedProperties);
         }
 
@@ -147,10 +148,9 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void DatabaseSecurityAlertPolicyLifecycleTest()
         {
-            using (var context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-                Sql2ScenarioHelper.RunDatabaseTestInEnvironment(new BasicDelegatingHandler(), "12.0", TestDatabaseSecurityAlertApis);
+                Sql2ScenarioHelper.RunDatabaseTestInEnvironment(context, new BasicDelegatingHandler(), "12.0", TestDatabaseSecurityAlertApis);
             }
         }
 
@@ -160,10 +160,9 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void ServerSecurityAlertPolicyLifecycleTest()
         {
-            using (var context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-                Sql2ScenarioHelper.RunServerTestInEnvironment(new BasicDelegatingHandler(), "12.0", TestServerSecurityAlertApis);
+                Sql2ScenarioHelper.RunServerTestInEnvironment(context, new BasicDelegatingHandler(), "12.0", TestServerSecurityAlertApis);
             }
         }
     }

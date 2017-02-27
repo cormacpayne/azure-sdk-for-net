@@ -15,11 +15,13 @@
 
 using Hyak.Common;
 using Microsoft.Azure;
-using Microsoft.Azure.Management.Resources;
-using Microsoft.Azure.Management.Resources.Models;
+using Microsoft.Azure.Management.ResourceManager;
+using Microsoft.Azure.Management.ResourceManager.Models;
 using Microsoft.Azure.Management.Sql;
 using Microsoft.Azure.Management.Sql.Models;
 using Microsoft.Azure.Test;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
+using Sql.Tests.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -68,7 +70,7 @@ namespace Sql2.Tests.ScenarioTests
             DataMaskingPolicyProperties properties = getDefaultPolicyResponse.DataMaskingPolicy.Properties;
             
             // Verify that the initial Get request contains the default policy.
-            TestUtilities.ValidateOperationResponse(getDefaultPolicyResponse, HttpStatusCode.OK);
+            HyakTestUtilities.ValidateOperationResponse(getDefaultPolicyResponse, HttpStatusCode.OK);
             VerifyDataMaskingPolicyInformation(MakeDefaultDataMaskingPolicyProperties(), properties);
 
             // Modify the policy properties, send and receive, see it its still ok
@@ -80,13 +82,13 @@ namespace Sql2.Tests.ScenarioTests
             var updateResponse = sqlClient.DataMasking.CreateOrUpdatePolicy(resourceGroupName, server.Name, database.Name, updateParams);
 
             // Verify that the initial Get request of contains the default policy.
-            TestUtilities.ValidateOperationResponse(updateResponse, HttpStatusCode.OK);
+            HyakTestUtilities.ValidateOperationResponse(updateResponse, HttpStatusCode.OK);
 
             DataMaskingPolicyGetResponse getUpdatedPolicyResponse = sqlClient.DataMasking.GetPolicy(resourceGroupName, server.Name, database.Name);
             DataMaskingPolicyProperties updatedProperties = getUpdatedPolicyResponse.DataMaskingPolicy.Properties;
 
             // Verify that the Get request contains the updated policy.
-            TestUtilities.ValidateOperationResponse(getUpdatedPolicyResponse, HttpStatusCode.OK);
+            HyakTestUtilities.ValidateOperationResponse(getUpdatedPolicyResponse, HttpStatusCode.OK);
             VerifyDataMaskingPolicyInformation(properties, updatedProperties);
         }
 
@@ -211,10 +213,10 @@ namespace Sql2.Tests.ScenarioTests
             string rule1Name = ruleParams.Properties.Id;
            
             var createRuleResponse = sqlClient.DataMasking.CreateOrUpdateRule(resourceGroupName, server.Name, database.Name, rule1Name, ruleParams);            
-            TestUtilities.ValidateOperationResponse(createRuleResponse, HttpStatusCode.OK);
+            HyakTestUtilities.ValidateOperationResponse(createRuleResponse, HttpStatusCode.OK);
 
             var listAfterCreateResponse = sqlClient.DataMasking.List(resourceGroupName, server.Name, database.Name);
-            TestUtilities.ValidateOperationResponse(listAfterCreateResponse, HttpStatusCode.OK);
+            HyakTestUtilities.ValidateOperationResponse(listAfterCreateResponse, HttpStatusCode.OK);
             Assert.Equal(1, listAfterCreateResponse.DataMaskingRules.Count);
 
             DataMaskingRule receivedRule = listAfterCreateResponse.DataMaskingRules.FirstOrDefault(isRuleOnColumn(ruleParams));
@@ -228,10 +230,10 @@ namespace Sql2.Tests.ScenarioTests
             ruleParams.Properties.SuffixSize = "1";
 
             var updateRuleResponse = sqlClient.DataMasking.CreateOrUpdateRule(resourceGroupName, server.Name, database.Name, rule1Name, ruleParams);
-            TestUtilities.ValidateOperationResponse(updateRuleResponse, HttpStatusCode.OK);
+            HyakTestUtilities.ValidateOperationResponse(updateRuleResponse, HttpStatusCode.OK);
 
             var listUpdateResponse = sqlClient.DataMasking.List(resourceGroupName, server.Name, database.Name);
-            TestUtilities.ValidateOperationResponse(listUpdateResponse, HttpStatusCode.OK);
+            HyakTestUtilities.ValidateOperationResponse(listUpdateResponse, HttpStatusCode.OK);
             Assert.Equal(1, listUpdateResponse.DataMaskingRules.Count);
 
             var updatedRule = listUpdateResponse.DataMaskingRules.FirstOrDefault(isRuleOnColumn(ruleParams));
@@ -246,10 +248,10 @@ namespace Sql2.Tests.ScenarioTests
             string rule2Name = ruleParams2.Properties.Id;
 
             var createSecondRuleResponse = sqlClient.DataMasking.CreateOrUpdateRule(resourceGroupName, server.Name, database.Name, rule2Name, ruleParams2);
-            TestUtilities.ValidateOperationResponse(createSecondRuleResponse, HttpStatusCode.OK);
+            HyakTestUtilities.ValidateOperationResponse(createSecondRuleResponse, HttpStatusCode.OK);
 
             DataMaskingRuleListResponse listAfterSecondCreateResponse = sqlClient.DataMasking.List(resourceGroupName, server.Name, database.Name);
-            TestUtilities.ValidateOperationResponse(listAfterSecondCreateResponse, HttpStatusCode.OK);
+            HyakTestUtilities.ValidateOperationResponse(listAfterSecondCreateResponse, HttpStatusCode.OK);
 
             Assert.Equal(2, listAfterSecondCreateResponse.DataMaskingRules.Count);
 
@@ -261,10 +263,10 @@ namespace Sql2.Tests.ScenarioTests
             VerifyDataMaskingRuleInformation(receivedSecondRule.Properties, ruleParams2.Properties);
 
             AzureOperationResponse deleteResponse = sqlClient.DataMasking.Delete(resourceGroupName, server.Name, database.Name, rule1Name);
-            TestUtilities.ValidateOperationResponse(deleteResponse, HttpStatusCode.OK);
+            HyakTestUtilities.ValidateOperationResponse(deleteResponse, HttpStatusCode.OK);
 
             DataMaskingRuleListResponse listAfterDeleteResponse = sqlClient.DataMasking.List(resourceGroupName, server.Name, database.Name);
-            TestUtilities.ValidateOperationResponse(listAfterDeleteResponse, HttpStatusCode.OK);
+            HyakTestUtilities.ValidateOperationResponse(listAfterDeleteResponse, HttpStatusCode.OK);
 
             Assert.Equal(listAfterDeleteResponse.DataMaskingRules.Count, 1);
             var receivedAfterDelete = listAfterSecondCreateResponse.DataMaskingRules.FirstOrDefault(isRuleOnColumn(ruleParams2));
@@ -277,10 +279,9 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void DataMaskingPolicyLifecycleTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-                Sql2ScenarioHelper.RunDatabaseTestInEnvironment(new BasicDelegatingHandler(), "12.0", TestDataMaskingPolicyAPIs);
+                Sql2ScenarioHelper.RunDatabaseTestInEnvironment(context, new BasicDelegatingHandler(), "12.0", TestDataMaskingPolicyAPIs);
             }
         }
 
@@ -290,10 +291,9 @@ namespace Sql2.Tests.ScenarioTests
         [Fact]
         public void DataMaskingRuleLifecycleTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-                Sql2ScenarioHelper.RunDatabaseTestInEnvironment(new BasicDelegatingHandler(), "12.0", TestDataMaskingRuleAPIs);
+                Sql2ScenarioHelper.RunDatabaseTestInEnvironment(context, new BasicDelegatingHandler(), "12.0", TestDataMaskingRuleAPIs);
             }
         }
     }

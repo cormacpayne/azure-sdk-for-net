@@ -1144,7 +1144,7 @@ namespace Microsoft.Azure.Management.Automation
             while (result.Status == OperationStatus.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.GetOperationResultStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = result.RetryAfter;
@@ -1398,7 +1398,7 @@ namespace Microsoft.Azure.Management.Automation
             while (result.Status == OperationStatus.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.GetOperationResultStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = result.RetryAfter;
@@ -1475,7 +1475,7 @@ namespace Microsoft.Azure.Management.Automation
             while (result.Status == OperationStatus.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.GetOperationResultStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = result.RetryAfter;

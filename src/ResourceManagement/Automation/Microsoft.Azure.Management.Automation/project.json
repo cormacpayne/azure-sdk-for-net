@@ -1,15 +1,15 @@
 {
-    "version": "0.55.0-prerelease",
-    "title": "Microsoft Azure SQL Management Library",
-    "description": "Provides Microsoft Azure SQL management operations for Microsoft Azure",
+    "version": "2.0.2",
+    "title": "Microsoft Azure Automation Management Library",
+    "description": "Provides Microsoft Azure Automation management operations including the ability to create, update and delete runbooks and schedules.",
     "authors": [ "Microsoft" ],
 
     "packOptions": {
-        "summary": "Provides Microsoft Azure SQL management operations for Microsoft Azure",
+        "summary": "Provides Microsoft Azure Automation management operations including the ability to create, update and delete runbooks and schedules.",
         "iconUrl": "http://go.microsoft.com/fwlink/?LinkID=288890",
         "projectUrl": "https://github.com/Azure/azure-sdk-for-net",
         "licenseUrl": "https://raw.githubusercontent.com/Microsoft/dotnet/master/LICENSE",
-        "tags": [ "Microsoft", "Microsoft Azure", "Azure", "sql", "database", "SQL database", "REST", "HTTP", "client", "azureofficial" ],
+        "tags": [ "Microsoft", "Microsoft Azure", "Azure", "Automation", "REST", "HTTP", "client", "azureofficial", "windowsazureofficial" ],
         "requireLicenseAcceptance": true
     },
 
