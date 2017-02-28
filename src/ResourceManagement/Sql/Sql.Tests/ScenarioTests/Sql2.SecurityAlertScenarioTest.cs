@@ -26,6 +26,11 @@ namespace Sql2.Tests.ScenarioTests
     /// </summary>
     public class Sql2SecurityAlertScenarioTests
     {     
+        public Sql2SecurityAlertScenarioTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         /// <summary>
         /// The non-boilerplated test code of the APIs for managing the lifecycle of a given database's security alert policy. It is meant to be called with a name of an already existing database (and therefore already existing 
         /// server and resource group). This test does not create these resources and does not remove them.

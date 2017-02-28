@@ -31,6 +31,11 @@ namespace Sql2.Tests.ScenarioTests
     /// </summary>
     public class Sql2ElasticPoolScenarioTests : TestBase
     {
+        public Sql2ElasticPoolScenarioTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         [Fact]
         public void ElasticPoolCrud()
         {
@@ -163,6 +168,8 @@ namespace Sql2.Tests.ScenarioTests
             using (HyakMockContext context = HyakMockContext.Start(this.GetType().FullName))
             {
                 string resPoolName = TestUtilities.GenerateName("csm-sql-respoolcrud");
+                var databaseName = TestUtilities.GenerateName("csm-sql-respoolcrud");
+                var database2Name = TestUtilities.GenerateName("csm-sql-respoolcrud");
 
                 Sql2ScenarioHelper.RunServerTestInEnvironment(
                     context,
@@ -191,7 +198,6 @@ namespace Sql2.Tests.ScenarioTests
 
                         ////////////////////////////////////////////////////////////////////
                         // Create database in Elastic Pool
-                        var databaseName = TestUtilities.GenerateName("csm-sql-respoolcrud");
                         var db1 = sqlClient.Databases.CreateOrUpdate(resGroupName, server.Name, databaseName, new DatabaseCreateOrUpdateParameters()
                         {
                             Location = server.Location,
@@ -205,7 +211,6 @@ namespace Sql2.Tests.ScenarioTests
 
                         //////////////////////////////////////////////////////////////////////
                         // Move database into Elastic Pool
-                        var database2Name = TestUtilities.GenerateName("csm-sql-respoolcrud");
                         var db2 = sqlClient.Databases.CreateOrUpdate(resGroupName, server.Name, database2Name, new DatabaseCreateOrUpdateParameters()
                         {
                             Location = server.Location,

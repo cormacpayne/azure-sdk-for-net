@@ -42,6 +42,11 @@ namespace Sql2.Tests.ScenarioTests
         private const string ImportOperationName = "Import";
         private const string ImportExistingDbOperationName = "ImportExistingDb";
 
+        public Sql2ImportExportScenarioTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         [Fact]
         public void ExportDatabaseTest()
         {

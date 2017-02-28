@@ -29,6 +29,12 @@ namespace Sql2.Tests.ScenarioTests
     {
         private const string c_DefualtEventTypesToAudit =
             "PlainSQL_Success,PlainSQL_Failure,ParameterizedSQL_Success,ParameterizedSQL_Failure,StoredProcedure_Success,StoredProcedure_Failure,Login_Success,Login_Failure,TransactionManagement_Success,TransactionManagement_Failure";
+        
+        public Sql2AuditScenarioTest()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+        
         /// <summary>
         /// The non-boilerplated test code of the APIs for managing the lifecycle of a given database's auditing policy. It is meant to be called with a name of an already existing database (and therefore already existing 
         /// server and resource group). This test does not create these resources and does not remove them.

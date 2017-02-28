@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Management.SiteRecovery
             while (result.Status == OperationStatus.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.ReplicationProtectedItem.GetApplyRecoveryPointStatusAsync(response.Location, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = 30;
@@ -3785,7 +3785,7 @@ namespace Microsoft.Azure.Management.SiteRecovery
             while (result.Status == OperationStatus.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.ReplicationProtectedItem.GetCommitFailoverStatusAsync(response.Location, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = 30;
@@ -3860,7 +3860,7 @@ namespace Microsoft.Azure.Management.SiteRecovery
             while (result.Status == OperationStatus.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.ReplicationProtectedItem.GetDisableStatusAsync(response.Location, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = 30;
@@ -3935,7 +3935,7 @@ namespace Microsoft.Azure.Management.SiteRecovery
             while (result.Status == OperationStatus.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.ReplicationProtectedItem.GetEnableStatusAsync(response.Location, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = 30;
@@ -34852,7 +34852,7 @@ namespace Microsoft.Azure.Management.SiteRecovery
             while (result.Status == OperationStatus.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.ReplicationProtectedItem.GetPlannedFailoverStatusAsync(response.Location, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = 30;
@@ -34923,7 +34923,7 @@ namespace Microsoft.Azure.Management.SiteRecovery
             while (result.Status == OperationStatus.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.ReplicationProtectedItem.GetPurgeStatusAsync(response.Location, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = 30;
@@ -34995,7 +34995,7 @@ namespace Microsoft.Azure.Management.SiteRecovery
             while (result.Status == OperationStatus.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.ReplicationProtectedItem.GetRepairReplicationStatusAsync(response.Location, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = 30;
@@ -35070,7 +35070,7 @@ namespace Microsoft.Azure.Management.SiteRecovery
             while (result.Status == OperationStatus.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.ReplicationProtectedItem.GetReprotectStatusAsync(response.Location, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = 30;
@@ -35145,7 +35145,7 @@ namespace Microsoft.Azure.Management.SiteRecovery
             while (result.Status == OperationStatus.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.ReplicationProtectedItem.GetTestFailoverStatusAsync(response.Location, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = 30;
@@ -35220,7 +35220,7 @@ namespace Microsoft.Azure.Management.SiteRecovery
             while (result.Status == OperationStatus.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.ReplicationProtectedItem.GetUnplannedFailoverStatusAsync(response.Location, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = 30;
@@ -35295,7 +35295,7 @@ namespace Microsoft.Azure.Management.SiteRecovery
             while (result.Status == OperationStatus.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.ReplicationProtectedItem.GetUpdateMobilityServiceStatusAsync(response.Location, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = 30;
@@ -35370,7 +35370,7 @@ namespace Microsoft.Azure.Management.SiteRecovery
             while (result.Status == OperationStatus.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.ReplicationProtectedItem.GetUpdateProtectionStatusAsync(response.Location, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = 30;

@@ -36,7 +36,6 @@
         "define": [ "NETSTANDARD15", "PORTABLE" ],
         "debugType": "portable"
       },
-      "imports": [ "dnxcore50" ],
       "dependencies": {
         "NETStandard.Library": "1.6.1",
         "Microsoft.NETCore.Platforms": "1.1.0"
@@ -47,7 +46,6 @@
         "define": [ "NETSTANDARD11", "PORTABLE" ],
         "debugType": "portable"
       },
-      "imports": [ "dnxcore50" ],
       "dependencies": {
         "NETStandard.Library": "1.6.1",
         "Microsoft.NETCore.Platforms": "1.1.0"

@@ -33,6 +33,11 @@ namespace Sql2.Tests.ScenarioTests
         private const string DatabaseRecommendedActionType = "Microsoft.Sql/servers/databases/advisors/recommendedActions";
         private const string ElasticPoolRecommendedActionType = "Microsoft.Sql/servers/elasticPools/advisors/recommendedActions";
 
+        public Sql2RecommendedActionScenarioTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         /// <summary>
         /// Test for list server recommended actions request
         /// </summary>

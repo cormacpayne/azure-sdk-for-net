@@ -33,6 +33,11 @@ namespace Sql2.Tests.ScenarioTests
     /// </summary>
     public class Sql2FailoverGroupScenarioTests : TestBase
     {
+        public Sql2FailoverGroupScenarioTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         [Fact]
         public void FailoverGroupCrud()
         {
@@ -138,7 +143,7 @@ namespace Sql2.Tests.ScenarioTests
                             });
 
 
-                            HyakTestUtilities.ValidateOperationResponse(failoverGroup3, HttpStatusCode.Created);
+                            HyakTestUtilities.ValidateOperationResponse(failoverGroup3);
                             ValidateFailoverGroup(
                                 failoverGroup3.FailoverGroup,
                                 failoverGroupName,
@@ -153,7 +158,7 @@ namespace Sql2.Tests.ScenarioTests
                             var failoverGroup4 = sqlClient.FailoverGroups.Get(resGroupName, server.Name, failoverGroupName);
 
 
-                            HyakTestUtilities.ValidateOperationResponse(failoverGroup4, HttpStatusCode.Created);
+                            HyakTestUtilities.ValidateOperationResponse(failoverGroup4);
                             ValidateFailoverGroup(
                                 failoverGroup3.FailoverGroup,
                                 failoverGroupName,

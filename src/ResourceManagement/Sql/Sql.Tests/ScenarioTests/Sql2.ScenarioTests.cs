@@ -36,6 +36,11 @@ namespace Sql2.Tests.ScenarioTests
     /// </summary>
     public class Sql2ScenarioTest : TestBase
     {
+        public Sql2ScenarioTest()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         /// <summary>
         /// Test for the server CRUD operations
         /// </summary>
@@ -123,7 +128,7 @@ namespace Sql2.Tests.ScenarioTests
                     var deleteResponse = sqlClient.Servers.Delete(resGroupName, serverName);
 
                     // Verify that the delete operation works.
-                    HyakTestUtilities.ValidateOperationResponse(deleteResponse, HttpStatusCode.NoContent);
+                    HyakTestUtilities.ValidateOperationResponse(deleteResponse);
                     /////////////////////////////////////////////////////////////////////
                 }
                 finally
@@ -488,7 +493,7 @@ namespace Sql2.Tests.ScenarioTests
                         },
                     });
 
-                    HyakTestUtilities.ValidateOperationResponse(createDbResponse1, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(createDbResponse1);
                     Assert.Equal(createDbResponse1.Database.Properties.ReadScale, readScaleEnabled);
 
                     //Update Read Scale Option
@@ -560,7 +565,7 @@ namespace Sql2.Tests.ScenarioTests
                     });
 
                     // Verify the the response from the service contains the right information
-                    HyakTestUtilities.ValidateOperationResponse(createResponse, HttpStatusCode.Created);
+                    HyakTestUtilities.ValidateOperationResponse(createResponse);
                     VerifyServerInformation(serverName, serverLocation, adminLogin, adminPass, version, createResponse.Server);
                     //////////////////////////////////////////////////////////////////////
 
@@ -855,7 +860,7 @@ namespace Sql2.Tests.ScenarioTests
                     //////////////////////////////////////////////////////////////////////
                     // Delete Server Key tests
                     var deleteResponse = sqlClient.ServerKey.Delete(resGroupName, serverName, serverKeyName);
-                    HyakTestUtilities.ValidateOperationResponse(deleteResponse, HttpStatusCode.OK);
+                    HyakTestUtilities.ValidateOperationResponse(deleteResponse, HttpStatusCode.NoContent);
                     //////////////////////////////////////////////////////////////////////
                 }
                 finally

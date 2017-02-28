@@ -32,6 +32,10 @@ namespace Sql2.Tests.ScenarioTests
     /// </summary>
     public class Sql2BlobAuditScenarioTest
     {
+        public Sql2BlobAuditScenarioTest()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
 
         /// <summary>
         /// The non-boilerplated test code of the APIs for managing the lifecycle of a given database's blob auditing policy. It is meant to be called with a name of an already existing database (and therefore already existing 

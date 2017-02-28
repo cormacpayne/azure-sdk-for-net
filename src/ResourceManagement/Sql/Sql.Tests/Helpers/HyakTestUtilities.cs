@@ -14,8 +14,11 @@
 //
 
 using Microsoft.Azure;
+using Microsoft.Azure.Test.HttpRecorder;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
+using Xunit;
 
 namespace Sql.Tests.Helpers
 {
@@ -28,8 +31,25 @@ namespace Sql.Tests.Helpers
         /// <param name="expectedStatus">The expected status code </param>
         public static void ValidateOperationResponse(AzureOperationResponse opResponse, HttpStatusCode expectedStatus = HttpStatusCode.OK)
         {
-            Debug.Assert(opResponse.StatusCode == expectedStatus);
-            Debug.Assert(opResponse.RequestId != null);
+            Assert.Equal(expectedStatus, opResponse.StatusCode);
+            Assert.True(opResponse.RequestId != null);
+        }
+
+        public static void SetHttpMockServerMatcher()
+        {
+            // If a test customizes the record matcher, use the cutomized version otherwise use the default
+            // permissive record matcher.
+            if (HttpMockServer.Matcher == null || HttpMockServer.Matcher.GetType() == typeof(SimpleRecordMatcher))
+            {
+                Dictionary<string, string> d = new Dictionary<string, string>();
+                d.Add("Microsoft.Resources", null);
+                d.Add("Microsoft.Features", null);
+                d.Add("Microsoft.Authorization", null);
+                d.Add("Microsoft.Compute", null);
+                var providersToIgnore = new Dictionary<string, string>();
+                providersToIgnore.Add("Microsoft.Azure.Management.Resources.ResourceManagementClient", "2016-02-01");
+                HttpMockServer.Matcher = new PermissiveRecordMatcherWithApiExclusion(true, d, providersToIgnore);
+            }
         }
     }
 }

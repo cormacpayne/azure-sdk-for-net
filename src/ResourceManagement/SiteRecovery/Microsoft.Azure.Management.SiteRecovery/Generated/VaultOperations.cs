@@ -561,7 +561,7 @@ namespace Microsoft.Azure.Management.SiteRecoveryVault
             while (result.Status == RecoveryServicesOperationStatus.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.GetOperationStatusAsync(response.RequestId, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = 10;
@@ -659,7 +659,7 @@ namespace Microsoft.Azure.Management.SiteRecoveryVault
             while (result.Status == RecoveryServicesOperationStatus.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.GetOperationStatusAsync(response.RequestId, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = 10;

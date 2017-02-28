@@ -33,6 +33,11 @@ namespace Sql2.Tests.ScenarioTests
     /// </summary>
     public class Sql2JobAccountScenarioTest : TestBase
     {
+        public Sql2JobAccountScenarioTest()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         /// <summary>
         /// Tests for the job account CRUD operations
         /// </summary>
@@ -142,7 +147,7 @@ namespace Sql2.Tests.ScenarioTests
                     // Delete job account test
 
                     var deleteJobAccountResponse = sqlClient.JobAccounts.Delete(resGroupName, serverName, jobAccountName);
-                    HyakTestUtilities.ValidateOperationResponse(deleteJobAccountResponse);
+                    HyakTestUtilities.ValidateOperationResponse(deleteJobAccountResponse, HttpStatusCode.NoContent);
                 }
                 finally
                 {

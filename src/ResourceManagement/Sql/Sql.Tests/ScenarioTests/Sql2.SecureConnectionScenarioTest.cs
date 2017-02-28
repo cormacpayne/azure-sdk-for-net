@@ -28,6 +28,11 @@ namespace Sql2.Tests.ScenarioTests
     public class Sql2SecureConnectionScenarioTest
     {
  
+        public Sql2SecureConnectionScenarioTest()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         /// <summary> 
         /// The non-boilerplated test code of the APIs for managing the lifecycle of a given database's secure connection policy. 
         /// It is meant to be called with a name of an already exisiting database (and therefore already existing server and resource group). 

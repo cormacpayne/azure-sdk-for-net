@@ -28,6 +28,11 @@ namespace Sql2.Tests.ScenarioTests
         private const string TableName = "[Person]";
         private const string IndexName = "nci_wi_Person_25F9812A-26A3-4ECA-B078-B2982817D12C";
 
+        public Sql2RecommendedIndexScenarioTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         [Fact]
         public void ListAllIndexesForServer()
         {

@@ -37,6 +37,11 @@ namespace Sql2.Tests.ScenarioTests
     /// </summary>
     public class Sql2DataMaskingScenarioTests
     {
+        public Sql2DataMaskingScenarioTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         /// <summary>
         /// Creates and returns a DataMaskingPolicyProperties object that holds the default settings for a data masking policy
         /// </summary>

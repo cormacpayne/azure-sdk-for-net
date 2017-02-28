@@ -784,7 +784,7 @@ namespace Microsoft.Azure.Management.SiteRecovery
             while (result.Status == OperationStatus.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.ProtectionContainerMapping.GetConfigureProtectionStatusAsync(response.Location, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = 30;
@@ -3059,7 +3059,7 @@ namespace Microsoft.Azure.Management.SiteRecovery
             while (result.Status == OperationStatus.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.ProtectionContainerMapping.GetPurgeProtectionStatusAsync(response.Location, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = 30;
@@ -3134,7 +3134,7 @@ namespace Microsoft.Azure.Management.SiteRecovery
             while (result.Status == OperationStatus.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.ProtectionContainerMapping.GetUnconfigureProtectionStatusAsync(response.Location, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = 30;

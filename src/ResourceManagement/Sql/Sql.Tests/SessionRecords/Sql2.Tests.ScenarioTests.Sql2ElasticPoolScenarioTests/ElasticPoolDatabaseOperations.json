@@ -1548,15 +1548,13 @@
   ],
   "Names": {
     "ElasticPoolDatabaseOperations": [
-      "csm-sql-respoolcrud3624"
+      "csm-sql-respoolcrud3624",
+      "csm-sql-respoolcrud4769",
+      "csm-sql-respoolcrud7200"
     ],
     "RunServerTestInEnvironment": [
       "csm-sql-server-7508",
       "csm-sql-rg-4063"
-    ],
-    "<ElasticPoolDatabaseOperations>b__0": [
-      "csm-sql-respoolcrud4769",
-      "csm-sql-respoolcrud7200"
     ]
   },
   "Variables": {

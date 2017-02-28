@@ -12,6 +12,7 @@ using Microsoft.Azure.Test;
 using Xunit;
 using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
 using Sql.Tests.Helpers;
+using Microsoft.Azure.Test.HttpRecorder;
 
 namespace Sql2.Tests.ScenarioTests
 {
@@ -20,6 +21,11 @@ namespace Sql2.Tests.ScenarioTests
     /// </summary>
     public class Sql2ServiceTierAdvisorScenarioTests : TestBase
     {
+        public Sql2ServiceTierAdvisorScenarioTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         [Fact]
         public void ListServiceTierAdvisors()
         {

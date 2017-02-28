@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Management.SiteRecovery
 
             Type objType = obj.GetType();
 
-            PropertyInfo[] properties = objType.GetProperties();
+            PropertyInfo[] properties = objType.GetTypeInfo().GetProperties();
             foreach (PropertyInfo property in properties)
             {
                 {
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Management.SiteRecovery
 
                                 // For primitive types we directly put in array. Rest are again
                                 // iterated upon to generate object.
-                                if (itemType.IsPrimitive || itemType.Equals(typeof(string)))
+                                if (itemType.GetTypeInfo().IsPrimitive || itemType.Equals(typeof(string)))
                                 {
                                     JValue jval = new JValue(item.ToString());
                                     jarray.Add(jval);
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Management.SiteRecovery
                         else
                         {
                             // This will not cut-off System.Collections because of the first check
-                            if (property.PropertyType.Assembly == objType.Assembly)
+                            if (property.PropertyType.GetTypeInfo().Assembly == objType.GetTypeInfo().Assembly)
                             {
                                 ConvertToJson(propValue, jObject);
                             }
@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Management.SiteRecovery
             }
 
             Type objType = queryObject.GetType();
-            PropertyInfo[] properties = objType.GetProperties();
+            PropertyInfo[] properties = objType.GetTypeInfo().GetProperties();
 
             System.Text.StringBuilder queryString = new System.Text.StringBuilder();
             List<string> propQuery = new List<string>();

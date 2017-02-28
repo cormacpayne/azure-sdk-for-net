@@ -58,6 +58,8 @@ namespace Sql2.Tests.ScenarioTests
 
         public Sql2ServerUpgradeScenarioTest()
         {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+
             if (HttpMockServer.GetCurrentMode() == HttpRecorderMode.Record)
             {
                 upgradePollingTimeInSeconds = RecordModeUpgradePollingTimeInSeconds;

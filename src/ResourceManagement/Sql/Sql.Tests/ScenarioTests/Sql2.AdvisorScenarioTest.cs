@@ -32,6 +32,11 @@ namespace Sql2.Tests.ScenarioTests
         private const string DatabaseAdvisorType = "Microsoft.Sql/servers/databases/advisors";
         private const string ElasticPoolAdvisorType = "Microsoft.Sql/servers/elasticPools/advisors";
 
+        public Sql2AdvisorScenarioTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         /// <summary>
         /// Test for list server advisors request
         /// </summary>

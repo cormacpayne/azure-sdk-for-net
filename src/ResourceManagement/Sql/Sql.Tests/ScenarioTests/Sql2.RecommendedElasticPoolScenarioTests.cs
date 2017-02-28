@@ -20,6 +20,11 @@ namespace Sql2.Tests.ScenarioTests
     /// </summary>
     public class Sql2RecommendedElasticPoolScenarioTests : TestBase
     {
+        public Sql2RecommendedElasticPoolScenarioTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         [Fact]
         public void ListAllPools()
         {

@@ -23,6 +23,8 @@ using System.Net.Http;
 using Sql.Tests;
 using Sql.Tests.Helpers;
 using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
+using Microsoft.Azure.Test.HttpRecorder;
+using System.Collections.Generic;
 
 namespace Sql2.Tests.ScenarioTests
 {
@@ -42,7 +44,7 @@ namespace Sql2.Tests.ScenarioTests
         /// <returns>SQL Client</returns>
         public static SqlManagementClient GetSqlClient(HyakMockContext context, DelegatingHandler handler)
         {
-            return context.GetGraphServiceClient<SqlManagementClient>().WithHandler(handler);
+            return context.GetServiceClient<SqlManagementClient>().WithHandler(handler);
         }
 
         /// <summary>
@@ -78,6 +80,20 @@ namespace Sql2.Tests.ScenarioTests
         /// <param name="test">A function that receives a sql client, names of a created resource group and server</param>
         public static void RunServerTestInEnvironment(HyakMockContext context, BasicDelegatingHandler handler, string serverVersion, string serverLocation, Action<SqlManagementClient, string, Server> test)
         {
+            // If a test customizes the record matcher, use the cutomized version otherwise use the default
+            // permissive record matcher.
+            if (HttpMockServer.Matcher == null || HttpMockServer.Matcher.GetType() == typeof(SimpleRecordMatcher))
+            {
+                Dictionary<string, string> d = new Dictionary<string, string>();
+                d.Add("Microsoft.Resources", null);
+                d.Add("Microsoft.Features", null);
+                d.Add("Microsoft.Authorization", null);
+                d.Add("Microsoft.Compute", null);
+                var providersToIgnore = new Dictionary<string, string>();
+                providersToIgnore.Add("Microsoft.Azure.Management.Resources.ResourceManagementClient", "2016-02-01");
+                HttpMockServer.Matcher = new PermissiveRecordMatcherWithApiExclusion(true, d, providersToIgnore);
+            }
+
             // Management Clients
             var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
             var resClient = Sql2ScenarioHelper.GetResourceClient(context, handler);
@@ -145,6 +161,20 @@ namespace Sql2.Tests.ScenarioTests
         /// <param name="test">A function that receives a sql client, names of a created resource group and server</param>
         public static void RunTwoServersTestInEnvironment(HyakMockContext context, BasicDelegatingHandler handler, string serverVersion, string serverLocation, string secondaryServerLocation, Action<SqlManagementClient, string, Server, Server> test)
         {
+            // If a test customizes the record matcher, use the cutomized version otherwise use the default
+            // permissive record matcher.
+            if (HttpMockServer.Matcher == null || HttpMockServer.Matcher.GetType() == typeof(SimpleRecordMatcher))
+            {
+                Dictionary<string, string> d = new Dictionary<string, string>();
+                d.Add("Microsoft.Resources", null);
+                d.Add("Microsoft.Features", null);
+                d.Add("Microsoft.Authorization", null);
+                d.Add("Microsoft.Compute", null);
+                var providersToIgnore = new Dictionary<string, string>();
+                providersToIgnore.Add("Microsoft.Azure.Management.Resources.ResourceManagementClient", "2016-02-01");
+                HttpMockServer.Matcher = new PermissiveRecordMatcherWithApiExclusion(true, d, providersToIgnore);
+            }
+
             // Management Clients
             var sqlClient = Sql2ScenarioHelper.GetSqlClient(context, handler);
             var resClient = Sql2ScenarioHelper.GetResourceClient(context, handler);

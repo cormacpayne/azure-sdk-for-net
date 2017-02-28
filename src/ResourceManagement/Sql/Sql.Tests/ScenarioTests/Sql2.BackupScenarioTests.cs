@@ -36,6 +36,11 @@ namespace Sql2.Tests.ScenarioTests
     /// </summary>
     public class Sql2BackupScenarioTest : TestBase
     {
+        public Sql2BackupScenarioTest()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         /// <summary>
         /// Test for List Azure SQL Database Restore Points operations.
         /// </summary>
@@ -276,7 +281,7 @@ namespace Sql2.Tests.ScenarioTests
                 });
 
                 // Verify the the response from the service contains the right information
-                HyakTestUtilities.ValidateOperationResponse(createResponse, HttpStatusCode.Created);
+                HyakTestUtilities.ValidateOperationResponse(createResponse);
                 //////////////////////////////////////////////////////////////////////
 
                 // Create standard database
@@ -416,7 +421,7 @@ namespace Sql2.Tests.ScenarioTests
                     },
                 });
 
-                HyakTestUtilities.ValidateOperationResponse(createDbResponse, HttpStatusCode.Created);
+                HyakTestUtilities.ValidateOperationResponse(createDbResponse);
                 //////////////////////////////////////////////////////////////////////
 
                 string databaseId = createDbResponse.Database.Id;

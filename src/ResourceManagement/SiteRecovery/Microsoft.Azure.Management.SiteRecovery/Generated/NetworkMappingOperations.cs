@@ -542,7 +542,7 @@ namespace Microsoft.Azure.Management.SiteRecovery
             while (result.Status == OperationStatus.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.NetworkMapping.GetCreateStatusAsync(response.Location, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = 30;
@@ -613,7 +613,7 @@ namespace Microsoft.Azure.Management.SiteRecovery
             while (result.Status == OperationStatus.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.NetworkMapping.GetDeleteStatusAsync(response.Location, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = 30;
