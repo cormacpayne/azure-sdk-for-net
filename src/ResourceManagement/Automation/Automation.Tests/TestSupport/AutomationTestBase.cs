@@ -19,10 +19,10 @@ using System.Globalization;
 using System.Net;
 using Hyak.Common;
 using Microsoft.Azure.Management.Automation.Models;
-using Microsoft.Azure.Management.Resources.Models;
-using Microsoft.Azure.Test;
+using Microsoft.Azure.Management.ResourceManager.Models;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
 using Newtonsoft.Json;
-using Microsoft.Azure.Management.Resources;
+using Microsoft.Azure.Management.ResourceManager;
 
 namespace Microsoft.Azure.Management.Automation.Testing
 {
@@ -32,12 +32,14 @@ namespace Microsoft.Azure.Management.Automation.Testing
         private const string automationAccount = "SDKTestAccount";
         private const string location = "East Us";
         
-        public AutomationTestBase()
+        public AutomationTestBase(HyakMockContext context)
         {
-            var handler = new RecordedDelegatingHandler();
-            AutomationClient = ResourceGroupHelper.GetAutomationClient(handler);
+            HyakTestUtilities.SetHttpMockServerMatcher();
 
-            ResourceManagementClient resourcesClient = ResourceGroupHelper.GetResourcesClient(handler);
+            var handler = new RecordedDelegatingHandler();
+            AutomationClient = ResourceGroupHelper.GetAutomationClient(context, handler);
+
+            ResourceManagementClient resourcesClient = ResourceGroupHelper.GetResourcesClient(context, handler);
 
             try
             {
@@ -53,7 +55,7 @@ namespace Microsoft.Azure.Management.Automation.Testing
                     Location = location,
                     Properties = new AutomationAccountCreateOrUpdateProperties()
                     {
-                        Sku = new Sku() { Name = "Free", Family = "Test", Capacity = 1 }
+                        Sku = new Models.Sku() { Name = "Free", Family = "Test", Capacity = 1 }
                     }
                 });
             }

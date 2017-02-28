@@ -13,27 +13,39 @@
 // limitations under the License.
 //
 
+using Microsoft.Azure;
+using Microsoft.Rest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Azure.Management.ResourceManager;
-using Microsoft.Azure.Test;
-using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
+using System.Threading.Tasks;
 using System.Net.Http;
+using System.Threading;
 
 namespace Microsoft.Azure.Management.Automation.Testing
 {
-    public static class ResourceGroupHelper
+    public class CredentialAdapter : SubscriptionCloudCredentials
     {
+        ServiceClientCredentials _credentials;
+        string _subscriptionId;
 
-        public static AutomationManagementClient GetAutomationClient(HyakMockContext context, RecordedDelegatingHandler handler)
+        public CredentialAdapter(ServiceClientCredentials wrapped, string subscriptionId)
         {
-            return context.GetServiceClient<AutomationManagementClient>();
+            _credentials = wrapped;
+            _subscriptionId = subscriptionId;
         }
 
-        public static ResourceManagementClient GetResourcesClient(HyakMockContext context, RecordedDelegatingHandler handler)
+        public override string SubscriptionId
         {
-            return context.GetServiceClient<ResourceManagementClient>(TestEnvironmentFactory.GetTestEnvironment(), false, new DelegatingHandler[] { handler });
+            get
+            {
+                return _subscriptionId;
+            }
+        }
+
+        public override Task ProcessHttpRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            return _credentials.ProcessHttpRequestAsync(request, cancellationToken);
         }
     }
 }

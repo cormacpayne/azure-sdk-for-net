@@ -20,18 +20,23 @@ using Microsoft.Azure.Management.Automation.Models;
 using Microsoft.Azure.Test;
 using Newtonsoft.Json;
 using Xunit;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
 
 namespace Microsoft.Azure.Management.Automation.Testing
 {
     public class AutomationTest 
     {
+        public AutomationTest()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         [Fact]
         public void CanCreateUpdateDeleteRunbook()
         {
-            using (var undoContext = UndoContext.Current)
+            using (var undoContext = HyakMockContext.Start(this.GetType().FullName))
             {
-                undoContext.Start();
-                using (AutomationTestBase _testFixture = new AutomationTestBase())
+                using (AutomationTestBase _testFixture = new AutomationTestBase(undoContext))
                 {
                     string runbookName = RunbookDefinition.TestFasterWorkflow.RunbookName;
                     string runbookContent = RunbookDefinition.TestFasterWorkflow.PsScript;
@@ -73,11 +78,9 @@ namespace Microsoft.Azure.Management.Automation.Testing
         [Fact]
         public void CanCreateUpdateDeleteSchedule()
         {
-            using (var undoContext = UndoContext.Current)
+            using (var undoContext = HyakMockContext.Start(this.GetType().FullName))
             {
-                undoContext.Start();
-
-                using (AutomationTestBase _testFixture = new AutomationTestBase())
+                using (AutomationTestBase _testFixture = new AutomationTestBase(undoContext))
                 {
                     var scheduleName = TestUtilities.GenerateName("hourlySche");
                     var startTime = DateTimeOffset.Now.AddMinutes(30);
@@ -111,11 +114,9 @@ namespace Microsoft.Azure.Management.Automation.Testing
         [Fact]
         public void CanCreateUpdateDeleteVariable()
         {
-            using (var undoContext = UndoContext.Current)
+            using (var undoContext = HyakMockContext.Start(this.GetType().FullName))
             {
-                undoContext.Start();
-
-                using (AutomationTestBase _testFixture = new AutomationTestBase())
+                using (AutomationTestBase _testFixture = new AutomationTestBase(undoContext))
                 {
                     var variableName = TestUtilities.GenerateName("variable");
                     var value = 10;
@@ -150,11 +151,9 @@ namespace Microsoft.Azure.Management.Automation.Testing
         [Fact]
         public void CanCreateUpdateDeleteWebhook()
         {
-            using (var undoContext = UndoContext.Current)
+            using (var undoContext = HyakMockContext.Start(this.GetType().FullName))
             {
-                undoContext.Start();
-
-                using (AutomationTestBase _testFixture = new AutomationTestBase())
+                using (AutomationTestBase _testFixture = new AutomationTestBase(undoContext))
                 {
                     var webhookName = TestUtilities.GenerateName("webhook");
                     var runbookName = RunbookDefinition.TestFasterWorkflow.RunbookName;
@@ -200,11 +199,9 @@ namespace Microsoft.Azure.Management.Automation.Testing
         [Fact]
         public void CanCreateUpdateDeleteCredential()
         {
-            using (var undoContext = UndoContext.Current)
+            using (var undoContext = HyakMockContext.Start(this.GetType().FullName))
             {
-                undoContext.Start();
-
-                using (AutomationTestBase _testFixture = new AutomationTestBase())
+                using (AutomationTestBase _testFixture = new AutomationTestBase(undoContext))
                 {
                     var credentialName = TestUtilities.GenerateName("credential");
                     var userName = "userName1";
@@ -241,11 +238,9 @@ namespace Microsoft.Azure.Management.Automation.Testing
         [Fact]
         public void CanGetUsage()
         {
-            using (var undoContext = UndoContext.Current)
+            using (var undoContext = HyakMockContext.Start(this.GetType().FullName))
             {
-                undoContext.Start();
-
-                using (AutomationTestBase _testFixture = new AutomationTestBase())
+                using (AutomationTestBase _testFixture = new AutomationTestBase(undoContext))
                 {
                     var usage = _testFixture.GetUsages();
                     Assert.Equal(3, usage.Count);
