@@ -26,17 +26,20 @@ namespace HDInsight.Tests
 {
     public class ResizeTests
     {
+        public ResizeTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         //[Fact]
         public void TestResizeCluster()
         {
             var handler = new RecordedDelegatingHandler {StatusCodeToReturn = HttpStatusCode.OK};
 
-            using (var context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
-                var client = HDInsightManagementTestUtilities.GetHDInsightManagementClient(handler);
-                var resourceManagementClient = HDInsightManagementTestUtilities.GetResourceManagementClient(handler);
+                var client = HDInsightManagementTestUtilities.GetHDInsightManagementClient(context, handler);
+                var resourceManagementClient = HDInsightManagementTestUtilities.GetResourceManagementClient(context, handler);
 
                 var resourceGroup = HDInsightManagementTestUtilities.CreateResourceGroup(resourceManagementClient);
                 const string dnsname = "hdisdk-resizetest";
@@ -65,12 +68,10 @@ namespace HDInsight.Tests
         {
             var handler = new RecordedDelegatingHandler { StatusCodeToReturn = HttpStatusCode.OK };
 
-            using (var context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
-                var client = HDInsightManagementTestUtilities.GetHDInsightManagementClient(handler);
-                var resourceManagementClient = HDInsightManagementTestUtilities.GetResourceManagementClient(handler);
+                var client = HDInsightManagementTestUtilities.GetHDInsightManagementClient(context, handler);
+                var resourceManagementClient = HDInsightManagementTestUtilities.GetResourceManagementClient(context, handler);
 
                 var resourceGroup = HDInsightManagementTestUtilities.CreateResourceGroup(resourceManagementClient);
                 const string dnsname = "hdisdk-resize2";

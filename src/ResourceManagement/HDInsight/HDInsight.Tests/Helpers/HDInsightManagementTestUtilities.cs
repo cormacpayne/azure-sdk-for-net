@@ -14,10 +14,12 @@
 //
 
 using Microsoft.Azure.Management.HDInsight;
-using Microsoft.Azure.Management.Resources;
-using Microsoft.Azure.Management.Resources.Models;
+using Microsoft.Azure.Management.ResourceManager;
+using Microsoft.Azure.Management.ResourceManager.Models;
 using Microsoft.Azure.Test;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
 using System;
+using System.Net.Http;
 
 namespace HDInsight.Tests.Helpers
 {
@@ -25,19 +27,19 @@ namespace HDInsight.Tests.Helpers
     {
         public static string DefaultLocation = "West US";
 
-        public static HDInsightManagementClient GetHDInsightManagementClient(RecordedDelegatingHandler handler)
+        public static HDInsightManagementClient GetHDInsightManagementClient(HyakMockContext context, RecordedDelegatingHandler handler)
         {
             handler.IsPassThrough = true;
-             var client =
-                 TestBase.GetServiceClient<HDInsightManagementClient>(new CSMTestEnvironmentFactory())
+            var client =
+                context.GetServiceClient<HDInsightManagementClient>()
                      .WithHandler(handler);
             return client;
         }
 
-        public static ResourceManagementClient GetResourceManagementClient(RecordedDelegatingHandler handler)
+        public static ResourceManagementClient GetResourceManagementClient(HyakMockContext context, RecordedDelegatingHandler handler)
         {
             handler.IsPassThrough = true;
-            return TestBase.GetServiceClient<ResourceManagementClient>(new CSMTestEnvironmentFactory()).WithHandler(handler);
+            return context.GetServiceClient<ResourceManagementClient>(TestEnvironmentFactory.GetTestEnvironment(), false, new DelegatingHandler[] { handler });
         }
 
         public static string CreateResourceGroup(ResourceManagementClient resourcesClient, string location = "")

@@ -34,18 +34,21 @@ namespace HDInsight.Tests
         private string CertificatePassword = "";
         private string ResourceUri = "";
         
+        public DataLakeTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         [Fact]
         public void TestCreateDataLakeClusterUsingClusterCreateParametersExtended()
         {
             var handler = new RecordedDelegatingHandler { StatusCodeToReturn = HttpStatusCode.OK };
 
-            using (var context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 //get clients
-                var client = HDInsightManagementTestUtilities.GetHDInsightManagementClient(handler);
-                var resourceManagementClient = HDInsightManagementTestUtilities.GetResourceManagementClient(handler);
+                var client = HDInsightManagementTestUtilities.GetHDInsightManagementClient(context, handler);
+                var resourceManagementClient = HDInsightManagementTestUtilities.GetResourceManagementClient(context, handler);
 
                 //create resourcegroup
                 var resourceGroup = HDInsightManagementTestUtilities.CreateResourceGroup(resourceManagementClient);
@@ -89,13 +92,11 @@ namespace HDInsight.Tests
         {
             var handler = new RecordedDelegatingHandler { StatusCodeToReturn = HttpStatusCode.OK };
 
-            using (var context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 //get clients
-                var client = HDInsightManagementTestUtilities.GetHDInsightManagementClient(handler);
-                var resourceManagementClient = HDInsightManagementTestUtilities.GetResourceManagementClient(handler);
+                var client = HDInsightManagementTestUtilities.GetHDInsightManagementClient(context, handler);
+                var resourceManagementClient = HDInsightManagementTestUtilities.GetResourceManagementClient(context, handler);
 
                 //create resourcegroup
                 var resourceGroup = HDInsightManagementTestUtilities.CreateResourceGroup(resourceManagementClient);
@@ -129,13 +130,11 @@ namespace HDInsight.Tests
         {
             var handler = new RecordedDelegatingHandler { StatusCodeToReturn = HttpStatusCode.OK };
 
-            using (var context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
                 //get clients
-                var client = HDInsightManagementTestUtilities.GetHDInsightManagementClient(handler);
-                var resourceManagementClient = HDInsightManagementTestUtilities.GetResourceManagementClient(handler);
+                var client = HDInsightManagementTestUtilities.GetHDInsightManagementClient(context, handler);
+                var resourceManagementClient = HDInsightManagementTestUtilities.GetResourceManagementClient(context, handler);
 
                 //create resourcegroup
                 var resourceGroup = HDInsightManagementTestUtilities.CreateResourceGroup(resourceManagementClient);

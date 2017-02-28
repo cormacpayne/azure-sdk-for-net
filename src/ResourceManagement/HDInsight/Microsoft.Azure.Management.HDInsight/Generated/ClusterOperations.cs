@@ -2047,7 +2047,7 @@ namespace Microsoft.Azure.Management.HDInsight
             while (result.State == AsyncOperationState.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.GetLongRunningOperationStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = 60;
@@ -2110,7 +2110,7 @@ namespace Microsoft.Azure.Management.HDInsight
             while (result.State == AsyncOperationState.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.GetLongRunningOperationStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = 60;
@@ -2173,7 +2173,7 @@ namespace Microsoft.Azure.Management.HDInsight
             while (result.Cluster.Properties.ProvisioningState == HDInsightClusterProvisioningState.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.Clusters.GetCreateStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = 60;
@@ -2232,7 +2232,7 @@ namespace Microsoft.Azure.Management.HDInsight
             while (result.State == AsyncOperationState.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.Clusters.GetDeleteStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = 60;
@@ -2450,7 +2450,7 @@ namespace Microsoft.Azure.Management.HDInsight
             while (result.State == AsyncOperationState.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.GetLongRunningOperationStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = 60;
@@ -6697,7 +6697,7 @@ namespace Microsoft.Azure.Management.HDInsight
             while (result.State == AsyncOperationState.InProgress)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await TaskEx.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delayInSeconds * 1000, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await client.GetLongRunningOperationStatusAsync(response.OperationStatusLink, cancellationToken).ConfigureAwait(false);
                 delayInSeconds = 60;

@@ -27,17 +27,20 @@ namespace HDInsight.Tests
 {
     public class HttpTests
     {
+        public HttpTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         [Fact]
         public void TestDisableEnableHttp()
         {
             var handler = new RecordedDelegatingHandler { StatusCodeToReturn = HttpStatusCode.OK };
 
-            using (var context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
-                var client = HDInsightManagementTestUtilities.GetHDInsightManagementClient(handler);
-                var resourceManagementClient = HDInsightManagementTestUtilities.GetResourceManagementClient(handler);
+                var client = HDInsightManagementTestUtilities.GetHDInsightManagementClient(context, handler);
+                var resourceManagementClient = HDInsightManagementTestUtilities.GetResourceManagementClient(context, handler);
 
                 var resourceGroup = HDInsightManagementTestUtilities.CreateResourceGroup(resourceManagementClient);
                 const string dnsname = "hdisdk-httptest2";
@@ -78,12 +81,10 @@ namespace HDInsight.Tests
         {
             var handler = new RecordedDelegatingHandler { StatusCodeToReturn = HttpStatusCode.OK };
 
-            using (var context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
-                var client = HDInsightManagementTestUtilities.GetHDInsightManagementClient(handler);
-                var resourceManagementClient = HDInsightManagementTestUtilities.GetResourceManagementClient(handler);
+                var client = HDInsightManagementTestUtilities.GetHDInsightManagementClient(context, handler);
+                var resourceManagementClient = HDInsightManagementTestUtilities.GetResourceManagementClient(context, handler);
 
                 var resourceGroup = HDInsightManagementTestUtilities.CreateResourceGroup(resourceManagementClient);
                 const string dnsname = "hdisdk-httptest3";
@@ -124,12 +125,10 @@ namespace HDInsight.Tests
         {
             var handler = new RecordedDelegatingHandler { StatusCodeToReturn = HttpStatusCode.OK };
 
-            using (var context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
-                var client = HDInsightManagementTestUtilities.GetHDInsightManagementClient(handler);
-                var resourceManagementClient = HDInsightManagementTestUtilities.GetResourceManagementClient(handler);
+                var client = HDInsightManagementTestUtilities.GetHDInsightManagementClient(context, handler);
+                var resourceManagementClient = HDInsightManagementTestUtilities.GetResourceManagementClient(context, handler);
 
                 var resourceGroup = HDInsightManagementTestUtilities.CreateResourceGroup(resourceManagementClient);
                 const string dnsname = "hdisdk-httptest3";
@@ -173,12 +172,10 @@ namespace HDInsight.Tests
         {
             var handler = new RecordedDelegatingHandler { StatusCodeToReturn = HttpStatusCode.OK };
 
-            using (var context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
-                var client = HDInsightManagementTestUtilities.GetHDInsightManagementClient(handler);
-                var resourceManagementClient = HDInsightManagementTestUtilities.GetResourceManagementClient(handler);
+                var client = HDInsightManagementTestUtilities.GetHDInsightManagementClient(context, handler);
+                var resourceManagementClient = HDInsightManagementTestUtilities.GetResourceManagementClient(context, handler);
 
                 var resourceGroup = HDInsightManagementTestUtilities.CreateResourceGroup(resourceManagementClient);
                 const string dnsname = "hdisdk-httptest3";

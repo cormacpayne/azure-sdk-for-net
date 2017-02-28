@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 using HDInsight.Tests.Helpers;
 using Hyak.Common;
 using Microsoft.Azure.Management.HDInsight;
-using Microsoft.Azure.Management.Resources;
+using Microsoft.Azure.Management.ResourceManager;
 using Microsoft.Azure.Test;
 using System.Linq;
 using Xunit;
@@ -28,16 +28,19 @@ namespace HDInsight.Tests
 {
     public class GetCapabilitiesTests
     {
+        public GetCapabilitiesTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         [Fact]
         public void TestGetCapabilities()
         {
             var handler = new RecordedDelegatingHandler { StatusCodeToReturn = HttpStatusCode.OK };
 
-            using (var context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
-                var client = HDInsightManagementTestUtilities.GetHDInsightManagementClient(handler);
+                var client = HDInsightManagementTestUtilities.GetHDInsightManagementClient(context, handler);
 
                 var capabilities = client.Clusters.GetCapabilities("East US");
 

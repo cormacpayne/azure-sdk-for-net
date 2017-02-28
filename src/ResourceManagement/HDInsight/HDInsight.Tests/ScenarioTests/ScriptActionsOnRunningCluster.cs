@@ -37,17 +37,20 @@ namespace HDInsight.Tests
 
         private const string FailingScriptLocationContainer = "failingscriptcontainer";
 
+        public ScriptActionsOnRunningCluster()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         [Fact]
         public void TestScriptActionsOnRunningCluster()
         {
             var handler = new RecordedDelegatingHandler { StatusCodeToReturn = HttpStatusCode.OK };
 
-            using (var context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-              
-                var client = HDInsightManagementTestUtilities.GetHDInsightManagementClient(handler);            
-                var resourceManagementClient = HDInsightManagementTestUtilities.GetResourceManagementClient(handler);
+                var client = HDInsightManagementTestUtilities.GetHDInsightManagementClient(context, handler);            
+                var resourceManagementClient = HDInsightManagementTestUtilities.GetResourceManagementClient(context, handler);
                
                 var resourceGroup = HDInsightManagementTestUtilities.CreateResourceGroup(resourceManagementClient);
                 
@@ -144,12 +147,10 @@ namespace HDInsight.Tests
         {
             var handler = new RecordedDelegatingHandler { StatusCodeToReturn = HttpStatusCode.OK };
 
-            using (var context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
-                var client = HDInsightManagementTestUtilities.GetHDInsightManagementClient(handler);
-                var resourceManagementClient = HDInsightManagementTestUtilities.GetResourceManagementClient(handler);
+                var client = HDInsightManagementTestUtilities.GetHDInsightManagementClient(context, handler);
+                var resourceManagementClient = HDInsightManagementTestUtilities.GetResourceManagementClient(context, handler);
 
                 var resourceGroup = HDInsightManagementTestUtilities.CreateResourceGroup(resourceManagementClient);
 
@@ -246,12 +247,12 @@ namespace HDInsight.Tests
                 var storageAccount = new CloudStorageAccount(creds, true);
                 var blobClient = storageAccount.CreateCloudBlobClient();
                 var container = blobClient.GetContainerReference(FailingScriptLocationContainer);
-                container.CreateIfNotExists();
+                container.CreateIfNotExistsAsync();
                 var blockBlob = container.GetBlockBlobReference("failingscriptaction.sh");
 
                 using (var fileStream = System.IO.File.OpenRead(@"TestData/FailingScriptAction.sh"))
                 {
-                    blockBlob.UploadFromStream(fileStream);
+                    blockBlob.UploadFromStreamAsync(fileStream);
                 }
             }
 
