@@ -46,11 +46,19 @@ namespace Microsoft.Azure.Test
                 environment.TokenInfo[TokenAudience.Management],
                 environment.SubscriptionId);
 
-            return new SiteRecoveryVaultManagementClient(
+            var client = new SiteRecoveryVaultManagementClient(
                 "Microsoft.SiteRecoveryBVTD2",
                 "SiteRecoveryVault",
                 credentials,
                 environment.BaseUri).WithHandler(HttpMockServer.CreateInstance());
+
+            if (HttpMockServer.Mode == HttpRecorderMode.Playback)
+            {
+                client.LongRunningOperationRetryTimeout = 0;
+                client.LongRunningOperationInitialTimeout = 0;
+            }
+
+            return client;
         }
 
         /// <summary>
@@ -91,13 +99,21 @@ namespace Microsoft.Azure.Test
                     break;
             };
 
-            return new SiteRecoveryManagementClient(
+            var client = new SiteRecoveryManagementClient(
                 SiteRecoveryTestsBase.MyVaultName,
                 SiteRecoveryTestsBase.MyResourceGroupName,
                 SiteRecoveryTestsBase.ResourceNamespace,
                 SiteRecoveryTestsBase.ResourceType,
                 credentials,
                 environment.BaseUri).WithHandler(HttpMockServer.CreateInstance());
+
+            if (HttpMockServer.Mode == HttpRecorderMode.Playback)
+            {
+                client.LongRunningOperationRetryTimeout = 0;
+                client.LongRunningOperationInitialTimeout = 0;
+            }
+
+            return client;
         }
 
         private static bool IgnoreCertificateErrorHandler
