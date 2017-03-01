@@ -15,33 +15,38 @@
 using System;
 using System.Net;
 using Microsoft.Azure;
-using Microsoft.Azure.Management.Resources;
-using Microsoft.Azure.Management.Resources.Models;
+using Microsoft.Azure.Management.ResourceManager;
+using Microsoft.Azure.Management.ResourceManager.Models;
 using Microsoft.Azure.Management.StreamAnalytics;
 using Microsoft.Azure.Management.StreamAnalytics.Models;
 using Microsoft.Azure.Test;
 using Xunit;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
+using Microsoft.Azure.Management.StreamAnalytics.Testing;
 
 namespace StreamAnalytics.Tests.OperationTests
 {
     public class InputOperationsTest : TestBase
     {
+        public InputOperationsTest()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         [Fact]
         public void Test_InputOperations_E2E()
         {
             BasicDelegatingHandler handler = new BasicDelegatingHandler();
 
-            using (var undoContext = UndoContext.Current)
+            using (var undoContext = HyakMockContext.Start(this.GetType().FullName))
             {
-                undoContext.Start();
-
                 string resourceGroupName = TestUtilities.GenerateName("StreamAnalytics");
                 string resourceName = TestUtilities.GenerateName("MyStreamingJobSubmittedBySDK");
 
-                string serviceLocation = TestHelper.GetDefaultLocation();
+                string serviceLocation = TestHelper.GetDefaultLocation(undoContext);
 
-                var resourceClient = TestHelper.GetResourceClient(handler);
-                var client = TestHelper.GetStreamAnalyticsManagementClient(handler);
+                var resourceClient = TestHelper.GetResourceClient(undoContext, handler);
+                var client = TestHelper.GetStreamAnalyticsManagementClient(undoContext, handler);
 
                 try
                 {
@@ -196,17 +201,15 @@ namespace StreamAnalytics.Tests.OperationTests
         {
             BasicDelegatingHandler handler = new BasicDelegatingHandler();
 
-            using (var undoContext = UndoContext.Current)
+            using (var undoContext = HyakMockContext.Start(this.GetType().FullName))
             {
-                undoContext.Start();
-
                 string resourceGroupName = TestUtilities.GenerateName("StreamAnalytics");
                 string resourceName = TestUtilities.GenerateName("MyStreamingJobSubmittedBySDK");
 
-                string serviceLocation = TestHelper.GetDefaultLocation();
+                string serviceLocation = TestHelper.GetDefaultLocation(undoContext);
 
-                var resourceClient = TestHelper.GetResourceClient(handler);
-                var client = TestHelper.GetStreamAnalyticsManagementClient(handler);
+                var resourceClient = TestHelper.GetResourceClient(undoContext, handler);
+                var client = TestHelper.GetStreamAnalyticsManagementClient(undoContext, handler);
 
                 try
                 {
@@ -328,17 +331,15 @@ namespace StreamAnalytics.Tests.OperationTests
         {
             BasicDelegatingHandler handler = new BasicDelegatingHandler();
 
-            using (var undoContext = UndoContext.Current)
+            using (var undoContext = HyakMockContext.Start(this.GetType().FullName))
             {
-                undoContext.Start();
-
                 string resourceGroupName = TestUtilities.GenerateName("StreamAnalytics");
                 string resourceName = TestUtilities.GenerateName("MyStreamingJobSubmittedBySDK");
 
-                string serviceLocation = TestHelper.GetDefaultLocation();
+                string serviceLocation = TestHelper.GetDefaultLocation(undoContext);
 
-                var resourceClient = TestHelper.GetResourceClient(handler);
-                var client = TestHelper.GetStreamAnalyticsManagementClient(handler);
+                var resourceClient = TestHelper.GetResourceClient(undoContext, handler);
+                var client = TestHelper.GetStreamAnalyticsManagementClient(undoContext, handler);
 
                 try
                 {
@@ -476,17 +477,15 @@ namespace StreamAnalytics.Tests.OperationTests
         {
             BasicDelegatingHandler handler = new BasicDelegatingHandler();
 
-            using (var undoContext = UndoContext.Current)
+            using (var undoContext = HyakMockContext.Start(this.GetType().FullName))
             {
-                undoContext.Start();
-
                 string resourceGroupName = TestUtilities.GenerateName("StreamAnalytics");
                 string resourceName = TestUtilities.GenerateName("MyStreamingJobSubmittedBySDK");
 
-                string serviceLocation = TestHelper.GetDefaultLocation();
+                string serviceLocation = TestHelper.GetDefaultLocation(undoContext);
 
-                var resourceClient = TestHelper.GetResourceClient(handler);
-                var client = TestHelper.GetStreamAnalyticsManagementClient(handler);
+                var resourceClient = TestHelper.GetResourceClient(undoContext, handler);
+                var client = TestHelper.GetStreamAnalyticsManagementClient(undoContext, handler);
 
                 try
                 {

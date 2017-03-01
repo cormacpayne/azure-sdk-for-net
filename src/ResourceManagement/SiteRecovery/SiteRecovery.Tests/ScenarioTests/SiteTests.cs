@@ -31,12 +31,16 @@ namespace SiteRecovery.Tests
         string location = "southeastasia";
         string azureSiteName = "azureSite1";
 
+        public SiteTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         [Fact]
         public void CreateSite()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 FabricCreationInput siteInput = new FabricCreationInput();
@@ -52,9 +56,8 @@ namespace SiteRecovery.Tests
         [Fact]
         public void DeleteSite()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var site = client.Fabrics.Delete(siteName, RequestHeaders);
@@ -65,9 +68,8 @@ namespace SiteRecovery.Tests
         [Fact]
         public void A2ACreateSite()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler, Constants.A2A);
 
                 FabricCreationInput siteInput = new FabricCreationInput();
@@ -86,9 +88,8 @@ namespace SiteRecovery.Tests
         [Fact]
         public void A2ADeleteSite()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler, Constants.A2A);
 
                 var response = client.Fabrics.BeginDeleting(azureSiteName, RequestHeaders);
@@ -98,9 +99,8 @@ namespace SiteRecovery.Tests
 
         public void CheckSiteConsistency()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var responseServers = client.Fabrics.List(RequestHeaders);

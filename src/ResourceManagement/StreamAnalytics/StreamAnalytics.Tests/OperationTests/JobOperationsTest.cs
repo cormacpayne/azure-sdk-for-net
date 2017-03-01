@@ -19,33 +19,38 @@ using System.Net;
 using System.Threading;
 using Hyak.Common;
 using Microsoft.Azure;
-using Microsoft.Azure.Management.Resources;
-using Microsoft.Azure.Management.Resources.Models;
+using Microsoft.Azure.Management.ResourceManager;
+using Microsoft.Azure.Management.ResourceManager.Models;
 using Microsoft.Azure.Management.StreamAnalytics;
 using Microsoft.Azure.Management.StreamAnalytics.Models;
 using Microsoft.Azure.Test;
 using Xunit;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
+using Microsoft.Azure.Management.StreamAnalytics.Testing;
 
 namespace StreamAnalytics.Tests.OperationTests
 {
     public class JobOperationsTest : TestBase
     {
+        public JobOperationsTest()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         [Fact]
         public void Test_JobOperations_E2E()
         {
             BasicDelegatingHandler handler = new BasicDelegatingHandler();
 
-            using (var undoContext = UndoContext.Current)
+            using (var undoContext = HyakMockContext.Start(this.GetType().FullName))
             {
-                undoContext.Start();
-
                 string resourceGroupName = TestUtilities.GenerateName("StreamAnalytics");
                 string resourceName = TestUtilities.GenerateName("MyStreamingJobSubmittedBySDK");
                 
-                string serviceLocation = TestHelper.GetDefaultLocation();
+                string serviceLocation = TestHelper.GetDefaultLocation(undoContext);
 
-                var resourceClient = TestHelper.GetResourceClient(handler);
-                var client = TestHelper.GetStreamAnalyticsManagementClient(handler);
+                var resourceClient = TestHelper.GetResourceClient(undoContext, handler);
+                var client = TestHelper.GetStreamAnalyticsManagementClient(undoContext, handler);
 
                 try
                 {
@@ -58,7 +63,7 @@ namespace StreamAnalytics.Tests.OperationTests
 
                     // Construct the general properties for JobProperties
                     JobProperties jobProperties = new JobProperties();
-                    jobProperties.Sku = new Sku()
+                    jobProperties.Sku = new Microsoft.Azure.Management.StreamAnalytics.Models.Sku()
                     {
                         Name = "standard"
                     };
@@ -235,17 +240,15 @@ namespace StreamAnalytics.Tests.OperationTests
         {
             BasicDelegatingHandler handler = new BasicDelegatingHandler();
 
-            using (var undoContext = UndoContext.Current)
+            using (var undoContext = HyakMockContext.Start(this.GetType().FullName))
             {
-                undoContext.Start();
-
                 string resourceGroupName = TestUtilities.GenerateName("StreamAnalytics");
                 string resourceName = TestUtilities.GenerateName("MyStreamingJobSubmittedBySDK");
 
-                string serviceLocation = TestHelper.GetDefaultLocation();
+                string serviceLocation = TestHelper.GetDefaultLocation(undoContext);
 
-                var resourceClient = TestHelper.GetResourceClient(handler);
-                var client = TestHelper.GetStreamAnalyticsManagementClient(handler);
+                var resourceClient = TestHelper.GetResourceClient(undoContext, handler);
+                var client = TestHelper.GetStreamAnalyticsManagementClient(undoContext, handler);
 
                 try
                 {

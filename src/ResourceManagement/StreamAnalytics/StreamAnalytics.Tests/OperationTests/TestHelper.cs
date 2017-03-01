@@ -14,11 +14,15 @@
 
 using System.Linq;
 using System.Net.Http;
-using Microsoft.Azure.Management.Resources;
+using Microsoft.Azure.Management.ResourceManager;
 using Microsoft.Azure.Management.StreamAnalytics;
 using Microsoft.Azure.Management.StreamAnalytics.Models;
 using Microsoft.WindowsAzure.Management;
 using Microsoft.Azure.Test;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
+using Microsoft.Azure.Management.StreamAnalytics.Testing;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace StreamAnalytics.Tests.OperationTests
 {
@@ -56,28 +60,19 @@ namespace StreamAnalytics.Tests.OperationTests
         /// Generate a Resource Management client from the test base to use for managing resource groups.
         /// </summary>
         /// <returns>Resource Management client</returns>
-        public static ResourceManagementClient GetResourceClient(DelegatingHandler handler)
+        public static ResourceManagementClient GetResourceClient(HyakMockContext context, DelegatingHandler handler)
         {
-            CSMTestEnvironmentFactory factory = new CSMTestEnvironmentFactory();
-            return TestBase.GetServiceClient<ResourceManagementClient>(factory).WithHandler(handler);
+            return context.GetServiceClient<ResourceManagementClient>(TestEnvironmentFactory.GetTestEnvironment(), false, new DelegatingHandler[] { handler });
         }
 
-        public static StreamAnalyticsManagementClient GetStreamAnalyticsManagementClient(DelegatingHandler handler)
+        public static StreamAnalyticsManagementClient GetStreamAnalyticsManagementClient(HyakMockContext context, DelegatingHandler handler)
         {
-            CSMTestEnvironmentFactory factory = new CSMTestEnvironmentFactory();
-            return TestBase.GetServiceClient<StreamAnalyticsManagementClient>(factory).WithHandler(handler);
+            return context.GetServiceClient<StreamAnalyticsManagementClient>().WithHandler(handler);
         }
 
-        public static string GetDefaultLocation()
+        public static string GetDefaultLocation(HyakMockContext context)
         {
-            ManagementClient managementClient = TestBase.GetServiceClient<ManagementClient>();
-
-            var serviceLocations = managementClient.Locations.ListAsync()
-                    .Result.ToList();
-
-            return serviceLocations.Any(l => l.Name.Equals("West US"))
-                ? "West US"
-                : serviceLocations.FirstOrDefault().Name;
+            return "West US";
         }
 
         // Construct the general Job object

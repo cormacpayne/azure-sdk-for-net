@@ -32,13 +32,17 @@ namespace SiteRecovery.Tests
         string resourceGroupName = "RecoveryServices-WHNOWF6LI6NM4B55QDIYR3YG3YAEZNTDUOWHPQX7NJB2LHDGTXJA-West-US";
         string resourceName = "rsv5";
 
+        public VaultTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         [Fact]
         public void CreateVault()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-                var rsmClient = GetRecoveryServicesClient(CustomHttpHandler);
+                var rsmClient = GetRecoveryServicesClient(context, CustomHttpHandler);
                 VaultCreateArgs vaultCreateArgs= new VaultCreateArgs();
                 vaultCreateArgs.Location = "westus";
                 vaultCreateArgs.Properties = new VaultProperties();
@@ -56,10 +60,9 @@ namespace SiteRecovery.Tests
         [Fact]
         public void RetrieveVault()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-                var rsmClient = GetRecoveryServicesClient(CustomHttpHandler);
+                var rsmClient = GetRecoveryServicesClient(context, CustomHttpHandler);
                 VaultListResponse response = rsmClient.Vaults.Get(resourceGroupName, RequestHeaders);
 
                 Assert.NotNull(response.Vaults[0].Name);
@@ -72,10 +75,9 @@ namespace SiteRecovery.Tests
         [Fact]
         public void RemoveVault()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-                var rsmClient = GetRecoveryServicesClient(CustomHttpHandler);
+                var rsmClient = GetRecoveryServicesClient(context, CustomHttpHandler);
                 RecoveryServicesOperationStatusResponse response = rsmClient.Vaults.BeginDeleting(resourceGroupName, resourceName);
 
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -85,10 +87,9 @@ namespace SiteRecovery.Tests
         [Fact]
         public void CreateAndRetrieveVaultExtendedInfo()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-                var rsmClient = GetRecoveryServicesClient(CustomHttpHandler);
+                var rsmClient = GetRecoveryServicesClient(context, CustomHttpHandler);
 
                 ResourceExtendedInformationArgs args =
                     new ResourceExtendedInformationArgs("1.0", "extendedinfo", Guid.NewGuid().ToString());

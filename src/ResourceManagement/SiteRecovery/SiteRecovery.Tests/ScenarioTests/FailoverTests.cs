@@ -27,11 +27,15 @@ namespace SiteRecovery.Tests
 {
     public class FailoverTests : SiteRecoveryTestsBase
     {
+        public FailoverTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         public void E2EFailover()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 string fabricId = "6adf9420-b02f-4377-8ab7-ff384e6d792f";
@@ -56,9 +60,8 @@ namespace SiteRecovery.Tests
 
         public void CommitFailover()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 string fabricId = "6adf9420-b02f-4377-8ab7-ff384e6d792f";
@@ -72,9 +75,8 @@ namespace SiteRecovery.Tests
 
         public void RR()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 string fabricId = "6adf9420-b02f-4377-8ab7-ff384e6d792f";
@@ -88,9 +90,8 @@ namespace SiteRecovery.Tests
 
         public void E2ETFO()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 string fabricId = "6adf9420-b02f-4377-8ab7-ff384e6d792f";
@@ -135,9 +136,8 @@ namespace SiteRecovery.Tests
 
         public void E2EUFO()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 string fabricId = "6adf9420-b02f-4377-8ab7-ff384e6d792f";
@@ -163,9 +163,8 @@ namespace SiteRecovery.Tests
 
         public void ApplyRecoveryPoint()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
            {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var fabrics = client.Fabrics.List(RequestHeaders);
@@ -232,9 +231,8 @@ namespace SiteRecovery.Tests
 
         public void InMageAzureV2UnplannedFailover()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 string vmId = "7192c867-b38e-11e5-af2b-0050569e66ab";
@@ -299,9 +297,8 @@ namespace SiteRecovery.Tests
 
         public void InMageUnplannedFailover()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 string vmId = "7192c867-b38e-11e5-af2b-0050569e66ab";
@@ -366,9 +363,8 @@ namespace SiteRecovery.Tests
 
         public void InMageReprotectTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 string vmId = "7192c867-b38e-11e5-af2b-0050569e66ab";
@@ -397,7 +393,7 @@ namespace SiteRecovery.Tests
                 var runAsAccount = vmWareDetails.RunAsAccounts.First(
                     account => account.AccountName.Equals(
                         vmAccount,
-                        StringComparison.InvariantCultureIgnoreCase));
+                        StringComparison.OrdinalIgnoreCase));
                 Assert.NotNull(runAsAccount);
 
                 string dataStoreName = "datastore-local (1)";
@@ -465,9 +461,8 @@ namespace SiteRecovery.Tests
 
         public void InMageAzureV2ReprotectTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 string vmId = "1faecbb8-b47d-11e5-af2b-0050569e66ab";
@@ -496,7 +491,7 @@ namespace SiteRecovery.Tests
                 var runAsAccount = vmWareDetails.RunAsAccounts.First(
                     account => account.AccountName.Equals(
                         vmAccount,
-                        StringComparison.InvariantCultureIgnoreCase));
+                        StringComparison.OrdinalIgnoreCase));
                 Assert.NotNull(runAsAccount);
 
                 var containersResponse = client.ProtectionContainer.List(

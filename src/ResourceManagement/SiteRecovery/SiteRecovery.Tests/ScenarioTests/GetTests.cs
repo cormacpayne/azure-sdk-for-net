@@ -26,12 +26,16 @@ namespace SiteRecovery.Tests
 {
     public class GetTests : SiteRecoveryTestsBase
     {
+        public GetTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         [Fact]
         public void GetServerTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 FabricListResponse responseServers = client.Fabrics.List(RequestHeaders);
@@ -48,9 +52,8 @@ namespace SiteRecovery.Tests
         [Fact]
         public void GetRecoveryServicesProviders()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 FabricListResponse responseServers = client.Fabrics.List(RequestHeaders);
@@ -75,9 +78,8 @@ namespace SiteRecovery.Tests
 
         public void GetStorageClassification()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 FabricListResponse responseServers = client.Fabrics.List(RequestHeaders);
@@ -101,9 +103,8 @@ namespace SiteRecovery.Tests
 
         public void GetProtectedContainerTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var responseServers = client.Fabrics.List(RequestHeaders);
@@ -132,9 +133,8 @@ namespace SiteRecovery.Tests
 
         public void GetAllProtectedContainerTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var protectionContainerList = client.ProtectionContainer.ListAll(RequestHeaders);
@@ -143,9 +143,8 @@ namespace SiteRecovery.Tests
 
 	public void GetReplicationProtectedItems()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 string fabricId = "f0632449-effd-4858-a210-4ea15756e4b7";
@@ -157,9 +156,8 @@ namespace SiteRecovery.Tests
 
         public void GetVMwareAzureV2ReplicationProtectableItems()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var responseServers = client.Fabrics.List(RequestHeaders);
@@ -205,9 +203,8 @@ namespace SiteRecovery.Tests
 
         public void GetVMwareAzureV2ReplicationProtectedItem()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = this.GetSiteRecoveryClient(CustomHttpHandler);
 
                 var response = client.ReplicationProtectedItem.Get(
@@ -223,9 +220,8 @@ namespace SiteRecovery.Tests
 
         public void GetVMwareAzureV2ReplicationProtectedItems()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = this.GetSiteRecoveryClient(CustomHttpHandler);
 
                 var responseServers = client.Fabrics.List(RequestHeaders);
@@ -268,9 +264,8 @@ namespace SiteRecovery.Tests
 
         public void GetNetworkTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 const string fabricName = "Vmm;f0632449-effd-4858-a210-4ea15756e4b7";
@@ -281,9 +276,8 @@ namespace SiteRecovery.Tests
 
         public void GetNetworkMappingTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 const string fabricName = "Vmm;f0632449-effd-4858-a210-4ea15756e4b7";
@@ -299,9 +293,8 @@ namespace SiteRecovery.Tests
 
         public void GetContainerMappings()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 string fabricId = "Vmm;6adf9420-b02f-4377-8ab7-ff384e6d792f";
@@ -313,9 +306,8 @@ namespace SiteRecovery.Tests
 
         public void GetVMwareAzureV2ContainerMapping()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var responseServers = client.Fabrics.List(RequestHeaders);
@@ -347,9 +339,8 @@ namespace SiteRecovery.Tests
 
         public void GetEvents()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var response = client.Events.List(
@@ -367,9 +358,8 @@ namespace SiteRecovery.Tests
 
         public void GetEvent()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var response = client.Events.List(
@@ -393,9 +383,8 @@ namespace SiteRecovery.Tests
 
         public void GetEventNegativeTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 EventResponse eventResponse = null;
@@ -424,9 +413,8 @@ namespace SiteRecovery.Tests
 
         public void GetAlertSettingsTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var response = client.AlertSettings.List(RequestHeaders);
@@ -444,9 +432,8 @@ namespace SiteRecovery.Tests
 
         public void GetAlertSettingsNegativeTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 AlertSettingsResponse alertResponse = null;
@@ -475,9 +462,8 @@ namespace SiteRecovery.Tests
         [Fact]
         public void GetStorageClassificationAndPairingsUnderVault()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 client.StorageClassification.ListAll(RequestHeaders);

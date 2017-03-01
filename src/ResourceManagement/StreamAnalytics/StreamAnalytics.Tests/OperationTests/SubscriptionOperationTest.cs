@@ -14,31 +14,36 @@
 
 using System.Linq;
 using System.Net;
-using Microsoft.Azure.Management.Resources;
-using Microsoft.Azure.Management.Resources.Models;
+using Microsoft.Azure.Management.ResourceManager;
+using Microsoft.Azure.Management.ResourceManager.Models;
 using Microsoft.Azure.Management.StreamAnalytics;
 using Microsoft.Azure.Management.StreamAnalytics.Models;
 using Microsoft.Azure.Test;
 using Xunit;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
+using Microsoft.Azure.Management.StreamAnalytics.Testing;
 
 namespace StreamAnalytics.Tests.OperationTests
 {
     public class SubscriptionOperationsTest : TestBase
     {
+        public SubscriptionOperationsTest()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         [Fact]
         public void Test_SubscriptionOperations_E2E()
         {
             BasicDelegatingHandler handler = new BasicDelegatingHandler();
 
-            using (var undoContext = UndoContext.Current)
+            using (var undoContext = HyakMockContext.Start(this.GetType().FullName))
             {
-                undoContext.Start();
-
                 string resourceGroupName = TestUtilities.GenerateName("StreamAnalytics");
-                string serviceLocation = TestHelper.GetDefaultLocation();
+                string serviceLocation = TestHelper.GetDefaultLocation(undoContext);
 
-                var resourceClient = TestHelper.GetResourceClient(handler);
-                var client = TestHelper.GetStreamAnalyticsManagementClient(handler);
+                var resourceClient = TestHelper.GetResourceClient(undoContext, handler);
+                var client = TestHelper.GetStreamAnalyticsManagementClient(undoContext, handler);
 
                 try
                 {

@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using Microsoft.Azure.Test;
 using Microsoft.Azure.Management.SiteRecovery;
 using System.Net;
-using System.Web;
 using Xunit;
 using Microsoft.Azure.Management.SiteRecovery.Models;
 
@@ -30,12 +29,16 @@ namespace SiteRecovery.Tests
     {
         private const string RecoveryservicePrefix = "RecoveryServices";
 
+        public EnumerationTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         [Fact]
         public void EnumerateServersTests()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var response = client.Fabrics.List(RequestHeaders);
@@ -55,9 +58,8 @@ namespace SiteRecovery.Tests
 
         public void EnumerateProtectedContainerTests()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var responseServers = client.Fabrics.List(RequestHeaders);
@@ -92,9 +94,8 @@ namespace SiteRecovery.Tests
         [Fact]
         public void EnumerateJobsTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 JobQueryParameter queryParam = new JobQueryParameter();
@@ -113,9 +114,8 @@ namespace SiteRecovery.Tests
         
         public void EnumerateProtectableItems()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 string fabricId = "6adf9420-b02f-4377-8ab7-ff384e6d792f";
@@ -135,9 +135,8 @@ namespace SiteRecovery.Tests
 
         public void EnumerateTargetComputeSizes()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 string fabricId = "332ef14f4ba397490601076e38b80f7fe4139f8dcc22a3996c16a01060637050";
@@ -150,9 +149,8 @@ namespace SiteRecovery.Tests
         [Fact]
         public void EnumerateProtectedItemsUnderVault()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 List<ReplicationProtectedItem> itemsList = new List<ReplicationProtectedItem>();
@@ -176,9 +174,8 @@ namespace SiteRecovery.Tests
         [Fact]
         public void EnumerateProtectedItemsUnderFabric()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var fabrics = client.Fabrics.List(RequestHeaders).Fabrics.ToList();
@@ -206,9 +203,8 @@ namespace SiteRecovery.Tests
 
         public void EnumerateProtectedItemsUnderVmWareFabric()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var responseServers = client.Fabrics.List(RequestHeaders);
@@ -238,9 +234,8 @@ namespace SiteRecovery.Tests
 
         public void EnumerateNetworksUnderFabricTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 const string fabricName = "Vmm;f0632449-effd-4858-a210-4ea15756e4b7";
@@ -251,9 +246,8 @@ namespace SiteRecovery.Tests
         [Fact]
         public void EnumerateAllNetworksInSubscriptionTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var response = client.Network.GetAll(RequestHeaders);
@@ -262,9 +256,8 @@ namespace SiteRecovery.Tests
 
         public void EnumerateNetworkMappingsUnderNetworkTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 const string fabricName = "Vmm;f0632449-effd-4858-a210-4ea15756e4b7";
@@ -276,9 +269,8 @@ namespace SiteRecovery.Tests
         [Fact]
         public void EnumerateAllNetworkMappingsInSubscriptionTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var response = client.NetworkMapping.GetAll(RequestHeaders);
@@ -288,9 +280,8 @@ namespace SiteRecovery.Tests
         [Fact]
         public void EnumeratePoliciesTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var response = client.Policies.List(RequestHeaders);
@@ -301,9 +292,8 @@ namespace SiteRecovery.Tests
 
         public void EnumerateEventsTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var response = client.Events.List(new EventQueryParameter(), RequestHeaders);
@@ -314,9 +304,8 @@ namespace SiteRecovery.Tests
 
         public void EnumerateAlertSettingsTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var response = client.AlertSettings.List(RequestHeaders);

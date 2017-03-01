@@ -24,11 +24,15 @@ namespace SiteRecovery.Tests
         //"bcdrvcenter";
         private string port = "443";
 
+        public VCenterTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         public void GetVCenters()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var responseServers = client.Fabrics.List(RequestHeaders);
@@ -50,9 +54,8 @@ namespace SiteRecovery.Tests
 
         public void GetAllVCenters()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var vCenterResponse =
@@ -64,9 +67,8 @@ namespace SiteRecovery.Tests
 
         public void GetVCenter()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var responseServers = client.Fabrics.List(RequestHeaders);
@@ -107,9 +109,8 @@ namespace SiteRecovery.Tests
 
         public void GetVCenterNegativeTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var responseServers = client.Fabrics.List(RequestHeaders);
@@ -148,9 +149,8 @@ namespace SiteRecovery.Tests
 
         public void DeleteVCenter()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var responseServers = client.Fabrics.List(RequestHeaders);
@@ -181,9 +181,8 @@ namespace SiteRecovery.Tests
 
         public void UpdateVCenter()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var responseServers = client.Fabrics.List(RequestHeaders);
@@ -210,7 +209,7 @@ namespace SiteRecovery.Tests
                  var runAsAccount = vmWareDetails.RunAsAccounts.First(
                     account => account.AccountName.Equals(
                         this.runAsAccountName,
-                        StringComparison.InvariantCultureIgnoreCase));
+                        StringComparison.OrdinalIgnoreCase));
                 Assert.NotNull(runAsAccount);
 
                 var response = client.VCenters.Update(
@@ -242,9 +241,8 @@ namespace SiteRecovery.Tests
 
 	public void AddVCenter()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var responseServers = client.Fabrics.List(RequestHeaders);
@@ -267,7 +265,7 @@ namespace SiteRecovery.Tests
                 var runAsAccount = vmWareDetails.RunAsAccounts.FirstOrDefault(
                     account => account.AccountName.Equals(
                         this.runAsAccountName,
-                        StringComparison.InvariantCultureIgnoreCase));
+                        StringComparison.OrdinalIgnoreCase));
                 Assert.NotNull(runAsAccount);
 
                 var response = client.VCenters.Create(

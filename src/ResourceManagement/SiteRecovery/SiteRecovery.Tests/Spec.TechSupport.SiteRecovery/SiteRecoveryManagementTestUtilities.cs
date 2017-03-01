@@ -14,7 +14,6 @@
 //
 
 using System;
-using System.Configuration;
 using System.Net;
 using System.Net.Security;
 using Microsoft.Azure.Management.SiteRecoveryVault;
@@ -23,6 +22,7 @@ using Microsoft.Azure.Test.HttpRecorder;
 namespace Microsoft.Azure.Test
 {
     using Azure.Management.SiteRecovery;
+    using Rest.ClientRuntime.Azure.TestFramework;
     using SiteRecovery.Tests;
 
     public static class SiteRecoveryManagementTestUtilities
@@ -34,18 +34,22 @@ namespace Microsoft.Azure.Test
         /// <returns>A recovery services management client, created from the current context (environment variables)</returns>
         public static SiteRecoveryVaultManagementClient GetSiteRecoveryVaultManagementClient(this TestBase testBase)
         {
-            TestEnvironment environment = new CSMTestEnvironmentFactory().GetTestEnvironment();
+            TestEnvironment environment = TestEnvironmentFactory.GetTestEnvironment();
 
-            if (ServicePointManager.ServerCertificateValidationCallback == null)
-            {
-                ServicePointManager.ServerCertificateValidationCallback =
-                    IgnoreCertificateErrorHandler;
-            }
+            //if (ServicePointManager.ServerCertificateValidationCallback == null)
+            //{
+            //    ServicePointManager.ServerCertificateValidationCallback =
+            //        IgnoreCertificateErrorHandler;
+            //}
+
+            var credentials = new CredentialAdapter(
+                environment.TokenInfo[TokenAudience.Management],
+                environment.SubscriptionId);
 
             return new SiteRecoveryVaultManagementClient(
                 "Microsoft.SiteRecoveryBVTD2",
                 "SiteRecoveryVault",
-                (SubscriptionCloudCredentials)environment.Credentials,
+                credentials,
                 environment.BaseUri).WithHandler(HttpMockServer.CreateInstance());
         }
 
@@ -56,15 +60,19 @@ namespace Microsoft.Azure.Test
         /// <returns>A site recovery management client, created from the current context (environment variables)</returns>
         public static SiteRecoveryManagementClient GetSiteRecoveryManagementClient(this TestBase testBase, String scenario = "")
         {
-            if (ServicePointManager.ServerCertificateValidationCallback == null)
-            {
-                ServicePointManager.ServerCertificateValidationCallback =
-                    IgnoreCertificateErrorHandler;
-            }
+            //if (ServicePointManager.ServerCertificateValidationCallback == null)
+            //{
+            //    ServicePointManager.ServerCertificateValidationCallback =
+            //        IgnoreCertificateErrorHandler;
+            //}
 
-            TestEnvironment environment = new CSMTestEnvironmentFactory().GetTestEnvironment();
+            TestEnvironment environment = TestEnvironmentFactory.GetTestEnvironment();
 
-            switch(scenario)
+            var credentials = new CredentialAdapter(
+                environment.TokenInfo[TokenAudience.Management],
+                environment.SubscriptionId);
+
+            switch (scenario)
             {
                 case Constants.A2A:
                     SiteRecoveryTestsBase.MyVaultName = "integrationTest1";
@@ -88,7 +96,7 @@ namespace Microsoft.Azure.Test
                 SiteRecoveryTestsBase.MyResourceGroupName,
                 SiteRecoveryTestsBase.ResourceNamespace,
                 SiteRecoveryTestsBase.ResourceType,
-                (SubscriptionCloudCredentials)environment.Credentials,
+                credentials,
                 environment.BaseUri).WithHandler(HttpMockServer.CreateInstance());
         }
 

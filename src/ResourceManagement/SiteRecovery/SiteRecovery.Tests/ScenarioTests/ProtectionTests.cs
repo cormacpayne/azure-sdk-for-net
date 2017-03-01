@@ -28,6 +28,11 @@ namespace SiteRecovery.Tests
 {
     public class ProtectionTests : SiteRecoveryTestsBase
     {
+        public ProtectionTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         public void EnableDR()
         {
             
@@ -40,9 +45,8 @@ namespace SiteRecovery.Tests
 
         public void PurgeDR()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var fabrics = client.Fabrics.List(RequestHeaders);
@@ -92,9 +96,8 @@ namespace SiteRecovery.Tests
 
         public void UpdateProtection()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 string replicationProtectedItemName = "PE1447651278";
@@ -124,9 +127,8 @@ namespace SiteRecovery.Tests
 
         public void UpdateProtectionOfInMageAzureV2ProtectedItem()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 string vmId = "7192c867-b38e-11e5-af2b-0050569e66ab";
@@ -192,9 +194,8 @@ namespace SiteRecovery.Tests
 
         public void EnableProtectionForVMwareVM()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = this.GetSiteRecoveryClient(this.CustomHttpHandler);
 
                 string vmId = "7192c867-b38e-11e5-af2b-0050569e66ab";
@@ -217,7 +218,7 @@ namespace SiteRecovery.Tests
                 var runAsAccount = vmWareDetails.RunAsAccounts.First(
                     account => account.AccountName.Equals(
                         vmAccount,
-                        StringComparison.InvariantCultureIgnoreCase));
+                        StringComparison.OrdinalIgnoreCase));
                 Assert.NotNull(runAsAccount);
 
                 var containersResponse = client.ProtectionContainer.List(
@@ -291,9 +292,8 @@ namespace SiteRecovery.Tests
 
         public void EnableProtectionForVMwareVMUsingInMageProvider()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = this.GetSiteRecoveryClient(this.CustomHttpHandler);
 
                 string vmId = "1faecbb8-b47d-11e5-af2b-0050569e66ab";
@@ -316,7 +316,7 @@ namespace SiteRecovery.Tests
                 var runAsAccount = vmWareDetails.RunAsAccounts.First(
                     account => account.AccountName.Equals(
                         vmAccount,
-                        StringComparison.InvariantCultureIgnoreCase));
+                        StringComparison.OrdinalIgnoreCase));
                 Assert.NotNull(runAsAccount);
 
                 var processServer = vmWareDetails.ProcessServers.FirstOrDefault(
@@ -399,9 +399,8 @@ namespace SiteRecovery.Tests
 
         public void RefreshVMWareFabric()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = this.GetSiteRecoveryClient(this.CustomHttpHandler);
 
                 var responseServers = client.Fabrics.List(RequestHeaders);
@@ -425,9 +424,8 @@ namespace SiteRecovery.Tests
 
         public void DisableProtectionForVMwareVM()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var fabrics = client.Fabrics.List(RequestHeaders);
@@ -490,9 +488,8 @@ namespace SiteRecovery.Tests
 
         public void PurgeProtectionForVMwareVM()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var fabrics = client.Fabrics.List(RequestHeaders);

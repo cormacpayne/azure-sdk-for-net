@@ -13,13 +13,17 @@ namespace SiteRecovery.Tests
 {
     public class ProcessServerTests : SiteRecoveryTestsBase
     {
+        public ProcessServerTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         private string runAsAccountName = "mobility_update_account";
 
         public void ProcessServerLoadBalance()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var responseServers = client.Fabrics.List(RequestHeaders);
@@ -75,9 +79,8 @@ namespace SiteRecovery.Tests
 
         public void ProcessServerFailover()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var responseServers = client.Fabrics.List(RequestHeaders);
@@ -120,9 +123,8 @@ namespace SiteRecovery.Tests
 
         public void DeployProcessServer()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 //var response =
@@ -150,9 +152,8 @@ namespace SiteRecovery.Tests
 
         public void UpdateMobilityService()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var responseServers = client.Fabrics.List(RequestHeaders);
@@ -172,7 +173,7 @@ namespace SiteRecovery.Tests
                 var runAsAccount = vmWareDetails.RunAsAccounts.First(
                    account => account.AccountName.Equals(
                        this.runAsAccountName,
-                       StringComparison.InvariantCultureIgnoreCase));
+                       StringComparison.OrdinalIgnoreCase));
                 Assert.NotNull(runAsAccount);
 
                 var containersResponse = client.ProtectionContainer.List(
@@ -216,9 +217,8 @@ namespace SiteRecovery.Tests
 
         public void DiscoverProtectableItemPhysicalServer()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var responseServers = client.Fabrics.List(RequestHeaders);

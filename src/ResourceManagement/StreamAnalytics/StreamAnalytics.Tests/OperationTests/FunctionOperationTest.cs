@@ -18,33 +18,38 @@ using System.IO;
 using System.Net;
 using Hyak.Common;
 using Microsoft.Azure;
-using Microsoft.Azure.Management.Resources;
-using Microsoft.Azure.Management.Resources.Models;
+using Microsoft.Azure.Management.ResourceManager;
+using Microsoft.Azure.Management.ResourceManager.Models;
 using Microsoft.Azure.Management.StreamAnalytics;
 using Microsoft.Azure.Management.StreamAnalytics.Models;
 using Microsoft.Azure.Test;
 using Xunit;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
+using Microsoft.Azure.Management.StreamAnalytics.Testing;
 
 namespace StreamAnalytics.Tests.OperationTests
 {
     public class FunctionOperationTest : TestBase
     {
+        public FunctionOperationTest()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         [Fact]
         public void Test_FunctionOperations_Full_Scalar_AzureMLWebService()
         {
             BasicDelegatingHandler handler = new BasicDelegatingHandler();
 
-            using (var undoContext = UndoContext.Current)
+            using (var undoContext = HyakMockContext.Start(this.GetType().FullName))
             {
-                undoContext.Start();
-
                 string resourceGroupName = TestUtilities.GenerateName("StreamAnalytics");
                 string resourceName = TestUtilities.GenerateName("MyStreamingJobSubmittedBySDK");
 
-                string serviceLocation = TestHelper.GetDefaultLocation();
+                string serviceLocation = TestHelper.GetDefaultLocation(undoContext);
 
-                var resourceClient = TestHelper.GetResourceClient(handler);
-                var client = TestHelper.GetStreamAnalyticsManagementClient(handler);
+                var resourceClient = TestHelper.GetResourceClient(undoContext, handler);
+                var client = TestHelper.GetStreamAnalyticsManagementClient(undoContext, handler);
 
                 try
                 {
@@ -214,17 +219,15 @@ namespace StreamAnalytics.Tests.OperationTests
         {
             BasicDelegatingHandler handler = new BasicDelegatingHandler();
 
-            using (var undoContext = UndoContext.Current)
+            using (var undoContext = HyakMockContext.Start(this.GetType().FullName))
             {
-                undoContext.Start();
-
                 string resourceGroupName = TestUtilities.GenerateName("StreamAnalytics");
                 string resourceName = TestUtilities.GenerateName("MyStreamingJobSubmittedBySDK");
 
-                string serviceLocation = TestHelper.GetDefaultLocation();
+                string serviceLocation = TestHelper.GetDefaultLocation(undoContext);
 
-                var resourceClient = TestHelper.GetResourceClient(handler);
-                var client = TestHelper.GetStreamAnalyticsManagementClient(handler);
+                var resourceClient = TestHelper.GetResourceClient(undoContext, handler);
+                var client = TestHelper.GetStreamAnalyticsManagementClient(undoContext, handler);
 
                 try
                 {
@@ -266,7 +269,7 @@ namespace StreamAnalytics.Tests.OperationTests
                                 client.Functions.RetrieveDefaultDefinition(resourceGroupName, resourceName, functionName,
                                     retrieveDefaultDefinitionParameters));
                     Assert.Equal(HttpStatusCode.InternalServerError, cloudException.Response.StatusCode);
-                    Assert.Contains("not supported", cloudException.Error.Message, StringComparison.InvariantCulture);
+                    Assert.Contains("not supported", cloudException.Error.Message, StringComparison.Ordinal);
 
                     // Add the function
                     Function javaScriptFunction = new Function(functionName)
@@ -332,7 +335,7 @@ namespace StreamAnalytics.Tests.OperationTests
                     Assert.Equal(OperationStatus.Failed, response.Status);
                     Assert.Equal(ResourceTestStatus.TestFailed, response.ResourceTestStatus);
                     Assert.NotNull(response.Error);
-                    Assert.Contains("not supported", response.Error.Message, StringComparison.InvariantCulture);
+                    Assert.Contains("not supported", response.Error.Message, StringComparison.Ordinal);
 
                     // Update the function
                     string newJavaScriptFunctionCode = @"function (x, y) { return x * y; }";
@@ -386,17 +389,15 @@ namespace StreamAnalytics.Tests.OperationTests
         {
             BasicDelegatingHandler handler = new BasicDelegatingHandler();
 
-            using (var undoContext = UndoContext.Current)
+            using (var undoContext = HyakMockContext.Start(this.GetType().FullName))
             {
-                undoContext.Start();
-
                 string resourceGroupName = TestUtilities.GenerateName("StreamAnalytics");
                 string resourceName = TestUtilities.GenerateName("MyStreamingJobSubmittedBySDK");
 
-                string serviceLocation = TestHelper.GetDefaultLocation();
+                string serviceLocation = TestHelper.GetDefaultLocation(undoContext);
 
-                var resourceClient = TestHelper.GetResourceClient(handler);
-                var client = TestHelper.GetStreamAnalyticsManagementClient(handler);
+                var resourceClient = TestHelper.GetResourceClient(undoContext, handler);
+                var client = TestHelper.GetStreamAnalyticsManagementClient(undoContext, handler);
 
                 try
                 {

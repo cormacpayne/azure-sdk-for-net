@@ -28,11 +28,15 @@ namespace SiteRecovery.Tests
 {
     public class PairingTests : SiteRecoveryTestsBase
     {
+        public PairingTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         public void PairClouds()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 string priCld = string.Empty;
@@ -114,9 +118,8 @@ namespace SiteRecovery.Tests
 
         public void UnpairClouds()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
                 Fabric selectedFabric = null;
 
@@ -133,9 +136,8 @@ namespace SiteRecovery.Tests
 
         public void CreateHyperVAzureProfile()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
                 string policyName = "Hydra-Profile-HyperVAzure";
                 HyperVReplicaAzurePolicyInput hvrAPolicy = new HyperVReplicaAzurePolicyInput()
@@ -166,9 +168,8 @@ namespace SiteRecovery.Tests
 
         public void DeleteProfile()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
                 string policyName = "Hydra-Profile-HyperVAzure";
                 var deleteResponse = client.Policies.Delete(policyName, RequestHeaders);
@@ -177,9 +178,8 @@ namespace SiteRecovery.Tests
 
         public void CreateHyperV2012Profile()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
                 string policyName = "Hydra-Profile-HyperV-2012-" + new Random().Next();
                 HyperVReplica2012PolicyInput hvrProfileInput = new HyperVReplica2012PolicyInput()
@@ -217,9 +217,8 @@ namespace SiteRecovery.Tests
 
         public void CreateHyperV2012R2Profile()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
                 string policyName = "Hydra-Profile-HyperV-2012-R2-" + new Random().Next();
                 HyperVReplica2012R2PolicyInput hvrProfileInput = new HyperVReplica2012R2PolicyInput()
@@ -258,9 +257,8 @@ namespace SiteRecovery.Tests
 
         public void CreateVMwareAzureV2Profile()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
                 string policyName = "Hitesh-VMwareAzureV2-Profile";
                 var input = new InMageAzureV2PolicyInput
@@ -295,9 +293,8 @@ namespace SiteRecovery.Tests
 
         public void PairNetworks()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 const string fabricName = "Vmm;f0632449-effd-4858-a210-4ea15756e4b7";
@@ -322,9 +319,8 @@ namespace SiteRecovery.Tests
 
         public void UnPairNetworks()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 const string fabricName = "Vmm;f0632449-effd-4858-a210-4ea15756e4b7";
@@ -341,9 +337,8 @@ namespace SiteRecovery.Tests
 
         public void PurgeCloudPair()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
                 Fabric selectedFabric = null;
 
@@ -383,9 +378,8 @@ namespace SiteRecovery.Tests
 
         public void CreateVMwareAzureV2Mapping()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var responseServers = client.Fabrics.List(RequestHeaders);
@@ -439,9 +433,8 @@ namespace SiteRecovery.Tests
 
         public void PairUnpairStorageClassifications()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 FabricListResponse responseServers = client.Fabrics.List(RequestHeaders);
@@ -498,9 +491,8 @@ namespace SiteRecovery.Tests
         [Fact]
         public void A2ACreatePolicy()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler, Constants.A2A);
                 string policyName = "A2A-Policy";
                 var input = new A2APolicyCreationInput
@@ -536,9 +528,8 @@ namespace SiteRecovery.Tests
         [Fact]
         public void A2ADeletePolicy()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler, Constants.A2A);
                 string policyName = "A2A-Policy";
 

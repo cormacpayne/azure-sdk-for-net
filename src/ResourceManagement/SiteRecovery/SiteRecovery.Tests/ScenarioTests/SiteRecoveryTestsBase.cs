@@ -22,7 +22,6 @@ using System.Text;
 using Microsoft.Azure.Management.SiteRecoveryVault;
 using Microsoft.Azure.Management.SiteRecovery;
 using Microsoft.Azure.Management.SiteRecovery.Models;
-using Microsoft.Azure.Common.Internals;
 using Hyak.Common.TransientFaultHandling;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -31,6 +30,7 @@ using Xunit;
 using Microsoft.Azure.Test;
 using Newtonsoft.Json;
 using Microsoft.Azure.Test.HttpRecorder;
+using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
 ////using SiteRecovery.Tests.ScenarioTests;
 
 namespace SiteRecovery.Tests
@@ -52,7 +52,7 @@ namespace SiteRecovery.Tests
         protected readonly RecordedDelegationHandler CustomHttpHandler
             = new RecordedDelegationHandler { StatusCodeToReturn = HttpStatusCode.OK };
 
-        public SiteRecoveryVaultManagementClient GetRecoveryServicesClient(RecordedDelegationHandler handler)
+        public SiteRecoveryVaultManagementClient GetRecoveryServicesClient(HyakMockContext context, RecordedDelegationHandler handler)
         {
             handler.IsPassThrough = true;
             return this.GetSiteRecoveryVaultManagementClient().WithHandler(handler); ;
@@ -70,7 +70,7 @@ namespace SiteRecovery.Tests
 
             DateTime currentDateTime = DateTime.Now;
             currentDateTime = currentDateTime.AddHours(-1);
-            cikTokenDetails.NotBeforeTimestamp = TimeZoneInfo.ConvertTimeToUtc(currentDateTime);
+            cikTokenDetails.NotBeforeTimestamp = TimeZoneInfo.ConvertTime(currentDateTime, TimeZoneInfo.Utc);
             cikTokenDetails.NotAfterTimestamp = cikTokenDetails.NotBeforeTimestamp.AddHours(6);
             cikTokenDetails.ClientRequestId = clientRequestId;
             cikTokenDetails.Version = new Version(1, 2);

@@ -26,12 +26,16 @@ namespace SiteRecovery.Tests
 {
     public class ExportTests : SiteRecoveryTestsBase
     {
+        public ExportTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         [Fact]
         public void ExportJobTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 JobQueryParameter jqp = new JobQueryParameter();

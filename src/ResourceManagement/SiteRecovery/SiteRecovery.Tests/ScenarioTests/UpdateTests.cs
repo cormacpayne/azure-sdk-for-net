@@ -27,11 +27,15 @@ namespace SiteRecovery.Tests
     public class UpdateTests : SiteRecoveryTestsBase
     {
         
+        public UpdateTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         public void UpdateVMwareAzureV2PolicyTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var policiesResponse = client.Policies.List(RequestHeaders);

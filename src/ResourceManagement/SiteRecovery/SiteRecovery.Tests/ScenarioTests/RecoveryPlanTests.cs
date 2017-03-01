@@ -26,12 +26,16 @@ namespace SiteRecovery.Tests.ScenarioTests
 {
     public class RecoveryPlanTests : SiteRecoveryTestsBase
     {
+        public RecoveryPlanTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         [Fact]
         public void RecoveryPlan_ValidateNames()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var rpName = "rpTest";
@@ -67,10 +71,9 @@ namespace SiteRecovery.Tests.ScenarioTests
 
         public void RecoveryPlan_ValidateCRUD()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
+                
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
                 var fabrics = client.Fabrics.List(RequestHeaders).Fabrics.ToList();
                 var containers =
@@ -137,10 +140,9 @@ namespace SiteRecovery.Tests.ScenarioTests
 
         public void RecoveryPlan_ValidateE2A()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
+                
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
                 var fabrics = client.Fabrics.List(RequestHeaders).Fabrics.ToList();
                 var containers =
@@ -246,10 +248,9 @@ namespace SiteRecovery.Tests.ScenarioTests
 
         public void RecoveryPlan_ValidateE2E()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
+                
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
                 var fabrics = client.Fabrics.List(RequestHeaders).Fabrics.ToList();
                 var containers =
@@ -317,10 +318,9 @@ namespace SiteRecovery.Tests.ScenarioTests
         [Fact]
         public void RecoveryPlan_ValidateGetProtectedItemsInRecoveryPlan()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
-
+                
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
                 var fabrics = client.Fabrics.List(RequestHeaders).Fabrics.ToList();
                 var containers =

@@ -27,6 +27,11 @@ namespace SiteRecovery.Tests
 {
     public class EndToEndTests : SiteRecoveryTestsBase
     {
+        public EndToEndTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         #region OLD TESTS
         //[Fact]
         //public void EndToEndE2ESingleVM()
@@ -1089,9 +1094,8 @@ namespace SiteRecovery.Tests
 
         public void EndToEndSingleVME2E()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 bool createPolicy = true;
@@ -1144,7 +1148,7 @@ namespace SiteRecovery.Tests
                 {
                     selectedFabric = client.GetVMMs()
                         .First(item => 
-                            item.Properties.FriendlyName.Equals(fabricName, StringComparison.InvariantCultureIgnoreCase));
+                            item.Properties.FriendlyName.Equals(fabricName, StringComparison.OrdinalIgnoreCase));
                 }
 
                 // Get Clouds
@@ -1169,7 +1173,7 @@ namespace SiteRecovery.Tests
                     else
                     {
                         primaryCloud = cloudsInFabric.First(item => 
-                            item.Properties.FriendlyName.Equals(primaryCloudName, StringComparison.InvariantCultureIgnoreCase));
+                            item.Properties.FriendlyName.Equals(primaryCloudName, StringComparison.OrdinalIgnoreCase));
                     }
 
                     if (string.IsNullOrEmpty(recoveryCloudName))
@@ -1181,7 +1185,7 @@ namespace SiteRecovery.Tests
                     else
                     {
                         recoveryCloud = cloudsInFabric.First(item =>
-                            item.Properties.FriendlyName.Equals(recoveryCloudName, StringComparison.InvariantCultureIgnoreCase));
+                            item.Properties.FriendlyName.Equals(recoveryCloudName, StringComparison.OrdinalIgnoreCase));
                     }
                 }
 
@@ -1256,7 +1260,7 @@ namespace SiteRecovery.Tests
                         RequestHeaders).ProtectableItems;
 
                     protectableItem = protectableItems.First(item => 
-                        item.Properties.FriendlyName.Equals(VMName, StringComparison.InvariantCultureIgnoreCase));
+                        item.Properties.FriendlyName.Equals(VMName, StringComparison.OrdinalIgnoreCase));
                 }
 
                 if (enableDR)
@@ -1367,9 +1371,8 @@ namespace SiteRecovery.Tests
 
         public void EndToEndSingleVME2A()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 bool createPolicy = true;
@@ -1431,7 +1434,7 @@ namespace SiteRecovery.Tests
                         client.ProtectionContainer.List(selectedFabric.Name, RequestHeaders).ProtectionContainers.ToList();
 
                     primaryCloud = cloudsInFabric.First(item =>
-                        item.Properties.FriendlyName.Equals(primaryCloudName, StringComparison.InvariantCultureIgnoreCase));
+                        item.Properties.FriendlyName.Equals(primaryCloudName, StringComparison.OrdinalIgnoreCase));
                 }
 
                 // Begin Operations
@@ -1471,7 +1474,7 @@ namespace SiteRecovery.Tests
                         RequestHeaders).ProtectableItems;
 
                     protectableItem = protectableItems.First(item =>
-                        item.Properties.FriendlyName.Equals(VMName, StringComparison.InvariantCultureIgnoreCase));
+                        item.Properties.FriendlyName.Equals(VMName, StringComparison.OrdinalIgnoreCase));
                 }
 
                 if (enableDR)
@@ -1565,9 +1568,8 @@ namespace SiteRecovery.Tests
 
         public void EndToEndSingleVMB2A()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 bool createPolicy = true;
@@ -1609,7 +1611,7 @@ namespace SiteRecovery.Tests
                 {
                     selectedFabric = client.GetHyperVSites()
                         .First(item =>
-                            item.Properties.FriendlyName.Equals(fabricName, StringComparison.InvariantCultureIgnoreCase));
+                            item.Properties.FriendlyName.Equals(fabricName, StringComparison.OrdinalIgnoreCase));
                 }
 
                 // Get Clouds
@@ -1629,7 +1631,7 @@ namespace SiteRecovery.Tests
                         client.ProtectionContainer.List(selectedFabric.Name, RequestHeaders).ProtectionContainers.ToList();
 
                     primaryCloud = cloudsInFabric.First(item =>
-                        item.Properties.FriendlyName.Equals(primaryCloudName, StringComparison.InvariantCultureIgnoreCase));
+                        item.Properties.FriendlyName.Equals(primaryCloudName, StringComparison.OrdinalIgnoreCase));
                 }
 
                 // Begin Operations
@@ -1669,7 +1671,7 @@ namespace SiteRecovery.Tests
                         RequestHeaders).ProtectableItems;
 
                     protectableItem = protectableItems.First(item =>
-                        item.Properties.FriendlyName.Equals(VMName, StringComparison.InvariantCultureIgnoreCase));
+                        item.Properties.FriendlyName.Equals(VMName, StringComparison.OrdinalIgnoreCase));
                 }
 
                 if (enableDR)

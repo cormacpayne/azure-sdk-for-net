@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using Microsoft.Azure.Test;
 using Microsoft.Azure.Management.SiteRecovery;
 using System.Net;
-using System.Web;
 using Xunit;
 using Microsoft.Azure.Management.SiteRecovery.Models;
 
@@ -30,11 +29,15 @@ namespace SiteRecovery.Tests
     {
         private const string RecoveryservicePrefix = "RecoveryServices";
 
+        public AlertsTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         public void ConfigureAlertSettingsTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var getAlertsResponse = client.AlertSettings.List(RequestHeaders);
@@ -66,9 +69,8 @@ namespace SiteRecovery.Tests
 
         public void UnconfigureAlertSettingsTest()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 var getAlertsResponse = client.AlertSettings.List(RequestHeaders);

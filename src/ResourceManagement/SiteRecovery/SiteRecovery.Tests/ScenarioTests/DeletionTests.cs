@@ -25,11 +25,15 @@ namespace SiteRecovery.Tests
 {
     public class DeletionTests : SiteRecoveryTestsBase
     {
+        public DeletionTests()
+        {
+            HyakTestUtilities.SetHttpMockServerMatcher();
+        }
+
         public void RemoveServer()
         {
-            using (UndoContext context = UndoContext.Current)
+            using (var context = HyakMockContext.Start(this.GetType().FullName))
             {
-                context.Start();
                 var client = GetSiteRecoveryClient(CustomHttpHandler);
 
                 FabricListResponse responseServers = client.Fabrics.List(RequestHeaders);

@@ -31,8 +31,8 @@ namespace Microsoft.Azure.Management.SiteRecovery
             }
 
             Type objType = obj.GetType();
-
-            PropertyInfo[] properties = objType.GetTypeInfo().GetProperties();
+            
+            var properties = objType.GetTypeInfo().DeclaredProperties;
             foreach (PropertyInfo property in properties)
             {
                 {
@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Management.SiteRecovery
             }
 
             Type objType = queryObject.GetType();
-            PropertyInfo[] properties = objType.GetTypeInfo().GetProperties();
+            var properties = objType.GetTypeInfo().DeclaredProperties;
 
             System.Text.StringBuilder queryString = new System.Text.StringBuilder();
             List<string> propQuery = new List<string>();

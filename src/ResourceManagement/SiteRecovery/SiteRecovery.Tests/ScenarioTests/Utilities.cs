@@ -23,6 +23,7 @@ using Microsoft.Azure.Test;
 using System.IO;
 using System;
 using System.Threading;
+using Newtonsoft.Json;
 
 namespace SiteRecovery.Tests
 {
@@ -69,10 +70,11 @@ namespace SiteRecovery.Tests
             try
             {
                 sw = new StringWriter();
-                using (var writer = new XmlTextWriter(sw))
+                var settings = new XmlWriterSettings();
+                settings.Indent = true;
+                using (var writer = XmlWriter.Create(sw, settings))
                 {
                     // Indent the XML so it's human readable.
-                    writer.Formatting = Formatting.Indented;
                     serializer.WriteObject(writer, propertyBagContainer);
                     writer.Flush();
                     xmlString = sw.ToString();
@@ -81,7 +83,7 @@ namespace SiteRecovery.Tests
             finally
             {
                 if (sw != null)
-                    sw.Close();
+                    sw.Dispose();
             }
 
             return xmlString;
@@ -174,7 +176,7 @@ namespace SiteRecovery.Tests
                     if (job.Properties.ScenarioName.Contains(jobName)
                         && job.Properties.State.Equals(
                             "InProgress",
-                            StringComparison.InvariantCultureIgnoreCase))
+                            StringComparison.OrdinalIgnoreCase))
                     {
                         trackingFinished = false;
                         break;
