@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Marker that this targets file has been imported -->
+  <PropertyGroup>
+    <HydraCoreImported>true</HydraCoreImported>
+	<PackageName></PackageName>
+  </PropertyGroup>
+
+  <!-- The nuspec files to build -->
+  <ItemGroup>
+	<PackageSpec Include=".\**\$(PackageName)*.nuspec" />	
+  </ItemGroup>
+
+  <!--
+    Ensure required environment variables / properties are set
+  -->
+  <Target Name="EnsureEnvironment">
+    <Error Text="The PACKAGE_PUBLISHING_API_KEY property is not set. Either set it in the environment or specify it on the msbuild command line."
+      Condition="'$(PACKAGE_PUBLISHING_API_KEY)'==''" ContinueOnError="ErrorAndContinue" />
+  </Target>
+
+  <!--
+    Ensure the output directory exists and is empty
+  -->
+  <Target Name="EnsureOutputDir">
+    <ItemGroup>
+      <OldSpecs Include="$(PackageOutputDir)\$(PackageName)*.nupkg" />
+    </ItemGroup>
+    <MakeDir Directories="$(PackageOutputDir)" />
+    <Delete Files="@(OldSpecs)" />
+  </Target>
+
+  <!--
+    Remove the output directory and any files
+  -->
+  <Target Name="Clean">
+    <RemoveDir Directories="$(PackageOutputDir)" />
+  </Target>
+
+  <!--
+    Read assembly version of core dll, use it as the version for both packages
+  -->
+  <Target Name="ReadPackageVersion">
+    <ItemGroup>
+      <PackageCoreAssembly Include="$(CoreAssembly)" />
+    </ItemGroup>
+
+    <GetAssemblyIdentity AssemblyFiles="@(PackageCoreAssembly)">
+        <Output TaskParameter="Assemblies" ItemName="CoreAssemblyIdentity" />
+    </GetAssemblyIdentity>
+
+    <PropertyGroup>
+      <PackageVersion>%(CoreAssemblyIdentity.Version)$(VersionSuffix)</PackageVersion>
+    </PropertyGroup>
+    <Message Text="Package version = $(PackageVersion)" />
+  </Target>
+
+  <!--
+    Build a nuget config file containing publishing settings.
+    This lets us specify all the publishing information in environment
+    variables to minimize build server configuration.
+  -->
+  <Target Name='CreatePublishConfig' DependsOnTargets="EnsureEnvironment;EnsureOutputDir">
+    <WriteLinesToFile File="$(PublishConfigFile)" Lines="&lt;configuration&gt;&lt;/configuration&gt;" Overwrite='true' />
+    <Exec Command='$(NuGetCommand) setapikey $(PACKAGE_PUBLISHING_API_KEY) -ConfigFile $(PublishConfigFile)' />
+  </Target>
+
+  <!--
+    Build the packages
+  -->
+  <Target Name="BuildPackages" DependsOnTargets="ReadPackageVersion;EnsureOutputDir">
+    <Message Text="Spec to build: @(PackageSpec)" Importance="normal" />
+
+    <ConvertToAbsolutePath Paths="$(PackageOutputDir)">
+      <Output TaskParameter="AbsolutePaths" ItemName="PackageOutputAbsolutePath" />
+    </ConvertToAbsolutePath>
+
+    <Exec Command='$(NuGetCommand) pack %(PackageSpec.Identity) -NoPackageAnalysis -OutputDirectory &quot;@(PackageOutputAbsolutePath)&quot; -Version &quot;$(PackageVersion)&quot; -Properties Configuration=$(BuildConfiguration)' />
+  </Target>
+
+  <!--
+    Publish the packages. 
+    We will make it 'unlisted', by delelting it after the publish went through. 
+  -->
+  <Target Name="PublishPackages" DependsOnTargets="BuildPackages">
+    <ItemGroup>
+      <PackageToPublish Include="$(PackageOutputDir)\$(PackageName)*.nupkg" />
+    </ItemGroup>
+
+    <Exec Command='$(NuGetCommand) push %(PackageToPublish.Identity) $(PACKAGE_PUBLISHING_API_KEY) -NonInteractive -Source https://www.nuget.org/api/v2/package/'
+      ContinueOnError='ErrorAndContinue' />
+    
+    <Exec Command='$(NuGetCommand) delete %(TestFrameworkPackageNameList.Identity) $(PackageVersion) $(PACKAGE_PUBLISHING_API_KEY) -NonInteractive -Source https://www.nuget.org/api/v2/package/'
+      ContinueOnError='ErrorAndContinue' />
+  </Target>
+</Project>
+

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="PublishPackages">
+
+  <PropertyGroup>
+    <!-- Core assembly is used to set version # for the package -->
+    <CoreAssemblyProjectDir>..\</CoreAssemblyProjectDir>
+    <CoreAssembly>$(MSBuildProjectDirectory)\..\binaries\Microsoft.Azure.Test.Framework.dll</CoreAssembly>
+    <BuildConfiguration>Debug</BuildConfiguration>
+    <VersionSuffix>-prerelease</VersionSuffix>
+
+    <!-- Publishing configuration -->
+    <PackageOutputDir>packages</PackageOutputDir>
+    <PublishConfigFile>$(PackageOutputDir)\push.config</PublishConfigFile>
+    <BinariesLocation>$(MSBuildProjectDirectory)\..\binaries</BinariesLocation>
+    <UnsignedBinariesLocation>$(MSBuildProjectDirectory)\..\binaries\unsigned</UnsignedBinariesLocation>	
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <TestFrameworkPackageNameList Include="Microsoft.Azure.Test.Framework" />
+  </ItemGroup>
+  
+  <Target Name="CopyBinariesToUnsignedFolder">
+    <ItemGroup>
+	  <AssembliesToBuild Include="$(BinariesLocation)\*.HttpRecorder.dll;$(BinariesLocation)\Microsoft.Azure.Test*.dll"/>
+    </ItemGroup>
+	
+    <Message Text="Copying built assembly to $(UnsignedBinariesLocation)." />
+    <MakeDir Directories="$(UnsignedBinariesLocation)" Condition=" !Exists($(UnsignedBinariesLocation)) " />
+	
+    <Copy SourceFiles="@(AssembliesToBuild)"
+          DestinationFolder="$(UnsignedBinariesLocation)\"/>
+  </Target>
+  
+  <UsingTask Condition=" Exists($(OnPremiseBuildTasks)) " TaskName="CodeSigningTask" AssemblyFile="$(OnPremiseBuildTasks)\Microsoft.WindowsAzure.Tools.Build.Tasks.OnPremise.dll" />
+  
+  <Target Name="SignBinaries" Condition=" '$(Sign)' == 'true' " 
+	DependsOnTargets="CopyBinariesToUnsignedFolder">  
+	
+	<ItemGroup>
+	   <AssembliesToSign Include="$(UnsignedBinariesLocation)\*.dll"/>
+	   <Net40AssembliesToSign Include="$(UnsignedBinariesLocation)\net40\*.dll" />
+	</ItemGroup>
+	
+    <Error Condition=" !Exists($(OnPremiseBuildTasks)) " Text="No OnPremiseBuildTasks available, the official build will be unable to continue. $(OnPremiseBuildTasks)" />
+
+    <Message Text="Code signing" Importance="high" />
+
+    <CodeSigningTask
+        Description="Azure Test Framework"
+        Keywords="Azure Test Framework"
+        UnsignedFiles="@(AssembliesToSign)"
+        DestinationPath="$(BinariesLocation)"
+        SigningLogPath="$(BinariesLocation)\signing.log"
+        ToolsPath="$(OnPremiseBuildTasks)" />
+  </Target>
+  
+  <Import Project="..\.nuget\NuGet.targets" />
+  <Import Project="Targets\BuildPackages.targets" />
+</Project>

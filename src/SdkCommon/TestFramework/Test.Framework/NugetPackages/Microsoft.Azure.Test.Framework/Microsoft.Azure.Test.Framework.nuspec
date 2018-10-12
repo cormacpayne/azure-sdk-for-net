@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Microsoft.Azure.Test.Framework</id>
+    <version>1.0.0.0</version>
+    <authors>Microsoft Corporation</authors>
+    <owners>Microsoft Corporation</owners>
+    <licenseUrl>http://go.microsoft.com/fwlink/?LinkId=235170</licenseUrl>
+    <projectUrl>https://github.com/Azure/hydra</projectUrl>
+    <iconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Test utilities for xunit test suites for Hyak generated clients</description>
+    <releaseNotes>Experimental prerelease</releaseNotes>
+    <copyright>Copyright 2013</copyright>
+    <dependencies>
+      <dependency id="Microsoft.Azure.Test.HttpRecorder" version="[1.6.0, 2)" />
+      <dependency id="Microsoft.Azure.Common" version="[2.0, 3)" />
+      <dependency id="Microsoft.IdentityModel.Clients.ActiveDirectory" version="[2.28.3,3.0)" />
+      <dependency id="Microsoft.Rest.ClientRuntime" version="[2.3.2,3.0)" />
+      <dependency id="Microsoft.Rest.ClientRuntime.Azure.Authentication" version="[2.2.6-preview,3.0)" />
+    </dependencies>
+  </metadata>
+
+  <files>
+    <file src="..\..\binaries\Microsoft.Azure.Test.Framework.dll" target="lib\net45" />
+	<file src="..\..\binaries\Microsoft.Azure.Test.Framework.pdb" target="lib\net45" />
+  </files>
+</package>
