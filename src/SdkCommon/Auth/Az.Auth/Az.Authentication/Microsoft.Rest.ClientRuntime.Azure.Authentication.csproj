@@ -36,13 +36,13 @@
     <Reference Include="System.Runtime" />
     <Reference Include="System.Runtime.Serialization" />
     
-    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="[3.14.0, 4.0.0)" />
+    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="[4.3.0, 5.0.0)" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="[5.1.2, 6.0.0)" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.4' ">
-    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="[3.14.0, 4.0.0)" />
+    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="[4.3.0, 5.0.0)" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="[5.1.2, 6.0.0)" />
   </ItemGroup>
 </Project>
