@@ -13,7 +13,7 @@
     </PackageReleaseNotes>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFrameworks>net452;net461;netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>net452;net461;netstandard2.0</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(VsIdeBuild)' == 'true' ">
@@ -37,12 +37,12 @@
     <PackageReference Include="Microsoft.Rest.ClientRuntime.Azure.Authentication" Version="[2.3.4, 3.0.0)" Condition=" '$(ProjectRefApplicable)' != 'true' "/>
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
   	<PackageReference Include="Hyak.Common" Version="1.2.1" />
     <PackageReference Include="Microsoft.Azure.Common" Version="2.2.0" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="[3.14.0, 4.0.0)" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="[5.1.2]" />
-    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="Microsoft.Rest.ClientRuntime.Azure.Authentication" Version="[2.3.4, 3.0.0)" Condition=" '$(ProjectRefApplicable)' != 'true' "/>
   </ItemGroup>
 
