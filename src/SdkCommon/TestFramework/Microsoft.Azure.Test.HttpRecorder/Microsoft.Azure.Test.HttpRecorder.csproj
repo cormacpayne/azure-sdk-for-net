@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Description>Microsoft.Azure.Test.HttpRecorder</Description>
     <AssemblyTitle>HttpRecorder Library for recording Clinet/Server communication in Azure</AssemblyTitle>
-    <Version>1.13.1</Version>
+    <Version>1.13.1.1</Version>
     <AssemblyName>Microsoft.Azure.Test.HttpRecorder</AssemblyName>
     <PackageId>Microsoft.Azure.Test.HttpRecorder</PackageId>
     <PackageTags>Microsoft AutoRest ClientRuntime HttpRecorder REST;$(CommonNugetPackageTags)</PackageTags>
@@ -14,7 +14,7 @@
     </PackageReleaseNotes>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFrameworks>net452;net461;netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>net452;net461;netstandard2.0</TargetFrameworks>
   </PropertyGroup>
   
   <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
@@ -31,7 +31,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
   </ItemGroup>
   
