@@ -353,6 +353,16 @@ namespace Microsoft.Azure.Management.Sql
         IRestorePointsOperations RestorePoints { get; }
 
         /// <summary>
+        /// Gets the IManagedDatabaseSecurityAlertPoliciesOperations.
+        /// </summary>
+        IManagedDatabaseSecurityAlertPoliciesOperations ManagedDatabaseSecurityAlertPolicies { get; }
+
+        /// <summary>
+        /// Gets the IManagedServerSecurityAlertPoliciesOperations.
+        /// </summary>
+        IManagedServerSecurityAlertPoliciesOperations ManagedServerSecurityAlertPolicies { get; }
+
+        /// <summary>
         /// Gets the IDatabaseOperations.
         /// </summary>
         IDatabaseOperations DatabaseOperations { get; }
@@ -416,6 +426,16 @@ namespace Microsoft.Azure.Management.Sql
         /// Gets the IManagedInstanceEncryptionProtectorsOperations.
         /// </summary>
         IManagedInstanceEncryptionProtectorsOperations ManagedInstanceEncryptionProtectors { get; }
+
+        /// <summary>
+        /// Gets the IManagedInstanceVulnerabilityAssessmentsOperations.
+        /// </summary>
+        IManagedInstanceVulnerabilityAssessmentsOperations ManagedInstanceVulnerabilityAssessments { get; }
+
+        /// <summary>
+        /// Gets the IServerVulnerabilityAssessmentsOperations.
+        /// </summary>
+        IServerVulnerabilityAssessmentsOperations ServerVulnerabilityAssessments { get; }
 
     }
 }
