@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Description>Microsoft.Azure.Test.Framework</Description>
     <AssemblyTitle>Test Framework for Microsoft Hyak Generated Clients</AssemblyTitle>
-    <Version>3.0.0</Version>
+    <Version>3.0.1</Version>
     <AssemblyName>Microsoft.Azure.Test.Framework</AssemblyName>
     <PackageId>Microsoft.Azure.Test.Framework</PackageId>
     <PackageTags>Microsoft Hyak TestFramework</PackageTags>
