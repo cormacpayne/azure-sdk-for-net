@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Management.StorageSync.Models
     /// Server Endpoint object.
     /// </summary>
     [Rest.Serialization.JsonTransformation]
-    public partial class ServerEndpoint : Resource
+    public partial class ServerEndpoint : ProxyResource
     {
         /// <summary>
         /// Initializes a new instance of the ServerEndpoint class.
@@ -43,6 +43,8 @@ namespace Microsoft.Azure.Management.StorageSync.Models
         /// 'on', 'off'</param>
         /// <param name="volumeFreeSpacePercent">Level of free space to be
         /// maintained by Cloud Tiering if it is enabled.</param>
+        /// <param name="tierFilesOlderThanDays">Tier files older than
+        /// days.</param>
         /// <param name="friendlyName">Friendly Name</param>
         /// <param name="serverResourceId">Server Resource Id.</param>
         /// <param name="provisioningState">ServerEndpoint Provisioning
@@ -50,19 +52,32 @@ namespace Microsoft.Azure.Management.StorageSync.Models
         /// <param name="lastWorkflowId">ServerEndpoint lastWorkflowId</param>
         /// <param name="lastOperationName">Resource Last Operation
         /// Name</param>
-        /// <param name="syncStatus">Sync Health Status</param>
-        public ServerEndpoint(string id = default(string), string name = default(string), string type = default(string), string serverLocalPath = default(string), string cloudTiering = default(string), int? volumeFreeSpacePercent = default(int?), string friendlyName = default(string), string serverResourceId = default(string), string provisioningState = default(string), string lastWorkflowId = default(string), string lastOperationName = default(string), object syncStatus = default(object))
+        /// <param name="syncStatus">Server Endpoint properties.</param>
+        /// <param name="offlineDataTransfer">Offline data transfer. Possible
+        /// values include: 'on', 'off'</param>
+        /// <param name="offlineDataTransferStorageAccountResourceId">Offline
+        /// data transfer storage account resource ID</param>
+        /// <param name="offlineDataTransferStorageAccountTenantId">Offline
+        /// data transfer storage account tenant ID</param>
+        /// <param name="offlineDataTransferShareName">Offline data transfer
+        /// share name</param>
+        public ServerEndpoint(string id = default(string), string name = default(string), string type = default(string), string serverLocalPath = default(string), string cloudTiering = default(string), int? volumeFreeSpacePercent = default(int?), int? tierFilesOlderThanDays = default(int?), string friendlyName = default(string), string serverResourceId = default(string), string provisioningState = default(string), string lastWorkflowId = default(string), string lastOperationName = default(string), ServerEndpointHealth syncStatus = default(ServerEndpointHealth), string offlineDataTransfer = default(string), string offlineDataTransferStorageAccountResourceId = default(string), string offlineDataTransferStorageAccountTenantId = default(string), string offlineDataTransferShareName = default(string))
             : base(id, name, type)
         {
             ServerLocalPath = serverLocalPath;
             CloudTiering = cloudTiering;
             VolumeFreeSpacePercent = volumeFreeSpacePercent;
+            TierFilesOlderThanDays = tierFilesOlderThanDays;
             FriendlyName = friendlyName;
             ServerResourceId = serverResourceId;
             ProvisioningState = provisioningState;
             LastWorkflowId = lastWorkflowId;
             LastOperationName = lastOperationName;
             SyncStatus = syncStatus;
+            OfflineDataTransfer = offlineDataTransfer;
+            OfflineDataTransferStorageAccountResourceId = offlineDataTransferStorageAccountResourceId;
+            OfflineDataTransferStorageAccountTenantId = offlineDataTransferStorageAccountTenantId;
+            OfflineDataTransferShareName = offlineDataTransferShareName;
             CustomInit();
         }
 
@@ -89,6 +104,12 @@ namespace Microsoft.Azure.Management.StorageSync.Models
         /// </summary>
         [JsonProperty(PropertyName = "properties.volumeFreeSpacePercent")]
         public int? VolumeFreeSpacePercent { get; set; }
+
+        /// <summary>
+        /// Gets or sets tier files older than days.
+        /// </summary>
+        [JsonProperty(PropertyName = "properties.tierFilesOlderThanDays")]
+        public int? TierFilesOlderThanDays { get; set; }
 
         /// <summary>
         /// Gets or sets friendly Name
@@ -121,10 +142,35 @@ namespace Microsoft.Azure.Management.StorageSync.Models
         public string LastOperationName { get; set; }
 
         /// <summary>
-        /// Gets or sets sync Health Status
+        /// Gets or sets server Endpoint properties.
         /// </summary>
         [JsonProperty(PropertyName = "properties.syncStatus")]
-        public object SyncStatus { get; set; }
+        public ServerEndpointHealth SyncStatus { get; set; }
+
+        /// <summary>
+        /// Gets or sets offline data transfer. Possible values include: 'on',
+        /// 'off'
+        /// </summary>
+        [JsonProperty(PropertyName = "properties.offlineDataTransfer")]
+        public string OfflineDataTransfer { get; set; }
+
+        /// <summary>
+        /// Gets offline data transfer storage account resource ID
+        /// </summary>
+        [JsonProperty(PropertyName = "properties.offlineDataTransferStorageAccountResourceId")]
+        public string OfflineDataTransferStorageAccountResourceId { get; private set; }
+
+        /// <summary>
+        /// Gets offline data transfer storage account tenant ID
+        /// </summary>
+        [JsonProperty(PropertyName = "properties.offlineDataTransferStorageAccountTenantId")]
+        public string OfflineDataTransferStorageAccountTenantId { get; private set; }
+
+        /// <summary>
+        /// Gets or sets offline data transfer share name
+        /// </summary>
+        [JsonProperty(PropertyName = "properties.offlineDataTransferShareName")]
+        public string OfflineDataTransferShareName { get; set; }
 
         /// <summary>
         /// Validate the object.
@@ -141,6 +187,18 @@ namespace Microsoft.Azure.Management.StorageSync.Models
             if (VolumeFreeSpacePercent < 0)
             {
                 throw new ValidationException(ValidationRules.InclusiveMinimum, "VolumeFreeSpacePercent", 0);
+            }
+            if (TierFilesOlderThanDays > 2147483647)
+            {
+                throw new ValidationException(ValidationRules.InclusiveMaximum, "TierFilesOlderThanDays", 2147483647);
+            }
+            if (TierFilesOlderThanDays < 0)
+            {
+                throw new ValidationException(ValidationRules.InclusiveMinimum, "TierFilesOlderThanDays", 0);
+            }
+            if (SyncStatus != null)
+            {
+                SyncStatus.Validate();
             }
         }
     }

@@ -13,11 +13,12 @@
 			<![CDATA[
 New features:
 - Backup Validate Operation API
+- Updating as we added re-registration flow.
       ]]>
 		</PackageReleaseNotes>
 	</PropertyGroup>
 	<PropertyGroup>
-		<TargetFrameworks>net452;netstandard1.4</TargetFrameworks>
+		<TargetFrameworks>$(SdkTargetFx)</TargetFrameworks>
 	</PropertyGroup>
 
 	<!-- Please do not move/edit code below this line -->

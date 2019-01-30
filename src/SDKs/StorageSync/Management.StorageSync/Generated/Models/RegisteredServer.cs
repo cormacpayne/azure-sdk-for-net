@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Management.StorageSync.Models
     /// Registered Server resource.
     /// </summary>
     [Rest.Serialization.JsonTransformation]
-    public partial class RegisteredServer : Resource
+    public partial class RegisteredServer : ProxyResource
     {
         /// <summary>
         /// Initializes a new instance of the RegisteredServer class.
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Management.StorageSync.Models
         /// Certificate</param>
         /// <param name="agentVersion">Registered Server Agent Version</param>
         /// <param name="serverOSVersion">Registered Server OS Version</param>
-        /// <param name="serverManagementtErrorCode">Registered Server
+        /// <param name="serverManagementErrorCode">Registered Server
         /// Management Error Code</param>
         /// <param name="lastHeartBeat">Registered Server last heart
         /// beat</param>
@@ -64,13 +64,15 @@ namespace Microsoft.Azure.Management.StorageSync.Models
         /// <param name="serviceLocation">Service Location</param>
         /// <param name="friendlyName">Friendly Name</param>
         /// <param name="managementEndpointUri">Management Endpoint Uri</param>
-        public RegisteredServer(string id = default(string), string name = default(string), string type = default(string), string serverCertificate = default(string), string agentVersion = default(string), string serverOSVersion = default(string), int? serverManagementtErrorCode = default(int?), string lastHeartBeat = default(string), string provisioningState = default(string), string serverRole = default(string), string clusterId = default(string), string clusterName = default(string), string serverId = default(string), string storageSyncServiceUid = default(string), string lastWorkflowId = default(string), string lastOperationName = default(string), string discoveryEndpointUri = default(string), string resourceLocation = default(string), string serviceLocation = default(string), string friendlyName = default(string), string managementEndpointUri = default(string))
+        /// <param name="monitoringConfiguration">Monitoring
+        /// Configuration</param>
+        public RegisteredServer(string id = default(string), string name = default(string), string type = default(string), string serverCertificate = default(string), string agentVersion = default(string), string serverOSVersion = default(string), int? serverManagementErrorCode = default(int?), string lastHeartBeat = default(string), string provisioningState = default(string), string serverRole = default(string), string clusterId = default(string), string clusterName = default(string), string serverId = default(string), string storageSyncServiceUid = default(string), string lastWorkflowId = default(string), string lastOperationName = default(string), string discoveryEndpointUri = default(string), string resourceLocation = default(string), string serviceLocation = default(string), string friendlyName = default(string), string managementEndpointUri = default(string), string monitoringConfiguration = default(string))
             : base(id, name, type)
         {
             ServerCertificate = serverCertificate;
             AgentVersion = agentVersion;
             ServerOSVersion = serverOSVersion;
-            ServerManagementtErrorCode = serverManagementtErrorCode;
+            ServerManagementErrorCode = serverManagementErrorCode;
             LastHeartBeat = lastHeartBeat;
             ProvisioningState = provisioningState;
             ServerRole = serverRole;
@@ -85,6 +87,7 @@ namespace Microsoft.Azure.Management.StorageSync.Models
             ServiceLocation = serviceLocation;
             FriendlyName = friendlyName;
             ManagementEndpointUri = managementEndpointUri;
+            MonitoringConfiguration = monitoringConfiguration;
             CustomInit();
         }
 
@@ -114,8 +117,8 @@ namespace Microsoft.Azure.Management.StorageSync.Models
         /// <summary>
         /// Gets or sets registered Server Management Error Code
         /// </summary>
-        [JsonProperty(PropertyName = "properties.serverManagementtErrorCode")]
-        public int? ServerManagementtErrorCode { get; set; }
+        [JsonProperty(PropertyName = "properties.serverManagementErrorCode")]
+        public int? ServerManagementErrorCode { get; set; }
 
         /// <summary>
         /// Gets or sets registered Server last heart beat
@@ -200,6 +203,12 @@ namespace Microsoft.Azure.Management.StorageSync.Models
         /// </summary>
         [JsonProperty(PropertyName = "properties.managementEndpointUri")]
         public string ManagementEndpointUri { get; set; }
+
+        /// <summary>
+        /// Gets or sets monitoring Configuration
+        /// </summary>
+        [JsonProperty(PropertyName = "properties.monitoringConfiguration")]
+        public string MonitoringConfiguration { get; set; }
 
     }
 }
